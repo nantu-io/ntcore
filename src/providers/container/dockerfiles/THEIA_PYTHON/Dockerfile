@@ -1,0 +1,1 @@
+FROM ntcore/theia-python:python-3.8-v0.1
