@@ -73,7 +73,7 @@ Congratulation on your first model deployment!
 ---
 
 ## Documentation
-
+Please check out our [User Guide](https://nantutech.github.io/ntcore-doc/#/zh-cn/)
 
 ----
 
