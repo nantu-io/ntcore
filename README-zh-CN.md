@@ -2,7 +2,7 @@
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/ntcore/webserver)
 
-English|[简体中文](https://github.com/nantutech/ntcore/blob/main/README-zh-CN.md)
+[English](https://github.com/nantutech/ntcore/blob/main/README.md)|简体中文
 
 ----
 
