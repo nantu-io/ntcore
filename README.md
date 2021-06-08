@@ -2,6 +2,8 @@
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/ntcore/webserver)
 
+English|[简体中文](https://github.com/nantutech/ntcore/blob/main/README-zh-CN.md)
+
 ----
 
 NTCore is an open-source platform to manage machine learning model development lifecycles. It facilates local development environment setup, model versioning and metadata tracking, as well as model deployment and monitoring in production.
