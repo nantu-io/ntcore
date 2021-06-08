@@ -20,10 +20,10 @@ NTCore 是一个用于管理机器学习模型开发生命周期的开源平台�
 
 ## This document includes
 
-- [十分钟内部署您的第一个模型](#deploy-your-first-model-in-10-minutes)
-- [用户文档](#documentation)
-- [社区](#community)
-- [执照](#license)
+- [十分钟内部署您的第一个模型](#十分钟内部署您的第一个模型)
+- [用户文档](#文档)
+- [社区](#社区)
+- [执照](#执照)
 
 ----
 
