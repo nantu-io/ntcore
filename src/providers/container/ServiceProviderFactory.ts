@@ -18,7 +18,7 @@ export class ContainerProviderFactory implements GenericProviderFactory<GenericS
      */
     public createProvider(type: ProviderType): GenericServiceProvider {
         switch(type) {
-            case ProviderType.LOCAL: return new GenericLocalServiceProvider(localDockerClient);
+            case ProviderType.DOCKER: return new GenericLocalServiceProvider(localDockerClient);
         }
     }
 }
@@ -31,7 +31,7 @@ export class ServiceConfigProviderFactory implements GenericProviderFactory<Gene
      */
     public createProvider(type: ProviderType): GenericServiceConfigProvider {
         switch(type) {
-            case ProviderType.LOCAL: return new LocalServiceConfigProvider();
+            case ProviderType.DOCKER: return new LocalServiceConfigProvider();
         }
     }
 }
@@ -44,7 +44,7 @@ export class ServiceStateProviderFactory implements GenericProviderFactory<Gener
      */
     public createProvider(type: ProviderType): GenericServiceStateProvider {
         switch(type) {
-            case ProviderType.LOCAL: return new LocalServiceStateProvider();
+            case ProviderType.DOCKER: return new LocalServiceStateProvider();
         }
     }
 }

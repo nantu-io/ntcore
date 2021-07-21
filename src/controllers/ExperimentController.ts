@@ -31,12 +31,12 @@ export class ExperimentController {
     private readonly _serviceProvider: GenericServiceProvider;
     private readonly _configProvider: GenericServiceConfigProvider;
 
-    public constructor() {
-        this._workspaceProvider = new WorkpaceProviderFactory().createProvider(ProviderType.LOCAL);
-        this._experimentProvider = new ExperimentProviderFactory().createProvider(ProviderType.LOCAL);
-        this._deploymentProvider = new DeploymentProviderFactory().createProvider(ProviderType.LOCAL);
-        this._serviceProvider = new ContainerProviderFactory().createProvider(ProviderType.LOCAL);
-        this._configProvider = new ServiceConfigProviderFactory().createProvider(ProviderType.LOCAL);
+    public constructor(provider: ProviderType) {
+        this._workspaceProvider = new WorkpaceProviderFactory().createProvider(provider);
+        this._experimentProvider = new ExperimentProviderFactory().createProvider(provider);
+        this._deploymentProvider = new DeploymentProviderFactory().createProvider(provider);
+        this._serviceProvider = new ContainerProviderFactory().createProvider(provider);
+        this._configProvider = new ServiceConfigProviderFactory().createProvider(provider);
         this.createExperimentV1 = this.createExperimentV1.bind(this);
         this.listExperimentsV1 = this.listExperimentsV1.bind(this);
         this.getExperimentsV1 = this.getExperimentsV1.bind(this);

@@ -22,10 +22,10 @@ export class InstanceController {
     private readonly _serviceProvider: GenericServiceProvider;
     private readonly _serviceStateProvider: GenericServiceStateProvider;
 
-    public constructor() {
-        this._serviceProvider = new ContainerProviderFactory().createProvider(ProviderType.LOCAL);
-        this._configProvider = new ServiceConfigProviderFactory().createProvider(ProviderType.LOCAL);
-        this._serviceStateProvider = new ServiceStateProviderFactory().createProvider(ProviderType.LOCAL);
+    public constructor(providerType: ProviderType) {
+        this._serviceProvider = new ContainerProviderFactory().createProvider(providerType);
+        this._configProvider = new ServiceConfigProviderFactory().createProvider(providerType);
+        this._serviceStateProvider = new ServiceStateProviderFactory().createProvider(providerType);
         this.createServiceV1 = this.createServiceV1.bind(this);
         this.getServiceStateV1 = this.getServiceStateV1.bind(this);
         this.stopServiceV1 = this.stopServiceV1.bind(this);

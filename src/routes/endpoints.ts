@@ -3,12 +3,20 @@ import { DeploymentController } from "../controllers/DeploymentController";
 import { ExperimentController } from "../controllers/ExperimentController";
 import { InstanceController } from "../controllers/InstanceController";
 import { WorkspaceController } from "../controllers/WorkspaceController";
+import { ProviderType } from "../commons/ProviderType";
 
 export class Routes {
-    private workspaceController: WorkspaceController = new WorkspaceController();
-    private instanceController: InstanceController = new InstanceController();
-    private experimentController: ExperimentController = new ExperimentController();
-    private deploymentController: DeploymentController = new DeploymentController();
+    private workspaceController: WorkspaceController;
+    private instanceController: InstanceController;
+    private experimentController: ExperimentController;
+    private deploymentController: DeploymentController;
+
+    constructor(providerType: ProviderType) {
+        this.workspaceController = new WorkspaceController(providerType);
+        this.instanceController = new InstanceController(providerType);
+        this.experimentController = new ExperimentController(providerType);
+        this.deploymentController = new DeploymentController(providerType);
+    }
 
     public routes(app: express.Application): void {
         app.route('/dsp/api/v1/service/:name/workspace/:workspaceId')

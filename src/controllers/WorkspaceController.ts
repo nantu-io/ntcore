@@ -7,8 +7,8 @@ import { ProviderType } from '../commons/ProviderType';
 export class WorkspaceController {
     private readonly _provider: GenericWorkspaceProvider;
 
-    public constructor() {
-        this._provider = new WorkpaceProviderFactory().createProvider(ProviderType.LOCAL);
+    public constructor(providerType: ProviderType) {
+        this._provider = new WorkpaceProviderFactory().createProvider(providerType);
         this.createWorkspaceV1 = this.createWorkspaceV1.bind(this);
         this.getWorkspaceV1 = this.getWorkspaceV1.bind(this);
         this.listWorkspacesV1 = this.listWorkspacesV1.bind(this);
@@ -20,7 +20,7 @@ export class WorkspaceController {
      * @param req Request
      * @param res Response
      * Example usage: 
-     * curl -H "Content-Type: application/json" -d '{"type":"FLASK_APP", "name":"test"}' -X POST http://localhost:8180/dsp/api/v1/workspace
+     * curl -H "Content-Type: application/json" -d '{"type":"API", "name":"test"}' -X POST http://localhost:8180/dsp/api/v1/workspace
      */
     public createWorkspaceV1(req: Request, res: Response) {
         const id = `C${Util.createWorkspaceId(req.body.name)}`;

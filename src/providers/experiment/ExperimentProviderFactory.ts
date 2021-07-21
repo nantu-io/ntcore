@@ -9,7 +9,7 @@ export class ExperimentProviderFactory {
      */
     public createProvider(type: ProviderType) {
         switch(type) {
-            case ProviderType.LOCAL: return new LocalExperimentProvider();
+            case ProviderType.DOCKER: return new LocalExperimentProvider();
         }
     }
 }

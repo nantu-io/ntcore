@@ -9,7 +9,7 @@ export class DeploymentProviderFactory {
      */
     public createProvider(type: ProviderType) {
         switch(type) {
-            case ProviderType.LOCAL: return new LocalDeploymentProvider();
+            case ProviderType.DOCKER: return new LocalDeploymentProvider();
         }
     }
 }

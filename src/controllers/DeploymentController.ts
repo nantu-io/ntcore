@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
-import { ProviderType } from '../commons/ProviderType';
 import { GenericDeploymentProvider } from '../providers/deployment/GenericDeploymentProvider';
 import { DeploymentProviderFactory } from '../providers/deployment/DeploymentProviderFactory';
+import { ProviderType } from '../commons/ProviderType';
 
 export class DeploymentController {
     private readonly _deploymentProvider: GenericDeploymentProvider;
 
-    public constructor() {
-        this._deploymentProvider = new DeploymentProviderFactory().createProvider(ProviderType.LOCAL);
+    public constructor(providerType: ProviderType) {
+        this._deploymentProvider = new DeploymentProviderFactory().createProvider(providerType);
         this.listDeploymentsV1 = this.listDeploymentsV1.bind(this);
         this.listActiveDeploymentsV1 = this.listActiveDeploymentsV1.bind(this);
     }

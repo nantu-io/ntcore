@@ -9,7 +9,7 @@ export class WorkpaceProviderFactory {
      */
     public createProvider(type: ProviderType) {
         switch(type) {
-            case ProviderType.LOCAL: return new LocalWorkspaceProvider();
+            case ProviderType.DOCKER: return new LocalWorkspaceProvider();
         }
     }
 }
