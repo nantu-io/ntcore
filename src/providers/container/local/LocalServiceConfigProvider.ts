@@ -12,6 +12,7 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
      * @param memory memory number in GB.
      */
     public createDevelopmentConfig(name: string, type: ServiceType, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService {
+        // TODO: replace "_" in names with "-".
         switch (type) {
             case ServiceType.JUPYTER: return this.createJupyterConfig(type, name, runtime, cpus, memory, packages);
             case ServiceType.THEIA_PYTHON: return this.createTheiaConfig(type, name, runtime, cpus, memory, packages);

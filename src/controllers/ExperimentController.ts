@@ -1,28 +1,14 @@
 import { Request, Response } from 'express';
-import { GenericExperimentProvider } from "../providers/experiment/GenericExperimentProvider";
-import { ExperimentProviderFactory } from "../providers/experiment/ExperimentProviderFactory";
 import { Util } from '../commons/Util';
 import { Runtime } from '../commons/Runtime';
-import { ProviderType } from '../commons/ProviderType';
-import { DeploymentProviderFactory } from '../providers/deployment/DeploymentProviderFactory';
-import { GenericWorkspaceProvider } from '../providers/workspace/GenericWorkspaceProvider';
-import { WorkpaceProviderFactory } from '../providers/workspace/WorkspaceProviderFactory';
 import { ContainerProviderFactory } from '../providers/container/ServiceProviderFactory';
 import { ServiceConfigProviderFactory } from '../providers/container/ServiceProviderFactory';
 import { waitUntil } from 'async-wait-until';
-import { 
-    GenericDeploymentProvider, 
-    DeploymentStatus, 
-    IllegalStateError,
-} from '../providers/deployment/GenericDeploymentProvider';
-import { 
-    GenericServiceProvider, 
-    GenericServiceConfigProvider, 
-    ServiceState,
-    ServiceTypeMapping, 
-    ServiceType
-} from '../providers/container/GenericServiceProvider';
 import { Framework } from '../commons/Framework';
+import { GenericExperimentProvider, ExperimentProviderFactory } from "../providers/experiment/GenericExperimentProvider";
+import { GenericWorkspaceProvider, WorkpaceProviderFactory } from '../providers/workspace/GenericWorkspaceProvider';
+import { GenericDeploymentProvider, DeploymentStatus, IllegalStateError, DeploymentProviderFactory } from '../providers/deployment/GenericDeploymentProvider';
+import { GenericServiceProvider, GenericServiceConfigProvider, ServiceState, ServiceTypeMapping, ServiceType } from '../providers/container/GenericServiceProvider';
 
 export class ExperimentController {
     private readonly _workspaceProvider: GenericWorkspaceProvider;
@@ -31,12 +17,12 @@ export class ExperimentController {
     private readonly _serviceProvider: GenericServiceProvider;
     private readonly _configProvider: GenericServiceConfigProvider;
 
-    public constructor(provider: ProviderType) {
-        this._workspaceProvider = new WorkpaceProviderFactory().createProvider(provider);
-        this._experimentProvider = new ExperimentProviderFactory().createProvider(provider);
-        this._deploymentProvider = new DeploymentProviderFactory().createProvider(provider);
-        this._serviceProvider = new ContainerProviderFactory().createProvider(provider);
-        this._configProvider = new ServiceConfigProviderFactory().createProvider(provider);
+    public constructor() {
+        this._workspaceProvider = new WorkpaceProviderFactory().createProvider();
+        this._experimentProvider = new ExperimentProviderFactory().createProvider();
+        this._deploymentProvider = new DeploymentProviderFactory().createProvider();
+        this._serviceProvider = new ContainerProviderFactory().createProvider();
+        this._configProvider = new ServiceConfigProviderFactory().createProvider();
         this.createExperimentV1 = this.createExperimentV1.bind(this);
         this.listExperimentsV1 = this.listExperimentsV1.bind(this);
         this.getExperimentsV1 = this.getExperimentsV1.bind(this);
@@ -147,14 +133,12 @@ export class ExperimentController {
         const framework = Framework.SKLEARN;
         const deploymentId = Util.createDeploymentId();
         const type = ServiceTypeMapping[`FLASK_${framework.toUpperCase()}`];
-        const cpu = 1;
-        const memory = 2;
+        const config = this._configProvider.createDeploymentConfig(type, workspaceId, version, runtime, framework, 1, 2);
         this._deploymentProvider.aquireLock(workspaceId, version)
             .then(() => this.createDeployment(workspaceId, deploymentId, version), (err) => this.handleLockAquisitionError(res, err))
-            .then(() => Promise.resolve(res.status(201).send({info: `Started deployment ${deploymentId}`})), (err) => Promise.reject(err))
-            .then(() => Promise.resolve(this._configProvider.createDeploymentConfig(type, workspaceId, version, runtime, framework, cpu, memory)), (err) => Promise.reject(err))
-            .then((config) => this._serviceProvider.provision(config), (err) => Promise.reject(err))
-            .then((config) => this._serviceProvider.start(config), (err) => Promise.reject(err))
+            .then(() => Promise.resolve(res.status(201).send({info: `Started Deployment ${deploymentId}`})), (err) => Promise.reject(err))
+            .then(() => this._serviceProvider.provision(config), (err) => Promise.reject(err))
+            .then(() => this._serviceProvider.start(config), (err) => Promise.reject(err))
             .then(() => this.waitForServiceRunning(type, workspaceId), (err) => Promise.reject(err))
             .then(() => this._deploymentProvider.releaseLock(workspaceId), (err) => Promise.reject(err))
             .then(() => this._deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.SUCCEED), (err) => Promise.reject(err))
@@ -207,7 +191,7 @@ export class ExperimentController {
     private async waitForServiceRunning(type: ServiceType, workspaceId: string) {
         const config = this._configProvider.createDeploymentConfig(type, workspaceId);
         await waitUntil(async () => (await this._serviceProvider.getState(config)).state === ServiceState.RUNNING,
-            { timeout: 300000, intervalBetweenAttempts: 5000 });
+            { timeout: 900000, intervalBetweenAttempts: 10000 });
         return config;
     }
 }

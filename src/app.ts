@@ -2,19 +2,17 @@ import { Routes } from "./routes/endpoints";
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import * as path from "path";
-import { AppConfig, AppConfigProvider } from './commons/ConfigProvider';
+import { appConfig } from './libs/config/AppConfigProvider';
 import fileUpload = require('express-fileupload');
 
 export class App {
     public app: express.Application;
     private _routes: Routes;
-    private _appConfig: AppConfig;
 
     constructor() {
       this.app = express();
       this.config();
-      this._appConfig = new AppConfigProvider().getConfig();
-      this._routes = new Routes(this._appConfig.provider);
+      this._routes = new Routes();
       this._routes.routes(this.app);
     }
 
@@ -35,7 +33,7 @@ export class App {
       });
       // Listen to port
       const PORT = 8180;
-      this.app.listen(PORT, () => console.log(`Server is running with ${this._appConfig.provider} provider`));
+      this.app.listen(PORT, () => console.log(`Server is running with ${appConfig.container.provider} provider`));
     }
 }
 

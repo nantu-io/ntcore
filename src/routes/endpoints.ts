@@ -3,7 +3,6 @@ import { DeploymentController } from "../controllers/DeploymentController";
 import { ExperimentController } from "../controllers/ExperimentController";
 import { InstanceController } from "../controllers/InstanceController";
 import { WorkspaceController } from "../controllers/WorkspaceController";
-import { ProviderType } from "../commons/ProviderType";
 
 export class Routes {
     private workspaceController: WorkspaceController;
@@ -11,11 +10,11 @@ export class Routes {
     private experimentController: ExperimentController;
     private deploymentController: DeploymentController;
 
-    constructor(providerType: ProviderType) {
-        this.workspaceController = new WorkspaceController(providerType);
-        this.instanceController = new InstanceController(providerType);
-        this.experimentController = new ExperimentController(providerType);
-        this.deploymentController = new DeploymentController(providerType);
+    constructor() {
+        this.workspaceController = new WorkspaceController();
+        this.instanceController = new InstanceController();
+        this.experimentController = new ExperimentController();
+        this.deploymentController = new DeploymentController();
     }
 
     public routes(app: express.Application): void {

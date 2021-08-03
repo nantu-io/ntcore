@@ -1,7 +1,4 @@
-import { 
-    Experiment,
-    GenericExperimentProvider
-} from "../GenericExperimentProvider";
+import { Experiment, GenericExperimentProvider } from "../GenericExperimentProvider";
 import {
     EXPERIMENTS_INITIALIZATION,
     EXPERIMENTS_LIST,
@@ -9,16 +6,17 @@ import {
     EXPERIMENT_READ,
     EXPERIMENT_DELETE
 } from "./LocalExperimentQueries"; 
-import { database } from "../../../commons/ClientConfig";
+import Database = require("better-sqlite3");
 import mkdirp = require('mkdirp');
 import fs = require('fs');
-import path = require("path");
 
 export class LocalExperimentProvider implements GenericExperimentProvider {
+    private _databaseClient: Database.Database;
     /**
      * Initialize the experiments table.
      */
-    constructor() {
+    constructor(databaseClient: Database.Database) {
+        this._databaseClient = databaseClient;
         this.createExperimentsTableIfNotExists();
     }
     /**
@@ -26,7 +24,7 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * @param experiment experiment object.
      */
     public async create(experiment: Experiment) {
-        await database.prepare(EXPERIMENT_CREATE).run({
+        this._databaseClient.prepare(EXPERIMENT_CREATE).run({
             workspace_id: experiment.workspaceId,
             version: experiment.version,
             runtime: experiment.runtime,
@@ -45,7 +43,7 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * @param workspaceId Workspace id.
      */
     public async list(workspaceId: string) {
-        return await database.prepare(EXPERIMENTS_LIST).all({workspace_id: workspaceId});
+        return this._databaseClient.prepare(EXPERIMENTS_LIST).all({workspace_id: workspaceId});
     }
 
     /**
@@ -54,7 +52,7 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * @param version Experiment version.
      */
     public async read(workspaceId: string, version: number) {
-        return await database.prepare(EXPERIMENT_READ).get({workspace_id: workspaceId, version: version});
+        return this._databaseClient.prepare(EXPERIMENT_READ).get({workspace_id: workspaceId, version: version});
     }
 
     /**
@@ -63,7 +61,7 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * @param version version number.
      */
      public async delete(workspaceId: string, version: number) {
-        return await database.prepare(EXPERIMENT_DELETE).run({workspaceId: workspaceId, version: version});
+        return this._databaseClient.prepare(EXPERIMENT_DELETE).run({workspaceId: workspaceId, version: version});
     }
 
     /**
@@ -101,6 +99,6 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
     }
     
     private createExperimentsTableIfNotExists() {
-        database.exec(EXPERIMENTS_INITIALIZATION);
+        this._databaseClient.exec(EXPERIMENTS_INITIALIZATION);
     }
 }

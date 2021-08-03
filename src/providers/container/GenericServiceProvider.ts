@@ -193,7 +193,7 @@ export interface GenericServiceStateProvider {
     /**
      * Gets the service state.
      */
-    get: (name: string, username: string) => Promise<{}>;
+    get: (name: string, username: string) => Promise<GenericService>;
     /**
      * Lists service states.
      */

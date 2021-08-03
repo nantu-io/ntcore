@@ -1,19 +1,16 @@
 import { GenericServiceStateProvider, GenericService, ServiceState } from "../GenericServiceProvider";
-import { 
-    INSTANCES_INITIALIZATION,
-    INSTANCES_LIST,
-    INSTANCES_READ,
-    INSTANCE_STATE_UPSERT
-} from "./LocalServiceStateQueries";
+import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./LocalServiceStateQueries";
 import { Runtime } from "../../../commons/Runtime";
-import { database } from "../../../commons/ClientConfig";
+import Database = require("better-sqlite3");
 
 export class LocalServiceStateProvider implements GenericServiceStateProvider {
+    private _databaseClient: Database.Database;
     /**
      * Initialize the experiments table.
      */
-    constructor() {
-        database.exec(INSTANCES_INITIALIZATION);
+    constructor(databaseClient: Database.Database) {
+        this._databaseClient = databaseClient;
+        this._databaseClient.exec(INSTANCES_INITIALIZATION);
     }
     /**
      * Records the service state into database.
@@ -23,7 +20,7 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider {
      * @returns Promise of the service config.
      */
     public async record(config: GenericService, username: string, state: ServiceState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<GenericService> {
-        await database.prepare(INSTANCE_STATE_UPSERT).run({
+        this._databaseClient.prepare(INSTANCE_STATE_UPSERT).run({
             name: config.name,
             createdBy: username,
             type: config.type,
@@ -44,7 +41,7 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider {
      * @returns Promise of the service state.
      */
     public async get(name: string, username: string): Promise<{}> {
-        const res = await database.prepare(INSTANCES_READ).get({name: name, createdBy: username});
+        const res = this._databaseClient.prepare(INSTANCES_READ).get({name: name, createdBy: username});
         if (res) {
             return { name, state: res.state, runtime: res.runtime, cpus: res.cpus, memory: res.memory, packages: res.packages };
         }
@@ -57,7 +54,7 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider {
      * @returns Promise of the service config.
      */
     public async list(username: string): Promise<GenericService[]> {
-        const response = await database.prepare(INSTANCES_LIST).all({createdBy: username});
+        const response = this._databaseClient.prepare(INSTANCES_LIST).all({createdBy: username});
         if (response) {
             return response.map((i: any) => ({type: i.type, name: i.name, state: i.state}));
         }

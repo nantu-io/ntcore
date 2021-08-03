@@ -1,8 +1,4 @@
-import { 
-    Deployment,
-    GenericDeploymentProvider,
-    DeploymentStatus
-} from "../GenericDeploymentProvider";
+import { Deployment, GenericDeploymentProvider, DeploymentStatus } from "../GenericDeploymentProvider";
 import {
     DEPLOYMENTS_INITIALIZATION,
     DEPLOYMENTS_LIST,
@@ -14,13 +10,15 @@ import {
     DEPLOYMENT_LOCK_DELETE,
     DEPLOYMENT_STATUS_UPDATE
 } from "./LocalDeploymentQueries";
-import { database } from "../../../commons/ClientConfig";
+import Database = require("better-sqlite3");
 
 export class LocalDeploymentProvider implements GenericDeploymentProvider {
+    private _databaseClient: Database.Database;
     /**
      * Initialize the experiments table.
      */
-    constructor() {
+    constructor(databaseClient: Database.Database) {
+        this._databaseClient = databaseClient;
         this.createDeploymentTablesIfNotExists();
     }
 
@@ -29,7 +27,7 @@ export class LocalDeploymentProvider implements GenericDeploymentProvider {
      * @param experiment Deployment object.
      */
     public async create(deployment: Deployment) {
-        await database.prepare(DEPLOYMENT_CREATE).run({
+        this._databaseClient.prepare(DEPLOYMENT_CREATE).run({
             id: deployment.deploymentId,
             workspace_id: deployment.workspaceId,
             version: deployment.version,
@@ -45,14 +43,14 @@ export class LocalDeploymentProvider implements GenericDeploymentProvider {
      * @param workspaceId Workspace id.
      */
     public async list(workspaceId: string) {
-        return await database.prepare(DEPLOYMENTS_LIST).all({workspace_id: workspaceId});;
+        return this._databaseClient.prepare(DEPLOYMENTS_LIST).all({workspace_id: workspaceId});;
     }
 
     /**
      * List all active deployments.
      */
      public async listActive() {
-        return await database.prepare(DEPLOYMENTS_ACTIVE_LIST).all();
+        return this._databaseClient.prepare(DEPLOYMENTS_ACTIVE_LIST).all();
     }
 
     /**
@@ -61,7 +59,7 @@ export class LocalDeploymentProvider implements GenericDeploymentProvider {
      * @param version Experiment version.
      */
     public async read(workspaceId: string, version: string) {
-        return await database.prepare(DEPLOYMENT_READ).get({workspace_id: workspaceId, version: version});
+        return this._databaseClient.prepare(DEPLOYMENT_READ).get({workspace_id: workspaceId, version: version});
     }
 
     /**
@@ -70,7 +68,7 @@ export class LocalDeploymentProvider implements GenericDeploymentProvider {
      * @param version Experiment version.
      */
     public async aquireLock(workspaceId: string, version: number) {
-        return await database.prepare(DEPLOYMENT_LOCK_CREATE).run({
+        return this._databaseClient.prepare(DEPLOYMENT_LOCK_CREATE).run({
             workspace_id: workspaceId,
             version: version,
             created_by: 'ntcore',
@@ -83,7 +81,7 @@ export class LocalDeploymentProvider implements GenericDeploymentProvider {
      * @param workspaceId Workspace id.
      */
     public async releaseLock(workspaceId: string) {
-        return await database.prepare(DEPLOYMENT_LOCK_DELETE).run({workspaceId: workspaceId});
+        return this._databaseClient.prepare(DEPLOYMENT_LOCK_DELETE).run({workspaceId: workspaceId});
     }
 
     /**
@@ -93,11 +91,11 @@ export class LocalDeploymentProvider implements GenericDeploymentProvider {
      * @param status Status of the deployment.
      */
     public async updateStatus(workspaceId: string, id: string, status: DeploymentStatus) {
-        return await database.prepare(DEPLOYMENT_STATUS_UPDATE).run({workspaceId: workspaceId, id: id, status: status})
+        return this._databaseClient.prepare(DEPLOYMENT_STATUS_UPDATE).run({workspaceId: workspaceId, id: id, status: status})
     }
 
     private createDeploymentTablesIfNotExists() {
-        database.exec(DEPLOYMENTS_INITIALIZATION);
-        database.exec(DEPLOYMENT_LOCK_INITIALIZATION);
+        this._databaseClient.exec(DEPLOYMENTS_INITIALIZATION);
+        this._databaseClient.exec(DEPLOYMENT_LOCK_INITIALIZATION);
     }
 }

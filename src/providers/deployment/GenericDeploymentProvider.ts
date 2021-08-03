@@ -1,7 +1,13 @@
+import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
+import { LocalDeploymentProvider } from "./local/LocalDeploymentProvider";
+import { ProviderType } from "../../commons/ProviderType";
+import { appConfig } from "../../libs/config/AppConfigProvider";
+
 /**
  * Defines the deployment statuses.
  */
-export const enum DeploymentStatus {
+export const enum DeploymentStatus 
+{
     /**
      * Indicates the deployment is succeed.
      */
@@ -18,7 +24,8 @@ export const enum DeploymentStatus {
 /**
  * Defines the deployment object.
  */
-export class Deployment {
+export class Deployment 
+{
     workspaceId: string;
     deploymentId: string;
     version: number;
@@ -33,7 +40,8 @@ export class IllegalStateError extends Error {}
 /**
  * Interface for deployment provider.
  */
-export interface GenericDeploymentProvider {
+export interface GenericDeploymentProvider 
+{
     /**
      * Create a new deployment.
      */
@@ -53,13 +61,31 @@ export interface GenericDeploymentProvider {
     /**
      * Aquire deployment lock;
      */
-    aquireLock: (workspaceId: string, version: number) => Promise<void>;
+    aquireLock: (workspaceId: string, version: number) => Promise<any>;
     /**
      * Release deployment lock;
      */
-    releaseLock: (workspaceId: string) => Promise<void>;
+    releaseLock: (workspaceId: string) => Promise<any>;
     /**
      * Update the status of a deployment;
      */
-    updateStatus: (workspaceId: string, id: string, status: DeploymentStatus) => Promise<void>;
+    updateStatus: (workspaceId: string, id: string, status: DeploymentStatus) => Promise<any>;
+}
+
+export class DeploymentProviderFactory
+{
+    /**
+     * Create a provider for local deployments.
+     * @param type Provider type, e.g., LOCAL, AWS etc.
+     * @returns Deployment provider.
+     */
+    public createProvider(): GenericDeploymentProvider {
+        const providerType = appConfig.container.provider;
+        switch(providerType) {
+            // TODO: Update this client provider to be postgres provider for kubernetes when it's ready.
+            case ProviderType.KUBERNETES: return new LocalDeploymentProvider(SQliteClientProvider.get());
+            case ProviderType.DOCKER: return new LocalDeploymentProvider(SQliteClientProvider.get());
+            default: throw new Error("Invalide provider type.");
+        }
+    }
 }

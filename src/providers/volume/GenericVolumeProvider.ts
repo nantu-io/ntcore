@@ -1,3 +1,8 @@
+import { LocalVolumeProvider } from "./local/LocalVolumeProvider";
+import { ProviderType } from "../../commons/ProviderType";
+import { appConfig } from "../../libs/config/AppConfigProvider";
+import DockerClientProvider from "../../libs/client/DockerClientProvider";
+
 /**
  * Volume config base.
  */
@@ -18,4 +23,20 @@ export interface GenericVolumeProvider {
      * Delete a volume.
      */
     delete: (volume: GenericVolume) => Promise<any>
+}
+
+export class VolumeProviderFactory 
+{
+    /**
+     * Create a provider for local volumes.
+     * @param type Provider type, e.g., LOCAL, AWS etc.
+     * @returns Deployment provider.
+     */
+    public createProvider(): GenericVolumeProvider {
+        const providerType: ProviderType = appConfig.container.provider;
+        switch(providerType) {
+            case ProviderType.DOCKER: return new LocalVolumeProvider(DockerClientProvider.get());
+            default: throw new Error("Invalid provider type.");
+        }
+    }
 }

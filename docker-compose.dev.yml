@@ -32,6 +32,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - data:/usr/src/app/data
+      - "./app-config/ntcore.yml:/usr/src/app/app-config/ntcore.yml"
     networks:
       - gateway
 

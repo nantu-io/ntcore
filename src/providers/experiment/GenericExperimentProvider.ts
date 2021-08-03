@@ -1,5 +1,9 @@
+import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import { Runtime } from '../../commons/Runtime';
 import { Framework } from '../../commons/Framework';
+import { LocalExperimentProvider } from "./local/LocalExperimentProvider";
+import { ProviderType } from "../../commons/ProviderType";
+import { appConfig } from "../../libs/config/AppConfigProvider";
 
 /**
  * Experiment class.
@@ -18,7 +22,8 @@ export class Experiment {
 /**
  * Interface for experiment provider.
  */
-export interface GenericExperimentProvider {
+export interface GenericExperimentProvider 
+{
     /**
      * Create a new experiment.
      */
@@ -47,4 +52,23 @@ export interface GenericExperimentProvider {
      * Delete model
      */
     deleteModel: (workspaceId: string, version: number) => Promise<any>
+}
+
+export class ExperimentProviderFactory
+{
+    /**
+     * Create a provider for local experiments.
+     * @param type Provider type, e.g., LOCAL, AWS etc.
+     * @returns Experiment provider.
+     */
+    public createProvider(): GenericExperimentProvider
+    {
+        const providerType = appConfig.container.provider;
+        switch(providerType) {
+            // TODO: Update this client provider to be postgres provider for kubernetes when it's ready.
+            case ProviderType.KUBERNETES: return new LocalExperimentProvider(SQliteClientProvider.get());
+            case ProviderType.DOCKER: return new LocalExperimentProvider(SQliteClientProvider.get());
+            default: throw new Error("Invalide provider type.");
+        }
+    }
 }

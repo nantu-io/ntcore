@@ -1,14 +1,13 @@
 import { Request, Response } from 'express';
-import { GenericWorkspaceProvider } from "../providers/workspace/GenericWorkspaceProvider";
+import { GenericWorkspaceProvider, WorkpaceProviderFactory } from "../providers/workspace/GenericWorkspaceProvider";
 import { Util } from '../commons/Util';
-import { WorkpaceProviderFactory } from '../providers/workspace/WorkspaceProviderFactory';
 import { ProviderType } from '../commons/ProviderType';
 
 export class WorkspaceController {
     private readonly _provider: GenericWorkspaceProvider;
 
-    public constructor(providerType: ProviderType) {
-        this._provider = new WorkpaceProviderFactory().createProvider(providerType);
+    public constructor() {
+        this._provider = new WorkpaceProviderFactory().createProvider();
         this.createWorkspaceV1 = this.createWorkspaceV1.bind(this);
         this.getWorkspaceV1 = this.getWorkspaceV1.bind(this);
         this.listWorkspacesV1 = this.listWorkspacesV1.bind(this);
@@ -40,7 +39,7 @@ export class WorkspaceController {
      * @param req Request
      * @param res Response
      * Example usage: 
-     * curl http://localhost:8180/dsp/api/v1/workspace/id
+     * curl http://localhost:8180/dsp/api/v1/workspace/{id}
      */
     public getWorkspaceV1(req: Request, res: Response) {
         const workspace = this._provider.read(req.params.id);
@@ -64,7 +63,7 @@ export class WorkspaceController {
      * @param req Request
      * @param res Response
      * Example usage: 
-     * curl -X DELETE http://localhost:8180/dsp/api/v1/workspace/id
+     * curl -X DELETE http://localhost:8180/dsp/api/v1/workspace/{id}
      */
     public deleteWorkspaceV1(req: Request, res: Response) {
         const workspaces = this._provider.delete(req.params.id);

@@ -1,7 +1,4 @@
-import { 
-    GenericWorkspaceProvider,
-    Workspace
-} from '../GenericWorkspaceProvider';
+import { GenericWorkspaceProvider,Workspace } from '../GenericWorkspaceProvider';
 import {
     WORKPACE_INITIALIZATION,
     WORKSPACE_CREATE,
@@ -11,14 +8,16 @@ import {
     WORKSPACE_DELETE,
     MAX_VERSION_INCREMENT,
 } from './LocalWorkspaceQueries';
-import { database } from "../../../commons/ClientConfig";
+import Database = require("better-sqlite3");
 import fs = require('fs');
 
 export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
+    private _databaseClient: Database.Database
     /**
      * Create the database locally.
      */
-    constructor() {
+    constructor(databaseClient: Database.Database) {
+        this._databaseClient = databaseClient;
         this.createWorkspaceTableIfNotExists();
     }
     /**
@@ -26,7 +25,7 @@ export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
      * @param workspace Workspace object.
      */
     public async create(workspace: Workspace) {
-        await database.prepare(WORKSPACE_CREATE).run({
+        this._databaseClient.prepare(WORKSPACE_CREATE).run({
             id: workspace.id,
             name: workspace.name,
             type: workspace.type,
@@ -41,7 +40,7 @@ export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
      * @param workspace Workspace object.
      */
     public async update(workspace: Workspace) {
-        await database.prepare(WORKSPACE_UPDATE).run({
+        this._databaseClient.prepare(WORKSPACE_UPDATE).run({
             id: workspace.id,
             name: workspace.name,
             type: workspace.type,
@@ -55,13 +54,13 @@ export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
      * @param id workspace id.
      */
     public async read(id: string) {
-        return await database.prepare(WORKSPACE_READ).get({ workspaceId: id });
+        return this._databaseClient.prepare(WORKSPACE_READ).get({ workspaceId: id });
     }
     /**
      * Lists all workspaces.
      */
     public async list() {
-        return await database.prepare(WORKSPACE_LIST).all();
+        return this._databaseClient.prepare(WORKSPACE_LIST).all();
     }
     /**
      * Delete the workspace.
@@ -69,7 +68,7 @@ export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
      */
     public async delete(id: string) {
         await new Promise((resolve) => fs.rmdir(`data/blob/${id}`, { recursive: true }, resolve));
-        return await database.prepare(WORKSPACE_DELETE).run({id: id});
+        return this._databaseClient.prepare(WORKSPACE_DELETE).run({id: id});
     }
 
     /**
@@ -77,14 +76,14 @@ export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
      * @param workspace Workspace id.
      */
     public async incrementVersion(id: string) {
-        return await database.transaction((workspaceId: string) => {
-            database.prepare(MAX_VERSION_INCREMENT).run({workspaceId: workspaceId});
-            const workspace = database.prepare(WORKSPACE_READ).get({ workspaceId: workspaceId });
+        return this._databaseClient.transaction((workspaceId: string) => {
+            this._databaseClient.prepare(MAX_VERSION_INCREMENT).run({workspaceId: workspaceId});
+            const workspace = this._databaseClient.prepare(WORKSPACE_READ).get({ workspaceId: workspaceId });
             return (workspace && workspace.max_version) ? workspace.max_version : 0;
         })(id);
     }
     
     private createWorkspaceTableIfNotExists() {
-        database.exec(WORKPACE_INITIALIZATION);
+        this._databaseClient.exec(WORKPACE_INITIALIZATION);
     }
 }
