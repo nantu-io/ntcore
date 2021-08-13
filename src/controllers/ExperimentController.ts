@@ -143,10 +143,12 @@ export class ExperimentController {
     public deployModelV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
-        const runtime = Runtime.PYTHON_38;
-        const framework = Framework.SKLEARN;
+        // const runtime = Runtime.PYTHON_38;
+        // const framework = Framework.SKLEARN;
+        const runtime = req.body.runtime;
+        const framework = req.body.framework;
         const deploymentId = Util.createDeploymentId();
-        const type = ServiceTypeMapping[`FLASK_${framework.toUpperCase()}`];
+        const type = ServiceTypeMapping[framework];
         const cpu = 1;
         const memory = 2;
         this._deploymentProvider.aquireLock(workspaceId, version)
