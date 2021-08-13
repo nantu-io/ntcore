@@ -32,6 +32,7 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
     public createDeploymentConfig(type: ServiceType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): LocalContainerService {
         switch (type) {
             case ServiceType.FLASK_SKLEARN: return this.createFlaskAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory, publishedPort);
+            case ServiceType.TENSORFLOW: return this.createTensorflowConfig(type, workspaceId, version, runtime, framework, cpus, memory, publishedPort);
             default: throw new Error('Invalid service type');
         }
     }
@@ -115,6 +116,35 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
                     Memory: memory * 1024 * 1024 * 1024, // GB
                 },
                 Image: `ntcore/flask-${framework}:${runtime}`,
+                Labels: { 
+                    [traefikLabel]: traefikValue,
+                    'traefik.enable': 'true',
+                },
+                Env: [
+                    'DSP_API_ENDPOINT=ntcore:8180',
+                    `DSP_WORKSPACE_ID=${workspaceId}`,
+                    `DSP_MODEL_VERSION=${version}`,
+                    `NTCORE_HOST=ntcore:8180`
+                ],
+            }],
+        };
+    }
+
+    private createTensorflowConfig(type: ServiceType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): LocalContainerService {
+        const traefikLabel = `traefik.http.routers.${workspaceId.toLowerCase()}.rule`;
+        const traefikValue = `PathPrefix(\`/s/${workspaceId}\`)`;
+        return {
+            type: type,
+            name: `tensorflow-${workspaceId.toLowerCase()}`,
+            ExposedPorts: { "8000/tcp": {} },
+            Containers: [{
+                HostConfig: { 
+                    PortBindings: { },
+                    NetworkMode: 'ntcore_gateway',
+                    CpuQuota: cpus * 100000, // CpuQuota * CpuPeriod
+                    Memory: memory * 1024 * 1024 * 1024, // GB
+                },
+                Image: `ntcore/tensorflow`,
                 Labels: { 
                     [traefikLabel]: traefikValue,
                     'traefik.enable': 'true',
