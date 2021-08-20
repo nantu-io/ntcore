@@ -4,6 +4,7 @@ import { ExperimentProviderFactory } from "../providers/experiment/ExperimentPro
 import { Util } from '../commons/Util';
 import { Runtime } from '../commons/Runtime';
 import { ProviderType } from '../commons/ProviderType';
+import { DatabaseProviderType as DatabaseType } from '../commons/DatabaseProviderType';
 import { DeploymentProviderFactory } from '../providers/deployment/DeploymentProviderFactory';
 import { GenericWorkspaceProvider } from '../providers/workspace/GenericWorkspaceProvider';
 import { WorkpaceProviderFactory } from '../providers/workspace/WorkspaceProviderFactory';
@@ -32,7 +33,7 @@ export class ExperimentController {
     private readonly _configProvider: GenericServiceConfigProvider;
 
     public constructor() {
-        this._workspaceProvider = new WorkpaceProviderFactory().createProvider(ProviderType.LOCAL);
+        this._workspaceProvider = new WorkpaceProviderFactory().createProvider(ProviderType.LOCAL, DatabaseType.SQLITE);
         this._experimentProvider = new ExperimentProviderFactory().createProvider(ProviderType.LOCAL);
         this._deploymentProvider = new DeploymentProviderFactory().createProvider(ProviderType.LOCAL);
         this._serviceProvider = new ContainerProviderFactory().createProvider(ProviderType.LOCAL);

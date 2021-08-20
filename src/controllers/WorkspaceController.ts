@@ -3,12 +3,13 @@ import { GenericWorkspaceProvider } from "../providers/workspace/GenericWorkspac
 import { Util } from '../commons/Util';
 import { WorkpaceProviderFactory } from '../providers/workspace/WorkspaceProviderFactory';
 import { ProviderType } from '../commons/ProviderType';
+import { DatabaseProviderType as DatabaseType } from '../commons/DatabaseProviderType';
 
 export class WorkspaceController {
     private readonly _provider: GenericWorkspaceProvider;
 
     public constructor() {
-        this._provider = new WorkpaceProviderFactory().createProvider(ProviderType.LOCAL);
+        this._provider = new WorkpaceProviderFactory().createProvider(ProviderType.LOCAL, DatabaseType.SQLITE);
         this.createWorkspaceV1 = this.createWorkspaceV1.bind(this);
         this.getWorkspaceV1 = this.getWorkspaceV1.bind(this);
         this.listWorkspacesV1 = this.listWorkspacesV1.bind(this);
