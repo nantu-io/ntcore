@@ -52,6 +52,18 @@ export interface GenericExperimentProvider
      * Delete model
      */
     deleteModel: (workspaceId: string, version: number) => Promise<any>
+    /**
+     * Register model.
+     */
+    register: (workspaceId: string, version: number) => Promise<any>
+    /**
+     * Unregister model.
+     */
+    unregister: (workspaceId: string) => Promise<any>
+    /**
+     * Get registered model.
+     */
+    getRegistry: (workspaceId: string) => Promise<Experiment>
 }
 
 export class ExperimentProviderFactory
@@ -68,7 +80,7 @@ export class ExperimentProviderFactory
             // TODO: Update this client provider to be postgres provider for kubernetes when it's ready.
             case ProviderType.KUBERNETES: return new LocalExperimentProvider(SQliteClientProvider.get());
             case ProviderType.DOCKER: return new LocalExperimentProvider(SQliteClientProvider.get());
-            default: throw new Error("Invalide provider type.");
+            default: throw new Error("Invalid provider type.");
         }
     }
 }

@@ -7,7 +7,7 @@ import Step from '@material-ui/core/Step';
 import StepButton from '@material-ui/core/StepButton';
 import Typography from '@material-ui/core/Typography';
 import Snackbar from '@material-ui/core/Snackbar';
-import Instances from './instances';
+import Registry from './registry';
 import Experiments from './experiments';
 import Deployments from './deployments';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -86,8 +86,8 @@ class Workspace extends Component {
     const { activeStep, workspaceType } = this.state;
     switch(activeStep) {
       // Add key to trigger update on child when workspaceType is changed.
-      case 0: return <Instances key={`ins-${workspaceType}`} workspaceId={params.id} workspaceType={workspaceType}></Instances>;
-      case 1: return <Experiments key={`exp-${workspaceType}`} workspaceId={params.id} onSuccess={(msg) => this._openSnackBar(SEVERITY.SUCCESS, msg)} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}></Experiments>;
+      case 0: return <Experiments key={`exp-${workspaceType}`} workspaceId={params.id} onSuccess={(msg) => this._openSnackBar(SEVERITY.SUCCESS, msg)} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}></Experiments>;
+      case 1: return <Registry key={`reg-${workspaceType}`} workspaceId={params.id} onSuccess={(msg) => this._openSnackBar(SEVERITY.SUCCESS, msg)} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}></Registry>;
       case 2: return <Deployments key={`dep-${workspaceType}`} workspaceId={params.id} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}></Deployments>;
       default: return null;
     }

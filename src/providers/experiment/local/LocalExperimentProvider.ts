@@ -4,7 +4,11 @@ import {
     EXPERIMENTS_LIST,
     EXPERIMENT_CREATE,
     EXPERIMENT_READ,
-    EXPERIMENT_DELETE
+    EXPERIMENT_DELETE,
+    EXPERIMENTS_CREATE_IS_REGISTERED_INDEX,
+    EXPERIMENT_REGISTER,
+    EXPERIMENT_UNREGISTER,
+    EXPERIMENT_REGISTRY_READ
 } from "./LocalExperimentQueries"; 
 import Database = require("better-sqlite3");
 import mkdirp = require('mkdirp');
@@ -97,8 +101,37 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
     public async deleteModel(workspaceId: string, version: number) {
         await new Promise((resolve) => fs.rmdir(`data/blob/${workspaceId}/${version}`, { recursive: true }, resolve));
     }
+
+    /**
+     * Register an experiment version.
+     * @param workspaceId Workspace id.
+     * @param version Experiment version.
+     */
+    public async register(workspaceId: string, version: number) {
+        this._databaseClient.transaction((workspaceId: string, version: number) => {
+            this._databaseClient.prepare(EXPERIMENT_UNREGISTER).run({workspace_id: workspaceId});
+            this._databaseClient.prepare(EXPERIMENT_REGISTER).run({workspace_id: workspaceId, version: version});
+        })(workspaceId, version);
+    }
+
+    /**
+     * Unregister an experiment version.
+     * @param workspaceId Workspace id.
+     */
+    public async unregister(workspaceId: string) {
+        this._databaseClient.prepare(EXPERIMENT_UNREGISTER).run({workspace_id: workspaceId});
+    }
+
+    /**
+     * Returns an registered experiment.
+     * @param workspaceId Workspace id.
+     */
+    public async getRegistry(workspaceId: string) {
+        return this._databaseClient.prepare(EXPERIMENT_REGISTRY_READ).get({workspace_id: workspaceId});
+    }
     
     private createExperimentsTableIfNotExists() {
         this._databaseClient.exec(EXPERIMENTS_INITIALIZATION);
+        this._databaseClient.exec(EXPERIMENTS_CREATE_IS_REGISTERED_INDEX);
     }
 }

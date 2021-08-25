@@ -22,8 +22,8 @@ export const useStyles = (theme) => ({
 });
 
 export const STEPS = {
-  0: 'Development',
-  1: 'Experiments',
+  0: 'Experiments',
+  1: 'Registry',
   2: 'Deployments'
 }
 

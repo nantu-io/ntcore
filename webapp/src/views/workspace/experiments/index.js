@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
-import DeployForm from './deploy';
+import RegisterForm from './register';
 import DeleteForm from './delete';
 import BaseModal from '../../baseModal';
 import MUIDataTable from "mui-datatables";
@@ -18,10 +18,13 @@ const useStyles = (theme) => ({
     table: {
         height: 500,
         marginTop: 15,
+    },
+    action: {
+        marginLeft: theme.spacing(-1),
     }
 });
 
-const MODAL_MODE = { DEPLOY: 'Deploy', DELETE: 'Delete' };
+const MODAL_MODE = { REGISTER: 'Register', DELETE: 'Delete' };
 
 class Experiments extends Component {
     constructor(props) {
@@ -38,7 +41,7 @@ class Experiments extends Component {
             // rows: [{id: 1, version: '1', createdBy: 'ntcore', createdAt: '2021-01-01 10:30:00', runtime: 'python-3.8', framework: 'sklearn', metrics: {"auc":0.9}, parameters: {"penalty": "l1"}, description: 'Logistic Regression'}]
             rows: []
         }
-        this._createDeployButton = this._createDeployButton.bind(this);
+        this._createRegisterButton = this._createRegisterButton.bind(this);
         this._fetchExperiments = this._fetchExperiments.bind(this);
         this._deleteCallback = this._deleteCallback.bind(this);
     }
@@ -75,20 +78,21 @@ class Experiments extends Component {
         }
     }
 
-    _createDeployButton(index) {
+    _createRegisterButton(index) {
+        const { classes } = this.props
         const { rows } = this.state
         const version = rows[index] ? rows[index].version : 0;
         const runtime = rows[index] ? rows[index].runtime : null;
         const framework = rows[index] ? rows[index].framework : null;
         return (
-            <Button color="primary" 
+            <Button color="primary" className={clsx(classes.action)}
                 onClick={() => this.setState({
                     isModalOpen: true, 
                     selectedVersion: version, 
                     selectedRuntime: runtime,
                     selectedFramework: framework,
-                    mode: MODAL_MODE.DEPLOY})}>
-                Deploy
+                    mode: MODAL_MODE.REGISTER})}>
+                Register
             </Button>)
     }
 
@@ -96,7 +100,7 @@ class Experiments extends Component {
         return [
             { name: 'actions', 
               label: "Actions", 
-              options: { customBodyRenderLite: this._createDeployButton, filter: false, sort: false, viewColumns: false }},
+              options: { customBodyRenderLite: this._createRegisterButton, filter: false, sort: false, viewColumns: false }},
             { name: 'id', label: 'Version' },
             { name: 'createdBy', label: 'Created User' },
             { name: 'createdAt', label: 'Created Date', options: { filter: false, sort: true } },
@@ -133,7 +137,7 @@ class Experiments extends Component {
 
     _createActiveForm(callback, closeModel, errorHandler) {
         const { workspaceId } = this.props;
-        const { selectedVersion, selectedRuntime, selectedFramework, rowsSelected, mode } = this.state;
+        const { selectedVersion, rowsSelected, mode } = this.state;
         const selectedExperiments = rowsSelected ? rowsSelected.map(i => this.state.rows[i].version) : [];
         switch(mode) {
             case MODAL_MODE.DELETE: return (
@@ -142,11 +146,9 @@ class Experiments extends Component {
                     callback={this._deleteCallback} 
                     onCancel={closeModel}
                     errorHandler={errorHandler}/>);
-            case MODAL_MODE.DEPLOY: return (
-                <DeployForm workspaceId={workspaceId}
+            case MODAL_MODE.REGISTER: return (
+                <RegisterForm workspaceId={workspaceId}
                     version={selectedVersion}
-                    runtime={selectedRuntime}
-                    framework={selectedFramework}
                     callback={callback} 
                     onCancel={closeModel}
                     errorHandler={errorHandler}/>);

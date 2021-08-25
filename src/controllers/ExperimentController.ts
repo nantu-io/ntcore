@@ -7,7 +7,7 @@ import { waitUntil } from 'async-wait-until';
 import { Framework } from '../commons/Framework';
 import { GenericExperimentProvider, ExperimentProviderFactory } from "../providers/experiment/GenericExperimentProvider";
 import { GenericWorkspaceProvider, WorkpaceProviderFactory } from '../providers/workspace/GenericWorkspaceProvider';
-import { GenericDeploymentProvider, DeploymentStatus, IllegalStateError, DeploymentProviderFactory } from '../providers/deployment/GenericDeploymentProvider';
+import { GenericDeploymentProvider, DeploymentStatus, DeploymentProviderFactory } from '../providers/deployment/GenericDeploymentProvider';
 import { GenericServiceProvider, GenericServiceConfigProvider, ServiceState, ServiceTypeMapping, ServiceType } from '../providers/container/GenericServiceProvider';
 
 export class ExperimentController {
@@ -30,6 +30,9 @@ export class ExperimentController {
         this.downloadModelV1 = this.downloadModelV1.bind(this);
         this.deployModelV1 = this.deployModelV1.bind(this);
         this.deleteExperimentV1 = this.deleteExperimentV1.bind(this);
+        this.registerExperimentV1 = this.registerExperimentV1.bind(this);
+        this.getRegistryV1 = this.getRegistryV1.bind(this);
+        this.unregisterExperimentV1 = this.unregisterExperimentV1.bind(this);
     }
 
     /**
@@ -126,7 +129,7 @@ export class ExperimentController {
      * Example usage:
      * curl -X POST -H "Content-Type: application/json" localhost:8180/dsp/api/v1/workspace/{workspaceId}/model/{version}/deploy
      */
-    public deployModelV1(req: Request, res: Response) {
+    public async deployModelV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
         const runtime = Runtime.PYTHON_38;
@@ -134,15 +137,42 @@ export class ExperimentController {
         const deploymentId = Util.createDeploymentId();
         const type = ServiceTypeMapping[`FLASK_${framework.toUpperCase()}`];
         const config = this._configProvider.createDeploymentConfig(type, workspaceId, version, runtime, framework, 1, 2);
-        this._deploymentProvider.aquireLock(workspaceId, version)
-            .then(() => this.createDeployment(workspaceId, deploymentId, version), (err) => this.handleLockAquisitionError(res, err))
-            .then(() => Promise.resolve(res.status(201).send({info: `Started Deployment ${deploymentId}`})), (err) => Promise.reject(err))
-            .then(() => this._serviceProvider.provision(config), (err) => Promise.reject(err))
-            .then(() => this._serviceProvider.start(config), (err) => Promise.reject(err))
-            .then(() => this.waitForServiceRunning(type, workspaceId), (err) => Promise.reject(err))
-            .then(() => this._deploymentProvider.releaseLock(workspaceId), (err) => Promise.reject(err))
-            .then(() => this._deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.SUCCEED), (err) => Promise.reject(err))
-            .catch((err) => this.handleDeploymentError(err, workspaceId, deploymentId));
+
+        try {
+            await this._deploymentProvider.aquireLock(workspaceId, version);
+        } catch (err) {
+            if (err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
+                res.status(400).send({error: 'Deployment in progress'});
+            } else {
+                res.status(500).send({error: err.toString()});
+            }
+            throw err;
+        }
+
+        try {
+            await this.createDeployment(workspaceId, deploymentId, version);
+            res.status(201).send({info: `Started Deployment ${deploymentId}`});
+            // Create containers with container service provider.
+            await this._serviceProvider.provision(config);
+            await this._serviceProvider.start(config);
+            await this.waitForServiceRunning(type, workspaceId);
+            await this._deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.SUCCEED);
+        } catch (err) {
+            await this._deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.FAILED);
+        } finally {
+            await this._deploymentProvider.releaseLock(workspaceId);
+        }
+    }
+
+    private async createDeployment(workspaceId: string, deploymentId: string, version: number) {
+        return await this._deploymentProvider.create({
+            workspaceId,
+            deploymentId,
+            version,
+            status: DeploymentStatus.PENDING,
+            createdBy: 'ntcore',
+            createdAt: new Date(),
+        });
     }
 
     /**
@@ -159,33 +189,42 @@ export class ExperimentController {
             .then(() => this._experimentProvider.deleteModel(workspaceId, version))
             .then(() => res.status(201).send({info: 'Successfully deleted experiment.'}));
     }
-
-    private handleLockAquisitionError(res: Response, err: any) {
-        if (err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
-            res.status(400).send({error: 'Deployment in progress'});
-        } else {
-            res.status(500).send({error: err.toString()});
-        }
-        return Promise.reject(new IllegalStateError('Unable to aquire deployment lock'))
+    
+    /**
+     * Endpoint to register an experiment.
+     * @param req Request
+     * @param res Response.
+     * Example: curl -X POST http://localhost:8180/dsp/api/v1/workspace/{workspace_id}/registry/{version}
+     */
+    public async registerExperimentV1(req: Request, res: Response) {
+        const workspaceId = req.params.workspaceId;
+        const version = parseInt(req.body.version);
+        await this._experimentProvider.register(workspaceId, version);
+        res.status(200).send({info: `Registered version ${version}`});
     }
 
-    private handleDeploymentError(error: Error, workspaceId: string, deploymentId: string) {
-        if (!(error instanceof IllegalStateError)) {
-            this._deploymentProvider.releaseLock(workspaceId);
-            this._deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.FAILED);
-        }
-        console.error(error);
+    /**
+     * Endpoint to register an experiment.
+     * @param req Request
+     * @param res Response.
+     * Example: curl http://localhost:8180/dsp/api/v1/workspace/{workspace_id}/registry
+     */
+    public async unregisterExperimentV1(req: Request, res: Response) {
+        const workspaceId = req.params.workspaceId;
+        await this._experimentProvider.unregister(workspaceId);
+        res.status(200).send({info: `Unregistered all versions in workspace ${workspaceId}`});
     }
 
-    private createDeployment(workspaceId: string, deploymentId: string, version: number) {
-        return this._deploymentProvider.create({
-            workspaceId,
-            deploymentId,
-            version,
-            status: DeploymentStatus.PENDING,
-            createdBy: 'ntcore',
-            createdAt: new Date(),
-        });
+    /**
+     * Endpoint to register an experiment.
+     * @param req Request
+     * @param res Response.
+     * Example: curl -X DELETE http://localhost:8180/dsp/api/v1/workspace/{workspace_id}/registry
+     */
+    public async getRegistryV1(req: Request, res: Response) {
+        const workspaceId = req.params.workspaceId;
+        const registry = await this._experimentProvider.getRegistry(workspaceId);
+        res.status(200).send(registry);
     }
 
     private async waitForServiceRunning(type: ServiceType, workspaceId: string) {
