@@ -6,8 +6,8 @@ export const EXPERIMENTS_EXISTENCE = `SELECT name FROM sqlite_master WHERE type=
  * Query to insert the new workspace.
  */
 export const EXPERIMENT_CREATE = `
-    INSERT INTO experiments (workspace_id, version, runtime, framework, description, parameters, metrics, created_by, created_at) 
-    VALUES ($workspace_id, $version, $runtime, $framework, $description, $parameters, $metrics, $created_by, $created_at);`
+    INSERT INTO experiments (workspace_id, version, runtime, framework, description, parameters, metrics, model, created_by, created_at) 
+    VALUES ($workspace_id, $version, $runtime, $framework, $description, $parameters, $metrics, $model, $created_by, $created_at);`
 /**
  * Query to create the workspace table.
  */
@@ -20,6 +20,7 @@ export const EXPERIMENTS_INITIALIZATION = `
         description   TEXT,
         parameters    TEXT,
         metrics       TEXT,
+        model         BLOB,
         is_registered INTEGER DEFAULT 0,
         created_by    TEXT,
         created_at   INTEGER,
@@ -37,7 +38,11 @@ export const EXPERIMENTS_LIST = `SELECT workspace_id, version, runtime, framewor
 /**
  * Query to read experiment given workspace id and version.
  */
-export const EXPERIMENT_READ = `SELECT workspace_id, version, runtime, framework, description, parameters, metrics, created_by, created_at FROM experiments WHERE workspace_id=$workspace_id AND version=$version;`
+export const EXPERIMENT_READ = `SELECT workspace_id, version, runtime, framework, description, parameters, metrics, model, created_by, created_at FROM experiments WHERE workspace_id=$workspace_id AND version=$version;`
+/**
+ * Query to read experiment given workspace id and version.
+ */
+ export const EXPERIMENT_MODEL_READ = `SELECT model FROM experiments WHERE workspace_id=$workspace_id AND version=$version;`
 /**
  * Query to update experiment state given workspace id and version.
  */

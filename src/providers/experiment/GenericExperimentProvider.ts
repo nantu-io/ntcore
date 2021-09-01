@@ -18,6 +18,7 @@ export class Experiment {
     description: string;
     parameters: string;
     metrics: string;
+    model: Buffer;
 }
 /**
  * Interface for experiment provider.
@@ -41,17 +42,9 @@ export interface GenericExperimentProvider
      */
     delete: (workspaceId: string, version: number) => Promise<any>;
     /**
-     * Save model
-     */
-    saveModel: (workspaceId: string, version: number, base64: string) => Promise<any>
-    /**
      * Load model
      */
     loadModel: (workspaceId: string, version: number) => Promise<string>
-    /**
-     * Delete model
-     */
-    deleteModel: (workspaceId: string, version: number) => Promise<any>
     /**
      * Register model.
      */

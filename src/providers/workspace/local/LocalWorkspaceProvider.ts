@@ -9,7 +9,6 @@ import {
     MAX_VERSION_INCREMENT,
 } from './LocalWorkspaceQueries';
 import Database = require("better-sqlite3");
-import fs = require('fs');
 
 export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
     private _databaseClient: Database.Database
@@ -67,7 +66,6 @@ export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
      * @param workspace Workspace id.
      */
     public async delete(id: string) {
-        await new Promise((resolve) => fs.rmdir(`data/blob/${id}`, { recursive: true }, resolve));
         return this._databaseClient.prepare(WORKSPACE_DELETE).run({id: id});
     }
 

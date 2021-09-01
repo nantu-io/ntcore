@@ -8,11 +8,10 @@ import {
     EXPERIMENTS_CREATE_IS_REGISTERED_INDEX,
     EXPERIMENT_REGISTER,
     EXPERIMENT_UNREGISTER,
-    EXPERIMENT_REGISTRY_READ
+    EXPERIMENT_REGISTRY_READ,
+    EXPERIMENT_MODEL_READ
 } from "./LocalExperimentQueries"; 
 import Database = require("better-sqlite3");
-import mkdirp = require('mkdirp');
-import fs = require('fs');
 
 export class LocalExperimentProvider implements GenericExperimentProvider {
     private _databaseClient: Database.Database;
@@ -36,6 +35,7 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
             description: experiment.description,
             parameters: JSON.stringify(experiment.parameters),
             metrics: JSON.stringify(experiment.metrics),
+            model: experiment.model,
             created_by: experiment.createdBy,
             created_at: Math.floor(experiment.createdAt.getTime()/1000)
         });
@@ -69,37 +69,13 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
     }
 
     /**
-     * Save the serialized model from an experiment.
-     * @param workspaceId Workspace id.
-     * @param version Experiment version.
-     * @param base64 Base64 encoded model.
-     * @returns 
-     */
-    public async saveModel(workspaceId: string, version: number, base64: string) {
-        const modelDirectory = `data/blob/${workspaceId}/${version}`;
-        const modelPath = `${modelDirectory}/model.pkl`;
-        const modelBlob = Buffer.from(base64, 'base64');
-        await mkdirp(modelDirectory);
-        return await new Promise((resolve) => { fs.writeFile(modelPath, modelBlob, resolve); });
-    }
-
-    /**
      * Retrieve the model.
      * @param workspaceId Workspace id.
      * @param version Experiment version.
      * @returns Model path.
      */
     public async loadModel(workspaceId: string, version: number) {
-        return `data/blob/${workspaceId}/${version}/model.pkl`;
-    }
-
-    /**
-     * Delete the model.
-     * @param workspaceId Workspace id.
-     * @param version Experiment version.
-     */
-    public async deleteModel(workspaceId: string, version: number) {
-        await new Promise((resolve) => fs.rmdir(`data/blob/${workspaceId}/${version}`, { recursive: true }, resolve));
+        return this._databaseClient.prepare(EXPERIMENT_MODEL_READ).get({workspace_id: workspaceId, version: version});
     }
 
     /**

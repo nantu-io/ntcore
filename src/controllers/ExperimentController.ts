@@ -26,7 +26,6 @@ export class ExperimentController {
         this.createExperimentV1 = this.createExperimentV1.bind(this);
         this.listExperimentsV1 = this.listExperimentsV1.bind(this);
         this.getExperimentsV1 = this.getExperimentsV1.bind(this);
-        this.uploadModelV1 = this.uploadModelV1.bind(this);
         this.downloadModelV1 = this.downloadModelV1.bind(this);
         this.deployModelV1 = this.deployModelV1.bind(this);
         this.deleteExperimentV1 = this.deleteExperimentV1.bind(this);
@@ -42,28 +41,28 @@ export class ExperimentController {
      * Example usage: 
      * curl -H "Content-Type: application/json" -d '{"model": "Logistic Regression", "parameters": {"penalty": "l2"}, "metrics": {"auc":0.9}}' -X POST http://localhost:8180/dsp/api/v1/workspace/C123/experiment
      */
-    public createExperimentV1(req: Request, res: Response) {
+    public async createExperimentV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const description = req.body.description;
         const runtime = req.body.runtime;
         const framework = req.body.framework;
         const parameters = JSON.parse(req.body.parameters);
         const metrics = JSON.parse(req.body.metrics);
-        const base64 = req.body.model;
-        this._workspaceProvider.incrementVersion(workspaceId)
-            .then((version) => this._experimentProvider.create({
-                workspaceId,
-                version,
-                runtime,
-                framework,
-                parameters,
-                metrics,
-                description,
-                createdBy: 'ntcore',
-                createdAt: new Date()
-            }))
-            .then((version) => this._experimentProvider.saveModel(workspaceId, version, base64))
-            .then((version) => Promise.resolve(res.status(201).send({workspaceId, version}))); 
+        const model = Buffer.from(req.body.model, 'base64');
+        const version = await this._workspaceProvider.incrementVersion(workspaceId);
+        await this._experimentProvider.create({
+            workspaceId,
+            version,
+            runtime,
+            framework,
+            parameters,
+            metrics,
+            description,
+            model,
+            createdBy: 'ntcore',
+            createdAt: new Date()
+        });
+        res.status(201).send({workspaceId, version});
     }
 
     /**
@@ -73,10 +72,10 @@ export class ExperimentController {
      * Example usage:
      * curl http://localhost:8180/dsp/api/v1/workspace/{workspaceId}/experiments
      */
-    public listExperimentsV1(req: Request, res: Response) {
+    public async listExperimentsV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
-        const experiments = this._experimentProvider.list(workspaceId);
-        experiments.then(w => res.status(200).send(w));
+        const experiments = await this._experimentProvider.list(workspaceId);
+        res.status(200).send(experiments);
     }
 
     /**
@@ -86,26 +85,11 @@ export class ExperimentController {
      * Example usage:
      * curl http://localhost:8180/dsp/api/v1/workspace/{workspaceId}/experiment/{version}
      */
-    public getExperimentsV1(req: Request, res: Response) {
+    public async getExperimentsV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
-        const experiment = this._experimentProvider.read(workspaceId, version);
-        experiment.then(w => res.status(200).send(w));
-    }
-
-    /**
-     * Endpoint to upload a model file based on the given workspace id and version.
-     * @param req Request
-     * @param res Response
-     * Example usage:
-     * curl -F "model=@model.pkl" localhost:8180/dsp/api/v1/workspace/{workspaceId}/model/{version}
-     */
-    public uploadModelV1(req: Request, res: Response) {
-        const workspaceId = req.params.workspaceId;
-        const version = parseInt(req.params.version);
-        const base64 = req.body.model;
-        this._experimentProvider.saveModel(workspaceId, version, base64)
-            .then(w => res.status(200).send(w));
+        const experiment = await this._experimentProvider.read(workspaceId, version);
+        res.status(200).send(experiment);
     }
 
     /**
@@ -115,11 +99,16 @@ export class ExperimentController {
      * Example usage:
      * curl localhost:8180/dsp/api/v1/workspace/{workspaceId}/model/{version}
      */
-    public downloadModelV1(req: Request, res: Response) {
+    public async downloadModelV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
-        this._experimentProvider.loadModel(workspaceId, version)
-            .then((model) => res.download(model));
+        const buffer = await this._experimentProvider.loadModel(workspaceId, version);
+        const model = Buffer.from(buffer['model'], 'binary');
+        res.writeHead(200, {
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': model.length
+        });
+        res.end(model);
     }
 
     /**
@@ -182,12 +171,11 @@ export class ExperimentController {
      * Example usage: 
      * curl -X DELETE http://localhost:8180/dsp/api/v1/workspace/{id}/experiment/{version}
      */
-     public deleteExperimentV1(req: Request, res: Response) {
+     public async deleteExperimentV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
-        this._experimentProvider.delete(workspaceId, version)
-            .then(() => this._experimentProvider.deleteModel(workspaceId, version))
-            .then(() => res.status(201).send({info: 'Successfully deleted experiment.'}));
+        await this._experimentProvider.delete(workspaceId, version)
+        res.status(201).send({info: 'Successfully deleted experiment.'});
     }
     
     /**

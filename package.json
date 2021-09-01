@@ -1,6 +1,6 @@
 {
     "name": "ntcore",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "ntcore web-server to manage machine learning lifecycle",
     "main": "index.js",
     "repository": {
@@ -66,5 +66,5 @@
         "prod": "npm run prestart && npm run start && npm run postbuild"
     },
     "author": "nantutech.com",
-    "license": "ISC"
+    "license": "Apache License"
 }
