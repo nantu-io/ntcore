@@ -5,6 +5,37 @@ import { LocalExperimentProvider } from "./local/LocalExperimentProvider";
 import { ProviderType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 
+export const enum ExperimentState {
+    /**
+     * Deploy instances locally with docker.
+     */
+    PENDING = "PENDING",
+    /**
+     * Deploy instances in Kubernetes cluster.
+     */
+    REGISTERED = "REGISTERED",
+    /**
+     * Deploy instances in AWS 
+     */
+    UNREGISTERED = "UNREGISTERED",
+}
+/**
+ * Provider type mapping.
+ */
+export const ExperimentStateMapping = {
+    /**
+     * Docker.
+     */
+    "PENDING": ExperimentState.PENDING,
+    /**
+     * Kubernetes.
+     */
+    "REGISTERED": ExperimentState.REGISTERED,
+    /**
+     * AWS.
+     */
+    "UNREGISTERED": ExperimentState.UNREGISTERED,
+}
 /**
  * Experiment class.
  */
@@ -19,6 +50,7 @@ export class Experiment {
     parameters: string;
     metrics: string;
     model: Buffer;
+    state: ExperimentState
 }
 /**
  * Interface for experiment provider.

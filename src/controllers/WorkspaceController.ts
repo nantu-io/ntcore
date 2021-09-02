@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { GenericWorkspaceProvider, WorkpaceProviderFactory } from "../providers/workspace/GenericWorkspaceProvider";
 import { Util } from '../commons/Util';
-import { ProviderType } from '../commons/ProviderType';
 
 export class WorkspaceController {
     private readonly _provider: GenericWorkspaceProvider;

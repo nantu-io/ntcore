@@ -1,12 +1,12 @@
-import { Experiment, GenericExperimentProvider } from "../GenericExperimentProvider";
+import { Experiment, ExperimentState, GenericExperimentProvider } from "../GenericExperimentProvider";
 import {
     EXPERIMENTS_INITIALIZATION,
     EXPERIMENTS_LIST,
     EXPERIMENT_CREATE,
     EXPERIMENT_READ,
     EXPERIMENT_DELETE,
-    EXPERIMENTS_CREATE_IS_REGISTERED_INDEX,
-    EXPERIMENT_REGISTER,
+    EXPERIMENTS_CREATE_STATE_INDEX,
+    EXPERIMENT_STATE_UPDATE,
     EXPERIMENT_UNREGISTER,
     EXPERIMENT_REGISTRY_READ,
     EXPERIMENT_MODEL_READ
@@ -36,6 +36,7 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
             parameters: JSON.stringify(experiment.parameters),
             metrics: JSON.stringify(experiment.metrics),
             model: experiment.model,
+            state: experiment.state,
             created_by: experiment.createdBy,
             created_at: Math.floor(experiment.createdAt.getTime()/1000)
         });
@@ -86,7 +87,7 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
     public async register(workspaceId: string, version: number) {
         this._databaseClient.transaction((workspaceId: string, version: number) => {
             this._databaseClient.prepare(EXPERIMENT_UNREGISTER).run({workspace_id: workspaceId});
-            this._databaseClient.prepare(EXPERIMENT_REGISTER).run({workspace_id: workspaceId, version: version});
+            this._databaseClient.prepare(EXPERIMENT_STATE_UPDATE).run({workspace_id: workspaceId, version: version, state: ExperimentState.REGISTERED});
         })(workspaceId, version);
     }
 
@@ -108,6 +109,6 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
     
     private createExperimentsTableIfNotExists() {
         this._databaseClient.exec(EXPERIMENTS_INITIALIZATION);
-        this._databaseClient.exec(EXPERIMENTS_CREATE_IS_REGISTERED_INDEX);
+        this._databaseClient.exec(EXPERIMENTS_CREATE_STATE_INDEX);
     }
 }

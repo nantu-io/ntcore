@@ -143,7 +143,7 @@ class Registry extends React.Component {
                             <p className={clsx(classes.entry)}>{version ? version : "--"}</p>
                             <p className={clsx(classes.entry)}>{framework ? framework : "--"}</p>
                             <p className={clsx(classes.entry)}>{createdBy ? createdBy : "--"}</p>
-                            <p className={clsx(classes.code)}>{endpoint}</p>
+                            <p className={clsx(classes.code)}>{version? endpoint : "--"}</p>
                         </Grid>
                         <Grid item xs={1}> 
                             <p className={clsx(classes.entry)}>Runtime</p>

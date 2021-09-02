@@ -5,7 +5,7 @@ import { ContainerProviderFactory } from '../providers/container/ServiceProvider
 import { ServiceConfigProviderFactory } from '../providers/container/ServiceProviderFactory';
 import { waitUntil } from 'async-wait-until';
 import { Framework } from '../commons/Framework';
-import { GenericExperimentProvider, ExperimentProviderFactory } from "../providers/experiment/GenericExperimentProvider";
+import { GenericExperimentProvider, ExperimentProviderFactory, ExperimentState } from "../providers/experiment/GenericExperimentProvider";
 import { GenericWorkspaceProvider, WorkpaceProviderFactory } from '../providers/workspace/GenericWorkspaceProvider';
 import { GenericDeploymentProvider, DeploymentStatus, DeploymentProviderFactory } from '../providers/deployment/GenericDeploymentProvider';
 import { GenericServiceProvider, GenericServiceConfigProvider, ServiceState, ServiceTypeMapping, ServiceType } from '../providers/container/GenericServiceProvider';
@@ -49,6 +49,7 @@ export class ExperimentController {
         const parameters = JSON.parse(req.body.parameters);
         const metrics = JSON.parse(req.body.metrics);
         const model = Buffer.from(req.body.model, 'base64');
+        const state = ExperimentState.UNREGISTERED;
         const version = await this._workspaceProvider.incrementVersion(workspaceId);
         await this._experimentProvider.create({
             workspaceId,
@@ -59,6 +60,7 @@ export class ExperimentController {
             metrics,
             description,
             model,
+            state,
             createdBy: 'ntcore',
             createdAt: new Date()
         });
