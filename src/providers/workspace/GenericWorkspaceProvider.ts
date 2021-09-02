@@ -1,7 +1,9 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
+import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 import { LocalWorkspaceProvider } from "./local/LocalWorkspaceProvider";
 import { ProviderType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
+import { PostgresWorkspaceProvider } from "./postgres/PostgresWorkspaceProvider";
 
 /**
  * Workspace types.
@@ -70,8 +72,7 @@ export class WorkpaceProviderFactory
     public createProvider(): GenericWorkspaceProvider {
         const providerType = appConfig.container.provider;
         switch(providerType) {
-            // TODO: Update this client provider to be postgres provider for kubernetes when it's ready.
-            case ProviderType.KUBERNETES: return new LocalWorkspaceProvider(SQliteClientProvider.get());
+            case ProviderType.KUBERNETES: return new PostgresWorkspaceProvider(PostgresClientProvider.get());
             case ProviderType.DOCKER: return new LocalWorkspaceProvider(SQliteClientProvider.get());
             default: throw new Error("Invalide provider type.");
         }
