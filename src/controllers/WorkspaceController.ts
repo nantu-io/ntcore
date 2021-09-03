@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { GenericWorkspaceProvider, WorkpaceProviderFactory } from "../providers/workspace/GenericWorkspaceProvider";
-import { Util } from '../commons/Util';
+import short = require('short-uuid');
+
+const NAMESPACE = '0a285782-a757-44ed-ad94-094509b1494e';
 
 export class WorkspaceController {
     private readonly _provider: GenericWorkspaceProvider;
@@ -21,7 +23,7 @@ export class WorkspaceController {
      * curl -H "Content-Type: application/json" -d '{"type":"API", "name":"test"}' -X POST http://localhost:8180/dsp/api/v1/workspace
      */
     public async createWorkspaceV1(req: Request, res: Response) {
-        const id = `C${Util.createWorkspaceId(req.body.name)}`;
+        const id = this.createWorkspaceId(req.body.name);
         await this._provider.create({
             id: id,
             name: req.body.name,
@@ -31,6 +33,13 @@ export class WorkspaceController {
             maxVersion: 0
         });
         res.status(201).send({id: id});
+    }
+
+    private createWorkspaceId(name: string) {
+        const uuidv5 = require('uuid/v5');
+        const uuid = uuidv5(name, NAMESPACE);
+        const translator = short('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+        return `C${translator.fromUUID(uuid)}`;
     }
 
     /**

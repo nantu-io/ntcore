@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Util } from '../commons/Util';
+import { v4 as uuidv4 } from 'uuid';
 import { Runtime } from '../commons/Runtime';
 import { ContainerProviderFactory } from '../providers/container/ServiceProviderFactory';
 import { ServiceConfigProviderFactory } from '../providers/container/ServiceProviderFactory';
@@ -125,7 +125,7 @@ export class ExperimentController {
         const version = parseInt(req.params.version);
         const runtime = Runtime.PYTHON_38;
         const framework = Framework.SKLEARN;
-        const deploymentId = Util.createDeploymentId();
+        const deploymentId = uuidv4();
         const type = ServiceTypeMapping[`FLASK_${framework.toUpperCase()}`];
         const config = this._configProvider.createDeploymentConfig(type, workspaceId, version, runtime, framework, 1, 2);
 
