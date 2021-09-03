@@ -18,8 +18,6 @@ export class Routes {
     }
 
     public routes(app: express.Application): void {
-        app.route('/dsp/api/v1/service/:name/workspace/:workspaceId')
-            .post(this.instanceController.createWorkspaceV1)
         app.route('/dsp/api/v1/service/:name')
             .get(this.instanceController.getServiceStateV1)
             .put(this.instanceController.stopServiceV1)

@@ -17,10 +17,10 @@ export class DeploymentController {
      * Example usage: 
      * curl http://localhost:8180/dsp/api/v1/workspace/{workspaceId}/deployments
      */
-    public listDeploymentsV1(req: Request, res: Response) {
+    public async listDeploymentsV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
-        const deployments = this._deploymentProvider.list(workspaceId);
-        deployments.then(w => res.status(200).send(w));
+        const deployments = await this._deploymentProvider.list(workspaceId);
+        res.status(200).send(deployments);
     }
 
     /**
@@ -30,8 +30,8 @@ export class DeploymentController {
      * Example usage: 
      * curl http://localhost:8180/dsp/api/v1/deployments/active
      */
-    public listActiveDeploymentsV1(req: Request, res: Response) {
-        const deployments = this._deploymentProvider.listActive();
-        deployments.then(w => res.status(200).send(w));
+    public async listActiveDeploymentsV1(req: Request, res: Response) {
+        const deployments = await this._deploymentProvider.listActive();
+        res.status(200).send(deployments);
     }
 }

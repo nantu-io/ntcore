@@ -20,9 +20,9 @@ export class WorkspaceController {
      * Example usage: 
      * curl -H "Content-Type: application/json" -d '{"type":"API", "name":"test"}' -X POST http://localhost:8180/dsp/api/v1/workspace
      */
-    public createWorkspaceV1(req: Request, res: Response) {
+    public async createWorkspaceV1(req: Request, res: Response) {
         const id = `C${Util.createWorkspaceId(req.body.name)}`;
-        const workspace = this._provider.create({
+        await this._provider.create({
             id: id,
             name: req.body.name,
             type: req.body.type,
@@ -30,7 +30,7 @@ export class WorkspaceController {
             createdAt: new Date(),
             maxVersion: 0
         });
-        workspace.then(() => res.status(201).send({id: id})); 
+        res.status(201).send({id: id});
     }
 
     /**
@@ -40,9 +40,9 @@ export class WorkspaceController {
      * Example usage: 
      * curl http://localhost:8180/dsp/api/v1/workspace/{id}
      */
-    public getWorkspaceV1(req: Request, res: Response) {
-        const workspace = this._provider.read(req.params.id);
-        workspace.then(w => res.status(200).send(w));
+    public async getWorkspaceV1(req: Request, res: Response) {
+        const workspace = await this._provider.read(req.params.id);
+        res.status(200).send(workspace);
     }
 
     /**
@@ -52,9 +52,9 @@ export class WorkspaceController {
      * Example usage: 
      * curl http://localhost:8180/dsp/api/v1/workspaces
      */
-    public listWorkspacesV1(req: Request, res: Response) {
-        const workspaces = this._provider.list();
-        workspaces.then(w => res.status(200).send(w));
+    public async listWorkspacesV1(req: Request, res: Response) {
+        const workspaces = await this._provider.list();
+        res.status(200).send(workspaces);
     }
 
     /**
@@ -64,8 +64,8 @@ export class WorkspaceController {
      * Example usage: 
      * curl -X DELETE http://localhost:8180/dsp/api/v1/workspace/{id}
      */
-    public deleteWorkspaceV1(req: Request, res: Response) {
-        const workspaces = this._provider.delete(req.params.id);
-        workspaces.then(w => res.status(201).send(w));
+    public async deleteWorkspaceV1(req: Request, res: Response) {
+        const workspaces = await this._provider.delete(req.params.id);
+        res.status(201).send(workspaces);
     }
 }
