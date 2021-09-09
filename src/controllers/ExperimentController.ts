@@ -5,19 +5,16 @@ import { ContainerProviderFactory } from '../providers/container/ServiceProvider
 import { ServiceConfigProviderFactory } from '../providers/container/ServiceProviderFactory';
 import { waitUntil } from 'async-wait-until';
 import { Framework } from '../commons/Framework';
-import { GenericExperimentProvider, ExperimentProviderFactory, ExperimentState } from "../providers/experiment/GenericExperimentProvider";
-import { GenericWorkspaceProvider, WorkpaceProviderFactory } from '../providers/workspace/GenericWorkspaceProvider';
-import { GenericDeploymentProvider, DeploymentStatus, DeploymentProviderFactory } from '../providers/deployment/GenericDeploymentProvider';
+import { ExperimentState } from "../providers/experiment/GenericExperimentProvider";
+import { DeploymentStatus } from '../providers/deployment/GenericDeploymentProvider';
 import { GenericServiceProvider, GenericServiceConfigProvider, ServiceState, ServiceTypeMapping, ServiceType } from '../providers/container/GenericServiceProvider';
-import { workspaceProvider, experimentProvider } from "../libs/config/AppModule";
+import { workspaceProvider, experimentProvider, deploymentProvider } from "../libs/config/AppModule";
 
 export class ExperimentController {
-    private readonly _deploymentProvider: GenericDeploymentProvider;
     private readonly _serviceProvider: GenericServiceProvider;
     private readonly _configProvider: GenericServiceConfigProvider;
 
     public constructor() {
-        this._deploymentProvider = new DeploymentProviderFactory().createProvider();
         this._serviceProvider = new ContainerProviderFactory().createProvider();
         this._configProvider = new ServiceConfigProviderFactory().createProvider();
         this.createExperimentV1 = this.createExperimentV1.bind(this);
@@ -127,7 +124,7 @@ export class ExperimentController {
         const config = this._configProvider.createDeploymentConfig(type, workspaceId, version, runtime, framework, 1, 2);
 
         try {
-            await this._deploymentProvider.aquireLock(workspaceId, version);
+            await deploymentProvider.aquireLock(workspaceId, version);
         } catch (err) {
             if (err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
                 res.status(400).send({error: 'Deployment in progress'});
@@ -144,16 +141,16 @@ export class ExperimentController {
             await this._serviceProvider.provision(config);
             await this._serviceProvider.start(config);
             await this.waitForServiceRunning(type, workspaceId);
-            await this._deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.SUCCEED);
+            await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.SUCCEED);
         } catch (err) {
-            await this._deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.FAILED);
+            await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.FAILED);
         } finally {
-            await this._deploymentProvider.releaseLock(workspaceId);
+            await deploymentProvider.releaseLock(workspaceId);
         }
     }
 
     private async createDeployment(workspaceId: string, deploymentId: string, version: number) {
-        return await this._deploymentProvider.create({
+        return await deploymentProvider.create({
             workspaceId,
             deploymentId,
             version,

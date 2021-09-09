@@ -26,7 +26,7 @@ export class PostgresWorkspaceProvider implements GenericWorkspaceProvider {
      */
     public async initialize() {
         await this._pgPool.query(WORKPACE_INITIALIZATION);
-        console.log('Initialized workspaces table ...');
+        console.log('Initialized workspaces table.');
     }
 
     /**

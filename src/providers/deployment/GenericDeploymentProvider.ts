@@ -2,6 +2,8 @@ import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import { LocalDeploymentProvider } from "./local/LocalDeploymentProvider";
 import { ProviderType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
+import { PostgresDeploymentProvider } from "./postgres/PostgresDeploymentProvider";
+import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 
 /**
  * Defines the deployment statuses.
@@ -42,6 +44,10 @@ export class IllegalStateError extends Error {}
  */
 export interface GenericDeploymentProvider 
 {
+    /**
+     * Initialize required resource.
+     */
+    initialize: () => Promise<void>;
     /**
      * Create a new deployment.
      */
@@ -84,7 +90,7 @@ export class DeploymentProviderFactory
         switch(providerType) {
             // TODO: Update this client provider to be postgres provider for kubernetes when it's ready.
             case ProviderType.KUBERNETES: return new LocalDeploymentProvider(SQliteClientProvider.get());
-            case ProviderType.DOCKER: return new LocalDeploymentProvider(SQliteClientProvider.get());
+            case ProviderType.DOCKER: return new PostgresDeploymentProvider(PostgresClientProvider.get());
             default: throw new Error("Invalide provider type.");
         }
     }

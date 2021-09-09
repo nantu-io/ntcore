@@ -25,7 +25,7 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
     public async initialize() {
         await this._pgPool.query(EXPERIMENTS_INITIALIZATION);
         await this._pgPool.query(EXPERIMENTS_CREATE_STATE_INDEX);
-        console.log('Initialized experiments table ...');
+        console.log('Initialized experiments table.');
     }
 
     /**
