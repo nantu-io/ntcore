@@ -17,7 +17,10 @@ export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
      */
     constructor(databaseClient: Database.Database) {
         this._databaseClient = databaseClient;
-        this.createWorkspaceTableIfNotExists();
+    }
+
+    public async initialize() {
+        this._databaseClient.exec(WORKPACE_INITIALIZATION);
     }
     /**
      * Create a new workspace.
@@ -79,9 +82,5 @@ export class LocalWorkspaceProvider implements GenericWorkspaceProvider {
             const workspace = this._databaseClient.prepare(WORKSPACE_READ).get({ workspaceId: workspaceId });
             return (workspace && workspace.max_version) ? workspace.max_version : 0;
         })(id);
-    }
-    
-    private createWorkspaceTableIfNotExists() {
-        this._databaseClient.exec(WORKPACE_INITIALIZATION);
     }
 }

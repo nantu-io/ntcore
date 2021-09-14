@@ -4,6 +4,8 @@ import { Framework } from '../../commons/Framework';
 import { LocalExperimentProvider } from "./local/LocalExperimentProvider";
 import { ProviderType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
+import { PostgresExperimentProvider } from "./postgres/PostgresExperimentProvider";
+import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 
 export const enum ExperimentState {
     /**
@@ -58,6 +60,10 @@ export class Experiment {
 export interface GenericExperimentProvider 
 {
     /**
+     * Initialize required resources.
+     */
+    initialize: () => Promise<void>;
+    /**
      * Create a new experiment.
      */
     create: (experiment: Experiment) => Promise<number>;
@@ -104,7 +110,7 @@ export class ExperimentProviderFactory
         switch(providerType) {
             // TODO: Update this client provider to be postgres provider for kubernetes when it's ready.
             case ProviderType.KUBERNETES: return new LocalExperimentProvider(SQliteClientProvider.get());
-            case ProviderType.DOCKER: return new LocalExperimentProvider(SQliteClientProvider.get());
+            case ProviderType.DOCKER: return new PostgresExperimentProvider(PostgresClientProvider.get());
             default: throw new Error("Invalid provider type.");
         }
     }

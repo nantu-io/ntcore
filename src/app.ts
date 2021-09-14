@@ -4,6 +4,7 @@ import * as bodyParser from "body-parser";
 import * as path from "path";
 import { appConfig } from './libs/config/AppConfigProvider';
 import fileUpload = require('express-fileupload');
+import { initialize } from "./libs/config/AppModule";
 
 export class App {
     public app: express.Application;
@@ -33,7 +34,9 @@ export class App {
       });
       // Listen to port
       const PORT = 8180;
-      this.app.listen(PORT, () => console.log(`Server is running with ${appConfig.container.provider} provider`));
+      initialize().then(() => {
+        this.app.listen(PORT, () => console.log(`Server is running with ${appConfig.container.provider} provider`));
+      });
     }
 }
 

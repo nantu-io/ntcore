@@ -8,7 +8,6 @@ export default class DatabaseClientProvider {
     private static _client: Pool;
 
     public static get(): Pool {
-        // TODO: relevant Postgres info
-        return this._client || (this._client = new Pool({  }));
+        return this._client || (this._client = new Pool(appConfig.database.config));
     }
 }

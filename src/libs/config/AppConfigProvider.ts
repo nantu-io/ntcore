@@ -15,7 +15,13 @@ class AppConfigContainer {
 class AppConfigDatabase {
     provider: "sqlite" | "postgres";
     path?: string;
-    uri?: string;
+    config?: {
+        host: string;
+        port: number;
+        user: string;
+        database: string;
+        password: string;
+    }
 }
 /**
  * Application configuration.
@@ -36,9 +42,19 @@ function getContainerProviderConfig(config: any): AppConfigContainer {
 
 function getDatabtaseProviderConfig(config: any): AppConfigDatabase {
     const provider = config['database'].provider.type;
+    const providerConfig = config['database'].provider.config;
     switch(provider) {
         case "sqlite": return { provider: provider, path: config['database'].provider.path };
-        case "postgres": return { provider: provider, uri: config['database'].provider.uri };
+        case "postgres": return { 
+            provider: provider, 
+            config: {
+                host: providerConfig.host,
+                port: providerConfig.port,
+                user: providerConfig.user,
+                database: providerConfig.database,
+                password: providerConfig.password,
+            }
+        };
         default: throw new Error("Invalid databse provider");
     }
 }

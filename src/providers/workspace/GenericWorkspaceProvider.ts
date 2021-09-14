@@ -37,6 +37,10 @@ export class Workspace
 export interface GenericWorkspaceProvider 
 {
     /**
+     * Initialize required resources.
+     */
+    initialize: () => Promise<void>;
+    /**
      * Create a new workpace.
      */
     create: (workspace: Workspace) => Promise<string>;
@@ -73,7 +77,7 @@ export class WorkpaceProviderFactory
         const providerType = appConfig.container.provider;
         switch(providerType) {
             case ProviderType.KUBERNETES: return new PostgresWorkspaceProvider(PostgresClientProvider.get());
-            case ProviderType.DOCKER: return new LocalWorkspaceProvider(SQliteClientProvider.get());
+            case ProviderType.DOCKER: return new PostgresWorkspaceProvider(PostgresClientProvider.get());
             default: throw new Error("Invalide provider type.");
         }
     }

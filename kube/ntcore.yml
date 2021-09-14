@@ -24,9 +24,14 @@ data:
         type: kubernetes
         namespace: default
     database:
-      provider:
+      provider: 
         type: postgres
-        uri: postgres:5432
+        config: 
+          host: localhost
+          port: 5432
+          user: postgres
+          database: postgres
+          password: ntcore
 
 ---
 kind: Deployment

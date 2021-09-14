@@ -20,7 +20,6 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      */
     constructor(databaseClient: Database.Database) {
         this._databaseClient = databaseClient;
-        this.createExperimentsTableIfNotExists();
     }
     /**
      * Create a new experiment.
@@ -41,6 +40,11 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
             created_at: Math.floor(experiment.createdAt.getTime()/1000)
         });
         return experiment.version;
+    }
+
+    public async initialize() {
+        this._databaseClient.exec(EXPERIMENTS_INITIALIZATION);
+        this._databaseClient.exec(EXPERIMENTS_CREATE_STATE_INDEX);
     }
 
     /**
@@ -105,10 +109,5 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      */
     public async getRegistry(workspaceId: string) {
         return this._databaseClient.prepare(EXPERIMENT_REGISTRY_READ).get({workspace_id: workspaceId});
-    }
-    
-    private createExperimentsTableIfNotExists() {
-        this._databaseClient.exec(EXPERIMENTS_INITIALIZATION);
-        this._databaseClient.exec(EXPERIMENTS_CREATE_STATE_INDEX);
     }
 }

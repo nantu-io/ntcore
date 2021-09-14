@@ -9,17 +9,14 @@ import { GenericExperimentProvider, ExperimentProviderFactory, ExperimentState }
 import { GenericWorkspaceProvider, WorkpaceProviderFactory } from '../providers/workspace/GenericWorkspaceProvider';
 import { GenericDeploymentProvider, DeploymentStatus, DeploymentProviderFactory } from '../providers/deployment/GenericDeploymentProvider';
 import { GenericServiceProvider, GenericServiceConfigProvider, ServiceState, ServiceTypeMapping, ServiceType } from '../providers/container/GenericServiceProvider';
+import { workspaceProvider, experimentProvider } from "../libs/config/AppModule";
 
 export class ExperimentController {
-    private readonly _workspaceProvider: GenericWorkspaceProvider;
-    private readonly _experimentProvider: GenericExperimentProvider;
     private readonly _deploymentProvider: GenericDeploymentProvider;
     private readonly _serviceProvider: GenericServiceProvider;
     private readonly _configProvider: GenericServiceConfigProvider;
 
     public constructor() {
-        this._workspaceProvider = new WorkpaceProviderFactory().createProvider();
-        this._experimentProvider = new ExperimentProviderFactory().createProvider();
         this._deploymentProvider = new DeploymentProviderFactory().createProvider();
         this._serviceProvider = new ContainerProviderFactory().createProvider();
         this._configProvider = new ServiceConfigProviderFactory().createProvider();
@@ -50,8 +47,8 @@ export class ExperimentController {
         const metrics = JSON.parse(req.body.metrics);
         const model = Buffer.from(req.body.model, 'base64');
         const state = ExperimentState.UNREGISTERED;
-        const version = await this._workspaceProvider.incrementVersion(workspaceId);
-        await this._experimentProvider.create({
+        const version = await workspaceProvider.incrementVersion(workspaceId);
+        await experimentProvider.create({
             workspaceId,
             version,
             runtime,
@@ -76,7 +73,7 @@ export class ExperimentController {
      */
     public async listExperimentsV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
-        const experiments = await this._experimentProvider.list(workspaceId);
+        const experiments = await experimentProvider.list(workspaceId);
         res.status(200).send(experiments);
     }
 
@@ -90,7 +87,7 @@ export class ExperimentController {
     public async getExperimentsV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
-        const experiment = await this._experimentProvider.read(workspaceId, version);
+        const experiment = await experimentProvider.read(workspaceId, version);
         res.status(200).send(experiment);
     }
 
@@ -104,7 +101,7 @@ export class ExperimentController {
     public async downloadModelV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
-        const buffer = await this._experimentProvider.loadModel(workspaceId, version);
+        const buffer = await experimentProvider.loadModel(workspaceId, version);
         const model = Buffer.from(buffer['model'], 'binary');
         res.writeHead(200, {
             'Content-Type': 'application/octet-stream',
@@ -176,7 +173,7 @@ export class ExperimentController {
      public async deleteExperimentV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
-        await this._experimentProvider.delete(workspaceId, version)
+        await experimentProvider.delete(workspaceId, version)
         res.status(201).send({info: 'Successfully deleted experiment.'});
     }
     
@@ -189,7 +186,7 @@ export class ExperimentController {
     public async registerExperimentV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.body.version);
-        await this._experimentProvider.register(workspaceId, version);
+        await experimentProvider.register(workspaceId, version);
         res.status(200).send({info: `Registered version ${version}`});
     }
 
@@ -201,7 +198,7 @@ export class ExperimentController {
      */
     public async unregisterExperimentV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
-        await this._experimentProvider.unregister(workspaceId);
+        await experimentProvider.unregister(workspaceId);
         res.status(200).send({info: `Unregistered all versions in workspace ${workspaceId}`});
     }
 
@@ -213,7 +210,7 @@ export class ExperimentController {
      */
     public async getRegistryV1(req: Request, res: Response) {
         const workspaceId = req.params.workspaceId;
-        const registry = await this._experimentProvider.getRegistry(workspaceId);
+        const registry = await experimentProvider.getRegistry(workspaceId);
         res.status(200).send(registry);
     }
 
