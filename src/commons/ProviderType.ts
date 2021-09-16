@@ -37,3 +37,29 @@ export const ProviderTypeMapping = {
      */
     "alicloud": ProviderType.ALICLOUD,
 }
+/**
+ * Database types.
+ */
+export const enum DatabaseType {
+    /**
+     * Local database type.
+     */
+    SQLITE = "SQLITE",
+    /**
+     * Postgres SQL.
+     */
+    POSTGRES = "POSTGRES",
+}
+/**
+ * Database types mapping.
+ */
+ export const DatabaseTypeMapping = {
+    /**
+     * Docker.
+     */
+     "sqlite": DatabaseType.SQLITE,
+     /**
+      * Kubernetes.
+      */
+     "postgres": DatabaseType.POSTGRES,
+}

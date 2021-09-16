@@ -1,7 +1,7 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 import { LocalWorkspaceProvider } from "./local/LocalWorkspaceProvider";
-import { ProviderType } from "../../commons/ProviderType";
+import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresWorkspaceProvider } from "./postgres/PostgresWorkspaceProvider";
 
@@ -74,10 +74,10 @@ export class WorkpaceProviderFactory
      * @returns Workspace provider.
      */
     public createProvider(): GenericWorkspaceProvider {
-        const providerType = appConfig.container.provider;
+        const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
-            case ProviderType.KUBERNETES: return new PostgresWorkspaceProvider(PostgresClientProvider.get());
-            case ProviderType.DOCKER: return new PostgresWorkspaceProvider(PostgresClientProvider.get());
+            case DatabaseType.POSTGRES: return new PostgresWorkspaceProvider(PostgresClientProvider.get());
+            case DatabaseType.SQLITE: return new LocalWorkspaceProvider(SQliteClientProvider.get());
             default: throw new Error("Invalide provider type.");
         }
     }

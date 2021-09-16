@@ -1,4 +1,4 @@
-import { ProviderType } from "../../commons/ProviderType";
+import { ProviderType, DatabaseType } from "../../commons/ProviderType";
 import { GenericLocalServiceProvider } from "./local/LocalServiceProvider";
 import { LocalServiceStateProvider } from "./local/LocalServiceStateProvider";
 import { LocalServiceConfigProvider } from "./local/LocalServiceConfigProvider";
@@ -9,6 +9,8 @@ import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import KubernetesClientProvider from "../../libs/client/KubernetesClientProvider";
 import DockerClientProvider from "../../libs/client/DockerClientProvider";
 import { GenericServiceStateProvider, GenericProviderFactory, GenericServiceProvider, GenericServiceConfigProvider } from "./GenericServiceProvider";
+import { PostgresServiceStateProvider } from "./postgres/PostgresServiceStateProvider";
+import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 
 export class ContainerProviderFactory implements GenericProviderFactory<GenericServiceProvider> 
 {
@@ -21,12 +23,9 @@ export class ContainerProviderFactory implements GenericProviderFactory<GenericS
     {
         const providerType: ProviderType = appConfig.container.provider;
         switch(providerType) {
-            case ProviderType.KUBERNETES: 
-                return new KubeContainerServiceProvider(KubernetesClientProvider.get());
-            case ProviderType.DOCKER: 
-                return new GenericLocalServiceProvider(DockerClientProvider.get());
-            default:
-                throw new Error("Invalid provider type.");
+            case ProviderType.KUBERNETES: return new KubeContainerServiceProvider(KubernetesClientProvider.get());
+            case ProviderType.DOCKER: return new GenericLocalServiceProvider(DockerClientProvider.get());
+            default: throw new Error("Invalid provider type.");
         }
     }
 }
@@ -58,11 +57,10 @@ export class ServiceStateProviderFactory implements GenericProviderFactory<Gener
      */
     public createProvider(): GenericServiceStateProvider 
     {
-        const providerType: ProviderType = appConfig.container.provider;
+        const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
-            // TODO: Update this client provider to be postgres provider for kubernetes when it's ready.
-            case ProviderType.KUBERNETES: return new LocalServiceStateProvider(SQliteClientProvider.get());
-            case ProviderType.DOCKER: return new LocalServiceStateProvider(SQliteClientProvider.get());
+            case DatabaseType.POSTGRES: return new PostgresServiceStateProvider(PostgresClientProvider.get());
+            case DatabaseType.SQLITE: return new LocalServiceStateProvider(SQliteClientProvider.get());
             default: throw new Error("Invalid provider type.");
         }
     }

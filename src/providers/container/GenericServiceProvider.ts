@@ -187,6 +187,10 @@ export interface GenericServiceProvider {
  */
 export interface GenericServiceStateProvider {
     /**
+     * Initialize required resource.
+     */
+    initialize: () => Promise<void>;
+    /**
      * Records the service state.
      */
     record: (config: GenericService, username: string, state: ServiceState, runtime?: Runtime, cpus?: any, memory?: any, packages?: string[]) => Promise<GenericService>;

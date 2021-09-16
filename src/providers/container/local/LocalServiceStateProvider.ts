@@ -10,8 +10,16 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider {
      */
     constructor(databaseClient: Database.Database) {
         this._databaseClient = databaseClient;
+    }
+
+    /**
+     * Initialize service states table.
+     */
+    public async initialize()
+    {
         this._databaseClient.exec(INSTANCES_INITIALIZATION);
     }
+
     /**
      * Records the service state into database.
      * @param config Service config.

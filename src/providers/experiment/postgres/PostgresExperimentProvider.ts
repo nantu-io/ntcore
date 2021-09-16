@@ -94,8 +94,8 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
         const client = await this._pgPool.connect();
         try {
             await client.query('BEGIN');
-            client.query(EXPERIMENT_UNREGISTER, [ workspaceId ]);
-            client.query(EXPERIMENT_STATE_UPDATE, [ workspaceId, version, ExperimentState.REGISTERED ]);
+            await client.query(EXPERIMENT_UNREGISTER, [ workspaceId ]);
+            await client.query(EXPERIMENT_STATE_UPDATE, [ workspaceId, version, ExperimentState.REGISTERED ]);
             await client.query('COMMIT');
         } catch (e) {
             await client.query('ROLLBACK');

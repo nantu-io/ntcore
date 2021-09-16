@@ -2,7 +2,7 @@ import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import { Runtime } from '../../commons/Runtime';
 import { Framework } from '../../commons/Framework';
 import { LocalExperimentProvider } from "./local/LocalExperimentProvider";
-import { ProviderType } from "../../commons/ProviderType";
+import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresExperimentProvider } from "./postgres/PostgresExperimentProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
@@ -106,11 +106,10 @@ export class ExperimentProviderFactory
      */
     public createProvider(): GenericExperimentProvider
     {
-        const providerType = appConfig.container.provider;
+        const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
-            // TODO: Update this client provider to be postgres provider for kubernetes when it's ready.
-            case ProviderType.KUBERNETES: return new LocalExperimentProvider(SQliteClientProvider.get());
-            case ProviderType.DOCKER: return new PostgresExperimentProvider(PostgresClientProvider.get());
+            case DatabaseType.POSTGRES: return new PostgresExperimentProvider(PostgresClientProvider.get());
+            case DatabaseType.SQLITE: return new LocalExperimentProvider(SQliteClientProvider.get());
             default: throw new Error("Invalid provider type.");
         }
     }

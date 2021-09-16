@@ -1,20 +1,19 @@
 import { Request, Response } from 'express';
-import { GenericServiceStateProvider, GenericService, ServiceState } from "../providers/container/GenericServiceProvider";
+import { GenericService, ServiceState } from "../providers/container/GenericServiceProvider";
 import { ContainerProviderFactory, ServiceConfigProviderFactory, ServiceStateProviderFactory } from '../providers/container/ServiceProviderFactory';
 import { GenericServiceProvider, GenericServiceConfigProvider, ServiceTypeMapping } from "../providers/container/GenericServiceProvider";
 import { waitUntil } from 'async-wait-until';
 import { RuntimeMapping } from '../commons/Runtime';
 import { ContainerTimeoutException } from "../commons/Errors"
+import { serviceStateProvider } from "../libs/config/AppModule";
 
 export class InstanceController {
     private readonly _configProvider: GenericServiceConfigProvider;
     private readonly _serviceProvider: GenericServiceProvider;
-    private readonly _serviceStateProvider: GenericServiceStateProvider;
 
     public constructor() {
         this._serviceProvider = new ContainerProviderFactory().createProvider();
         this._configProvider = new ServiceConfigProviderFactory().createProvider();
-        this._serviceStateProvider = new ServiceStateProviderFactory().createProvider();
         this.createServiceV1 = this.createServiceV1.bind(this);
         this.getServiceStateV1 = this.getServiceStateV1.bind(this);
         this.stopServiceV1 = this.stopServiceV1.bind(this);
@@ -40,13 +39,13 @@ export class InstanceController {
         const config = this._configProvider.createDevelopmentConfig(name, type, runtime, cpus, memory, packages);
 
         try {
-            await this._serviceStateProvider.record(config, username, ServiceState.PENDING, runtime, cpus, memory, packages);
+            await serviceStateProvider.record(config, username, ServiceState.PENDING, runtime, cpus, memory, packages);
             res.status(201).send({ name: name, status: ServiceState.PENDING });
             await this._serviceProvider.provision(config);
             await this._serviceProvider.start(config);
             const result = await this.waitForInstanceState(config, ServiceState.RUNNING);
             const state = result ? ServiceState.RUNNING : ServiceState.INACTIVE;
-            await this._serviceStateProvider.record(config, username, state);
+            await serviceStateProvider.record(config, username, state);
         } catch (err) {
             await this.handleServiceProviderError(err, config, username);
         }
@@ -66,11 +65,11 @@ export class InstanceController {
 
         try {
             await this._serviceProvider.getState(config);
-            await this._serviceStateProvider.record(config, username, ServiceState.STOPPING);
+            await serviceStateProvider.record(config, username, ServiceState.STOPPING);
             res.status(201).send(config);
             await this._serviceProvider.stop(config);
             await this.waitForInstanceState(config, ServiceState.INACTIVE);
-            await this._serviceStateProvider.record(config, username, ServiceState.STOPPED);
+            await serviceStateProvider.record(config, username, ServiceState.STOPPED);
         } catch (err) {
             await this.handleServiceProviderError(err, config, username);
         }
@@ -90,12 +89,12 @@ export class InstanceController {
 
         try {
             await this._serviceProvider.getState(config);
-            await this._serviceStateProvider.record(config, username, ServiceState.STOPPING);
+            await serviceStateProvider.record(config, username, ServiceState.STOPPING);
             res.status(201).send(config);
             await this._serviceProvider.stop(config);
             await this.waitForInstanceState(config, ServiceState.INACTIVE);
             await this._serviceProvider.delete(config);
-            await this._serviceStateProvider.record(config, username, ServiceState.INACTIVE);
+            await serviceStateProvider.record(config, username, ServiceState.INACTIVE);
         } catch (err) {
             await this.handleServiceProviderError(err, config, username);
         }
@@ -110,7 +109,7 @@ export class InstanceController {
      */
     public async listServicesV1(req: Request, res: Response) {
         try {
-            const services = await this._serviceStateProvider.list('ntcore');
+            const services = await serviceStateProvider.list('ntcore');
             res.status(200).send(services);
         } catch (err) {
             res.status(500).send({ error: `Failed to list local containers: ${err}` });
@@ -126,7 +125,7 @@ export class InstanceController {
      */
     public async getServiceStateV1(req: Request, res: Response) {
         try {
-            const state = await this._serviceStateProvider.get(req.params.name, 'ntcore');
+            const state = await serviceStateProvider.get(req.params.name, 'ntcore');
             res.status(200).send(state);
         } catch (err) {
             res.status(500).send({ error: `Failed to get instance state: ${err}` });
@@ -150,7 +149,7 @@ export class InstanceController {
 
     private async handleServiceProviderError(err: any, service: GenericService, username: string) {
         if (err instanceof ContainerTimeoutException) {
-            await this._serviceStateProvider.record(service, username, ServiceState.INACTIVE);
+            await serviceStateProvider.record(service, username, ServiceState.INACTIVE);
         } else {
             await this.synchronizeServiceState(service, username);
         }
@@ -158,16 +157,16 @@ export class InstanceController {
     }
 
     private async synchronizeServiceState(service: GenericService, username: string) {
-        const recordStatePromise = this._serviceStateProvider.get(service.name, username);
+        const recordStatePromise = serviceStateProvider.get(service.name, username);
         const actualStatePromise = this._serviceProvider.getState(service);
         // Wait until both promises are finished.
         Promise.all([recordStatePromise, actualStatePromise]).then(async (values) => {
             const recordState = values[0];
             const actualState = values[1];
             if (!actualState.state) {
-                await this._serviceStateProvider.record(service, username, ServiceState.INACTIVE);
+                await serviceStateProvider.record(service, username, ServiceState.INACTIVE);
             } else if (recordState.state !== actualState.state) {
-                await this._serviceStateProvider.record(service, username, actualState.state);
+                await serviceStateProvider.record(service, username, actualState.state);
             }
         })
     }

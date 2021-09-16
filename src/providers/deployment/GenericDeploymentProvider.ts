@@ -1,6 +1,6 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import { LocalDeploymentProvider } from "./local/LocalDeploymentProvider";
-import { ProviderType } from "../../commons/ProviderType";
+import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresDeploymentProvider } from "./postgres/PostgresDeploymentProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
@@ -86,11 +86,10 @@ export class DeploymentProviderFactory
      * @returns Deployment provider.
      */
     public createProvider(): GenericDeploymentProvider {
-        const providerType = appConfig.container.provider;
+        const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
-            // TODO: Update this client provider to be postgres provider for kubernetes when it's ready.
-            case ProviderType.KUBERNETES: return new LocalDeploymentProvider(SQliteClientProvider.get());
-            case ProviderType.DOCKER: return new PostgresDeploymentProvider(PostgresClientProvider.get());
+            case DatabaseType.POSTGRES: return new PostgresDeploymentProvider(PostgresClientProvider.get());
+            case DatabaseType.SQLITE: return new LocalDeploymentProvider(SQliteClientProvider.get());
             default: throw new Error("Invalide provider type.");
         }
     }

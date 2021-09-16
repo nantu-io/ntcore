@@ -1,19 +1,21 @@
-import { ProviderType, ProviderTypeMapping } from '../../commons/ProviderType';
+import { ProviderType, ProviderTypeMapping, DatabaseType, DatabaseTypeMapping } from '../../commons/ProviderType';
 import yaml = require('js-yaml');
 import fs = require('fs');
 
 /**
  * Container setup in AppConfig.
  */
-class AppConfigContainer {
+class AppConfigContainer 
+{
     provider: ProviderType;
     namespace?: string;
 }
 /**
  * Database setup in AppConfig.
  */
-class AppConfigDatabase {
-    provider: "sqlite" | "postgres";
+class AppConfigDatabase 
+{
+    provider: DatabaseType;
     path?: string;
     config?: {
         host: string;
@@ -31,7 +33,8 @@ class AppConfig {
     database: AppConfigDatabase;
 }
 
-function getContainerProviderConfig(config: any): AppConfigContainer {
+function getContainerProviderConfig(config: any): AppConfigContainer 
+{
     const provider = ProviderTypeMapping[config['container'].provider.type];
     switch(provider) {
         case ProviderType.KUBERNETES: return { provider: provider, namespace: config['container'].provider.namespace };
@@ -40,27 +43,33 @@ function getContainerProviderConfig(config: any): AppConfigContainer {
     }
 }
 
-function getDatabtaseProviderConfig(config: any): AppConfigDatabase {
-    const provider = config['database'].provider.type;
-    const providerConfig = config['database'].provider.config;
+function getDatabtaseProviderConfig(config: any): AppConfigDatabase 
+{
+    const provider = DatabaseTypeMapping[config['database'].provider.type];
     switch(provider) {
-        case "sqlite": return { provider: provider, path: config['database'].provider.path };
-        case "postgres": return { 
-            provider: provider, 
-            config: {
-                host: providerConfig.host,
-                port: providerConfig.port,
-                user: providerConfig.user,
-                database: providerConfig.database,
-                password: providerConfig.password,
-            }
-        };
+        case DatabaseType.SQLITE: return { provider: provider, path: config['database'].provider.path };
+        case DatabaseType.POSTGRES: return getPostgresProviderConfig(provider, config);
         default: throw new Error("Invalid databse provider");
     }
 }
 
-function getAppConfig(): AppConfig {
-    console.log(`Parsing application configuration ... `);
+function getPostgresProviderConfig(provider: DatabaseType, config: any): AppConfigDatabase 
+{
+    const providerConfig = config['database'].provider.config;
+    return { 
+        provider: provider, 
+        config: {
+            host: providerConfig.host,
+            port: providerConfig.port,
+            user: providerConfig.user,
+            database: providerConfig.database,
+            password: providerConfig.password,
+        }
+    };
+}
+
+function getAppConfig(): AppConfig 
+{
     const config = yaml.load(fs.readFileSync('app-config/ntcore.yml', 'utf8'));
     return { 
         container: getContainerProviderConfig(config),
