@@ -27,7 +27,9 @@ Examples
         model.fit(X, y)
 """
 
-import six
+import platform
+import os
+import pickle
 import gorilla
 import numpy as np
 import inspect
@@ -80,7 +82,7 @@ classes = [
     kernel_ridge.KernelRidge,
 ]
 
-
+NTCORE_WORKSPACE_ID = 'NTCORE_WORKSPACE_ID'
 settings = gorilla.Settings(allow_hit=True)
 
 
@@ -89,32 +91,23 @@ def _fit_and_log(self, cls, *args, **kwargs):
     if run is None:
         return
 
-    params = self.get_params()
-
-    cleaned_params = dict()
-    for key, val in six.viewitems(params):
-        try:
-            # _utils.python_to_val_proto(val)
-            pass
-        except TypeError:
-            continue
-        else:
-            cleaned_params.update({key: val})
-
     original_fit = gorilla.get_original_attribute(cls, 'fit')
     fitted_estimator = original_fit(self, *args, **kwargs)
 
     (X, y_true, sample_weight) = _get_args_for_metrics(fitted_estimator.fit, args, kwargs)
-    prefix = "training_"
 
     if sklearn.base.is_classifier(fitted_estimator):
-        metrics = _get_classifier_metrics(fitted_estimator, prefix, X, y_true, sample_weight)
+        metrics = _get_classifier_metrics(fitted_estimator, "training_", X, y_true, sample_weight)
     elif sklearn.base.is_regressor(fitted_estimator):
-        metrics = _get_regressor_metrics(fitted_estimator, prefix, X, y_true, sample_weight)
+        metrics = _get_regressor_metrics(fitted_estimator, "training_", X, y_true, sample_weight)
 
     experiment = dict(
-        workspace_id='C123',
-        metrics=metrics
+        workspace_id=os.environ[NTCORE_WORKSPACE_ID],
+        runtime="python-" + ".".join(platform.python_version().split('.')[0:2]), 
+        framework="sklearn",
+        metrics=metrics,
+        parameters=_get_params(self),
+        model=pickle.dumps(self)
     )
 
     try:
@@ -123,6 +116,10 @@ def _fit_and_log(self, cls, *args, **kwargs):
         print(e)
 
     return fitted_estimator
+
+
+def _get_params(estimator):
+    return {k: str(v) if isinstance(v, bool) else v for k, v in estimator.get_params().items()}
 
 
 def _get_classifier_metrics(fitted_estimator, prefix, X, y_true, sample_weight):
@@ -158,7 +155,7 @@ def _get_classifier_metrics(fitted_estimator, prefix, X, y_true, sample_weight):
     (y_true, y_pred, ...... sample_weight), otherwise as (y_true, y_pred, ......)
     3. return a dictionary of metric(name, value)
 
-    :param fitted_estimator: The already fitted classifier
+    :param fitted_estimator: The fitted classifier
     :param fit_args: Positional arguments given to fit_func.
     :param fit_kwargs: Keyword arguments given to fit_func.
     :return: dictionary of (function name, computed value)
@@ -213,7 +210,7 @@ def _get_regressor_metrics(fitted_estimator, prefix, X, y_true, sample_weight):
     (y_true, y_pred, sample_weight, multioutput), otherwise as (y_true, y_pred, multioutput)
     3. return a dictionary of metric(name, value)
 
-    :param fitted_estimator: The already fitted regressor
+    :param fitted_estimator: The fitted regressor
     :param fit_args: Positional arguments given to fit_func.
     :param fit_kwargs: Keyword arguments given to fit_func.
     :return: dictionary of (function name, computed value)
@@ -253,43 +250,34 @@ def _get_args_for_metrics(fit_func, fit_args, fit_kwargs):
     """
     _SAMPLE_WEIGHT = "sample_weight"
 
-    def _get_Xy(args, kwargs, X_var_name, y_var_name):
-        # corresponds to: model.fit(X, y)
-        if len(args) >= 2:
-            return args[:2]
-
-        # corresponds to: model.fit(X, <y_var_name>=y)
-        if len(args) == 1:
-            return args[0], kwargs.get(y_var_name)
-
-        # corresponds to: model.fit(<X_var_name>=X, <y_var_name>=y)
-        return kwargs[X_var_name], kwargs.get(y_var_name)
-
-    def _get_sample_weight(arg_names, args, kwargs):
-        sample_weight_index = arg_names.index(_SAMPLE_WEIGHT)
-
-        # corresponds to: model.fit(X, y, ..., sample_weight)
-        if len(args) > sample_weight_index:
-            return args[sample_weight_index]
-
-        # corresponds to: model.fit(X, y, ..., sample_weight=sample_weight)
-        if _SAMPLE_WEIGHT in kwargs:
-            return kwargs[_SAMPLE_WEIGHT]
-
-        return None
-
     fit_arg_names = list(inspect.signature(fit_func).parameters.keys())
 
     # In most cases, X_var_name and y_var_name become "X" and "y", respectively.
     # However, certain sklearn models use different variable names for X and y.
     # E.g., see: https://scikit-learn.org/stable/modules/generated/sklearn.multioutput.MultiOutputClassifier.html#sklearn.multioutput.MultiOutputClassifier.fit # noqa: E501
     X_var_name, y_var_name = fit_arg_names[:2]
-    Xy = _get_Xy(fit_args, fit_kwargs, X_var_name, y_var_name)
-    sample_weight = (
-        _get_sample_weight(fit_arg_names, fit_args, fit_kwargs)
-        if (_SAMPLE_WEIGHT in fit_arg_names)
-        else None
-    )
+    if len(fit_args) >= 2:
+        # corresponds to: model.fit(X, y)
+        Xy = fit_args[:2]
+    elif len(fit_args) == 1:
+        # corresponds to: model.fit(X, <y_var_name>=y)
+        Xy = fit_args[0], fit_kwargs.get(y_var_name)
+    else:
+        # corresponds to: model.fit(<X_var_name>=X, <y_var_name>=y)
+        Xy = fit_kwargs[X_var_name], fit_kwargs.get(y_var_name)
+
+    if _SAMPLE_WEIGHT not in fit_arg_names:
+        return (*Xy, None)
+
+    sample_weight_index = fit_arg_names.index(_SAMPLE_WEIGHT)
+    if len(fit_args) > sample_weight_index:
+        # corresponds to: model.fit(X, y, ..., sample_weight)
+        sample_weight = fit_args[sample_weight_index]
+    elif _SAMPLE_WEIGHT in fit_kwargs:
+        # corresponds to: model.fit(X, y, ..., sample_weight=sample_weight)
+        sample_weight = fit_kwargs[_SAMPLE_WEIGHT]
+    else:
+        sample_weight = None
 
     return (*Xy, sample_weight)
 

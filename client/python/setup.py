@@ -32,9 +32,4 @@ setup(
         "pyyaml>=5.1, <5.4",
         "requests>=2.21, <3.0",
     ],
-    entry_points={
-        "console_scripts": [
-            "verta = verta._cli:cli",
-        ],
-    },
 )

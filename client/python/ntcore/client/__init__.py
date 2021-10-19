@@ -1,10 +1,10 @@
 import requests
-import pickle
 import base64
 import json
-from integrations import sklearn
+import os
 
 NTCORE_DEFAULT_BASE_ENDPOINT = 'http://localhost:8180'
+NTCORE_WORKSPACE_ID = 'NTCORE_WORKSPACE_ID'
 
 
 class Client(object):
@@ -42,9 +42,9 @@ class Client(object):
         workspace_id : str
             The workspace id to group the experiments.
         """
-        self._workspace_id = workspace_id
-        self._autolog_enabled = True
+        import ntcore.integrations.sklearn
 
+        os.environ[NTCORE_WORKSPACE_ID] = workspace_id
 
     def log_experiment(self, experiment):
         """
@@ -66,16 +66,15 @@ class Client(object):
             raise ValueError('Experiment wasn\'t logged since workspace id wasn\'t provided.')
 
         payload = {
-            # "runtime": experiment['runtime'],        
-            # "framework": experiment['framework'],
-            # "parameters": json.dumps(experiment['parameters']),
+            "runtime": experiment['runtime'],
+            "framework": experiment['framework'],
+            "parameters": json.dumps(experiment['parameters']),
             "metrics": json.dumps(experiment['metrics']), 
-            # "model": base64.b64encode(pickle.dumps(experiment['estimator'])) 
+            "model": base64.b64encode(experiment['model'])
         }
 
         try:
-            # requests.post(self._get_experiment_endpoint(), data=payload)
-            print(payload)
+            requests.post(self._get_experiment_endpoint(), data=payload)
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError('Experiment wasn\'t logged since ntcore wasn\'t available at {0}.'.format(self._endpoint))
 
@@ -84,7 +83,7 @@ class Client(object):
         Gets the NTCore endpoint for sending experiment data.
         """
         return '{base_endpoint}/dsp/api/v1/workspace/{workspace_id}/experiment'.format(
-            base_endpoint=self._endpoint, workspace_id=self._workspace_id)
+            base_endpoint=self._endpoint, workspace_id=os.environ[NTCORE_WORKSPACE_ID])
 
     def start_run(self):
         return Run(self)
