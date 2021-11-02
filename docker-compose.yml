@@ -20,7 +20,7 @@ services:
       - gateway
 
   ntcore:
-    image: "ntcore/webserver"
+    image: "ntcore/webserver:latest"
     container_name: "ntcore-service"
     labels:
       - "traefik.enable=true"
