@@ -124,7 +124,8 @@ class Registry extends React.Component {
         const errorHandler = (error) => {
             this.setState({isModalOpen: false}, () => onError(error));
         }
-        const endpoint = `/s/pre-prod/${workspaceId}/predict`;
+        // TODO: Change endpoint to `/s/pre-prod/${workspaceId}/predict` after enabling pre-prod deployment;
+        const endpoint = "--";
         const formattedCreatedAt = createdAt ? dateFormat((new Date(parseInt(createdAt) * 1000)), "mm/dd/yyyy HH:MM:ss") : null;
 
         return (
