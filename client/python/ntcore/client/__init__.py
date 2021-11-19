@@ -85,7 +85,7 @@ class Client(object):
         return '{base_endpoint}/dsp/api/v1/workspace/{workspace_id}/experiment'.format(
             base_endpoint=self._endpoint, workspace_id=os.environ[NTCORE_WORKSPACE_ID])
     
-    def register_model(self,version_number:int):
+    def register_model(self, workspace_id:str, version_number:int):
         """
         Register model at the NTCore endpoint 
         """
@@ -93,7 +93,7 @@ class Client(object):
             raise ValueError("version number is not defined or is less than 0")
         
         try:
-            requests.post(f"{self._endpoint}/dsp/api/v1/workspace/{os.environ[NTCORE_WORKSPACE_ID]}/registry/{version_number}")
+            requests.post(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry/{version_number}")
         except requests.exceptions.ConnectionError as e :
             raise RuntimeError(f'model wasn\'t registered since ntcore wasn\'t available at {self._endpoint}')
     def start_run(self):
