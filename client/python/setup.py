@@ -25,12 +25,13 @@ setup(
     packages=find_packages(),
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
     install_requires=[
-        "click~=7.0",
-        "cloudpickle~=1.0",
-        "pathlib2>=2.2, <3.0",
-        "pytimeparse>=1.1.8, <2.0",
-        "pyyaml>=5.1, <5.4",
-        "requests>=2.21, <3.0",
+        "cloudpickle",
+        "requests>=2.17.3",
+        "packaging",
+        "importlib_metadata>=3.7.0,!=4.7.0",
+        "numpy",
+        "pandas",
+        "scikit-learn",
         "mlflow<=1.21.0"
     ],
     entry_points={
