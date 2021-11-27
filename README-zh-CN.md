@@ -46,18 +46,21 @@ docker-compose up
 5. 根据您的偏好启动开发实例，例如 Jupyter Notebook。
 6. 下面是一个基于sklearn对鸢尾花类型进行分类的例子。执行代码以记录您训练过的模型并查看`Experiment`部分中的元数据。
 ```
-from sklearn import datasets
-from sklearn.svm import SVC
-import ntcore
-
-# Enable autologging
-ntcore.sklearn.autolog()
+# Config the ntcore client
+from ntcore import client
+client.set_endpoint('http://localhost:8000')
+client.autolog('C8W60XEPH7DA3AAH3S41PJZ3OV')
 
 # Prepare the training dataset
+from sklearn import datasets
 iris = datasets.load_iris()
-clf = SVC()
 
-with ntcore.start_run() as run:
+# Init the model
+from sklearn.ensemble import RandomForestClassifier
+clf = RandomForestClassifier(max_depth=2, random_state=0)
+
+# Start an experiment run
+with client.start_run():
     clf.fit(iris.data, iris.target_names[iris.target])
 ```
 7. 将经过训练的模型部署为 RESTful API。在`Experiment`部分，选择版本并单击`Deploy`按钮以创建您的第一个预测endpoint。
