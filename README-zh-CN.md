@@ -35,7 +35,7 @@ docker-compose --version
 ```
 1. 复制这个仓库
 ``` 
-git clone https://github.com/nantutech/ntcore.git
+git clone https://github.com/nantu-io/ntcore.git
 ```
 2. 在ntcore路径，启动ntcore服务器
 ```
