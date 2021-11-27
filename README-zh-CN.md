@@ -74,7 +74,7 @@ curl -H "Content-Type: application/json" -X POST --data '{"data": [[5.1,3.5,1.4,
 ---
 
 ## 文档
-请查看我们的[用户文档](https://nantutech.github.io/ntcore-doc/#/zh-cn/)
+请查看我们的[用户文档](https://nantu-io.github.io/ntcore-doc/#/zh-cn/)
 
 ----
 
