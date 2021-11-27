@@ -35,7 +35,7 @@ docker-compose --version
 ```
 1. Clone this repository
 ``` 
-git clone https://github.com/nantutech/ntcore.git
+git clone https://github.com/nantu-io/ntcore.git
 ```
 2. <ins>Inside</ins> the cloned repository, start the ntcore server
 ```
