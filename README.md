@@ -35,7 +35,7 @@ docker-compose --version
 ```
 1. Clone this repository
 ``` 
-git clone https://github.com/nantutech/ntcore.git
+git clone https://github.com/nantu-io/ntcore.git
 ```
 2. <ins>Inside</ins> the cloned repository, start the ntcore server
 ```
@@ -47,17 +47,21 @@ docker-compose up
 6. Below is an example based on `sklearn` to classify iris flower types. Execute the code to log the models you've trained and check out the metadata in the `Experiment` section.
 ```
 from sklearn import datasets
-from sklearn.svm import SVC
-import ntcore
-
-# Enable autologging
-ntcore.sklearn.autolog()
+# Config the ntcore client
+from ntcore import client
+client.set_endpoint('http://localhost:8000')
+client.autolog('C8W60XEPH7DA3AAH3S41PJZ3OV')
 
 # Prepare the training dataset
+from sklearn import datasets
 iris = datasets.load_iris()
-clf = SVC()
 
-with ntcore.start_run() as run:
+# Init the model
+from sklearn.ensemble import RandomForestClassifier
+clf = RandomForestClassifier(max_depth=2, random_state=0)
+
+# Start an experiment run
+with client.start_run():
     clf.fit(iris.data, iris.target_names[iris.target])
 ```
 7. Deploy your trained model as a RESTful API. In the `Experiment` section, select the version and click the `Deploy` button to create your first prediction endpoint.
@@ -75,7 +79,7 @@ Congratulation on your first model deployment!
 ---
 
 ## Documentation
-Please check out our [User Guide](https://nantutech.github.io/ntcore-doc/#/zh-cn/)
+Please check out our [User Guide](https://nantu-io.github.io/ntcore-doc/#/zh-cn/)
 
 ----
 

@@ -124,7 +124,8 @@ class Registry extends React.Component {
         const errorHandler = (error) => {
             this.setState({isModalOpen: false}, () => onError(error));
         }
-        const endpoint = `/s/pre-prod/${workspaceId}/predict`;
+        // TODO: Change endpoint to `/s/pre-prod/${workspaceId}/predict` after enabling pre-prod deployment;
+        const endpoint = "--";
         const formattedCreatedAt = createdAt ? dateFormat((new Date(parseInt(createdAt) * 1000)), "mm/dd/yyyy HH:MM:ss") : null;
 
         return (
@@ -133,25 +134,25 @@ class Registry extends React.Component {
                     <p className={clsx(classes.summary)}>Summary</p>
                     <Divider className={classes.divider} />
                     <Grid container className={clsx(classes.container)}>
-                        <Grid item xs={1}> 
+                        <Grid item xs={2}> 
                             <p className={clsx(classes.entry)}>Version</p>
                             <p className={clsx(classes.entry)}>Framework</p>
                             <p className={clsx(classes.entry)}>Created by</p>
                             <p className={clsx(classes.entry)}>Endpoint</p>
                         </Grid>
-                        <Grid item xs={5}>
+                        <Grid item xs={4}>
                             <p className={clsx(classes.entry)}>{version ? version : "--"}</p>
                             <p className={clsx(classes.entry)}>{framework ? framework : "--"}</p>
                             <p className={clsx(classes.entry)}>{createdBy ? createdBy : "--"}</p>
                             <p className={clsx(classes.code)}>{version? endpoint : "--"}</p>
                         </Grid>
-                        <Grid item xs={1}> 
+                        <Grid item xs={2}> 
                             <p className={clsx(classes.entry)}>Runtime</p>
                             <p className={clsx(classes.entry)}>Description</p>
                             <p className={clsx(classes.entry)}>Created at</p>
                             <p className={clsx(classes.entry)}>Actions</p>
                         </Grid>
-                        <Grid item xs={5}>
+                        <Grid item xs={4}>
                             <p className={clsx(classes.entry)}>{runtime ? runtime : "--"}</p>
                             <p className={clsx(classes.entry)}>{description ? description : "--"}</p>
                             <p className={clsx(classes.entry)}>{formattedCreatedAt ? formattedCreatedAt : "--"}</p>

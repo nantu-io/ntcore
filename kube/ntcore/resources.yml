@@ -13,27 +13,6 @@ spec:
     app: ntcore
 
 ---
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: ntcore
-data:
-  ntcore.yml: |
-    container:
-      provider:
-        type: kubernetes
-        namespace: default
-    database:
-      provider: 
-        type: postgres
-        config: 
-          host: localhost
-          port: 5432
-          user: postgres
-          database: postgres
-          password: ntcore
-
----
 kind: Deployment
 apiVersion: apps/v1
 metadata:

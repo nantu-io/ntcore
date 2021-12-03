@@ -37,6 +37,7 @@ bower_components
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 webapp/build
+**build
 
 # Dependency directories
 node_modules/
@@ -107,3 +108,6 @@ dist
 
 # Data file
 data
+
+# egg-info
+**egg-info

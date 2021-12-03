@@ -1,0 +1,12 @@
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: ntcore
+  region: cn-north-1
+
+nodeGroups:
+  - name: prod
+    instanceType: m5.large
+    desiredCapacity: 1

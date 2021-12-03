@@ -19,9 +19,9 @@ export class App {
 
     private config(): void {
       // support application/json type post data
-      this.app.use(bodyParser.json());
+      this.app.use(bodyParser.json({limit: '500mb'}));
       // support application/x-www-form-urlencoded post data
-      this.app.use(bodyParser.urlencoded({ extended: false }));
+      this.app.use(bodyParser.urlencoded({ limit: '500mb', extended: false }));
       // support file upload from client
       this.app.use(fileUpload({
         useTempFiles : true,

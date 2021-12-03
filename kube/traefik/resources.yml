@@ -11,6 +11,7 @@ metadata:
   name: traefik
 
 spec:
+  type: LoadBalancer
   ports:
     - protocol: TCP
       name: web
