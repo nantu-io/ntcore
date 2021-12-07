@@ -12,6 +12,7 @@ import platform
 import pickle
 
 settings = gorilla.Settings(allow_hit=True)
+FRAMEWORK = "sklearn"
 
 
 def _get_runtime_version():
@@ -34,7 +35,7 @@ def _patch_log_params(module):
         experiment = client.get_experiment()
         experiment.set_parameters({**info_tags, **params})
         experiment.set_runtime(_get_runtime_version())
-        experiment.set_framework('sklearn')
+        experiment.set_framework(FRAMEWORK)
         return info_tags
     patch = gorilla.Patch(module, method_name, _log_params, settings=settings)
     gorilla.apply(patch)
@@ -57,36 +58,21 @@ def _patch_log_metrics(module):
 def _patch_log_model(module):
     method_name = 'log_model'
     @gorilla.patch(module)
-    def _log_model(sk_model, 
-            artifact_path,
-            conda_env=None,
-            serialization_format=SERIALIZATION_FORMAT_CLOUDPICKLE,
-            registered_model_name=None,
-            signature: ModelSignature = None,
-            input_example: ModelInputExample = None,
-            await_registration_for=DEFAULT_AWAIT_MAX_SLEEP_SECONDS,
-            pip_requirements=None,
-            extra_pip_requirements=None):
+    def _log_model(*args, **kwargs):
         original = gorilla.get_original_attribute(module, method_name)
-        model = original(
-            sk_model, 
-            artifact_path, 
-            conda_env, 
-            serialization_format, 
-            registered_model_name,
-            signature,
-            input_example,
-            await_registration_for,
-            pip_requirements,
-            extra_pip_requirements)
+        model = original(*args, **kwargs)
         experiment = client.get_experiment()
-        experiment.set_model(pickle.dumps(sk_model))
+        experiment.set_model(pickle.dumps(args[0]))
         experiment.emit()
         return model
     patch = gorilla.Patch(module, method_name, _log_model, settings=settings)
     gorilla.apply(patch)
 
 
-_patch_log_params(utils)
-_patch_log_metrics(utils)
-_patch_log_model(sklearn)
+def patch():
+    """
+    Patch mlflow sklearn methods to intercept training params and metrics
+    """
+    _patch_log_params(utils)
+    _patch_log_metrics(utils)
+    _patch_log_model(sklearn)
