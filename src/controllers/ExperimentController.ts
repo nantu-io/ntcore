@@ -4,10 +4,10 @@ import { Runtime } from '../commons/Runtime';
 import { ContainerProviderFactory } from '../providers/container/ServiceProviderFactory';
 import { ServiceConfigProviderFactory } from '../providers/container/ServiceProviderFactory';
 import { waitUntil } from 'async-wait-until';
-import { Framework } from '../commons/Framework';
+import { Framework, FrameworkMapping } from '../commons/Framework';
 import { ExperimentState } from "../providers/experiment/GenericExperimentProvider";
 import { DeploymentStatus } from '../providers/deployment/GenericDeploymentProvider';
-import { GenericServiceProvider, GenericServiceConfigProvider, ServiceState, ServiceTypeMapping, ServiceType } from '../providers/container/GenericServiceProvider';
+import { GenericServiceProvider, GenericServiceConfigProvider, ServiceState, ServiceType } from '../providers/container/GenericServiceProvider';
 import { workspaceProvider, experimentProvider, deploymentProvider } from "../libs/config/AppModule";
 
 export class ExperimentController {
@@ -118,10 +118,10 @@ export class ExperimentController {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
         const runtime = Runtime.PYTHON_38;
-        const framework = Framework.SKLEARN;
         const deploymentId = uuidv4();
-        const type = ServiceTypeMapping[`FLASK_${framework.toUpperCase()}`];
-        const config = this._configProvider.createDeploymentConfig(type, workspaceId, version, runtime, framework, 1, 2);
+        const model = await experimentProvider.read(workspaceId, version);
+        const type = this.getServiceType(model.framework);
+        const config = this._configProvider.createDeploymentConfig(type, workspaceId, version, runtime, model.framework, 1, 2);
 
         try {
             await deploymentProvider.aquireLock(workspaceId, version);
@@ -146,6 +146,15 @@ export class ExperimentController {
             await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.FAILED);
         } finally {
             await deploymentProvider.releaseLock(workspaceId);
+        }
+    }
+
+    private getServiceType(framework: string): ServiceType
+    {
+        switch(FrameworkMapping[framework]) {
+            case Framework.SKLEARN: return ServiceType.FLASK_SKLEARN;
+            case Framework.TENSORFLOW: return ServiceType.TENSORFLOW;
+            default: throw new Error("Invalid framework.");
         }
     }
 
