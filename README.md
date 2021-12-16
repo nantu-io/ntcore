@@ -1,8 +1,6 @@
-# NTCore: Machine Learning Development Lifecycle Management Platform.
+# NTCore: Model Lifecycle Management.
 
 ![workflows-intro](https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg)
-
-![Docker Pulls](https://img.shields.io/docker/pulls/ntcore/webserver)
 
 English|[简体中文](https://github.com/nantutech/ntcore/blob/main/README-zh-CN.md)
 
@@ -11,14 +9,15 @@ English|[简体中文](https://github.com/nantutech/ntcore/blob/main/README-zh-C
 NTCore is an open-source platform to manage machine learning model development lifecycles. It facilates local development environment setup, model versioning and metadata tracking, as well as model deployment and monitoring in production.
 
 With NTCore you can:
-* Setup your development environments including Jupyter Notebook and Python IDE in 1 minute.
-* Version your trained models with metadata during experiments and make them auditable and reproducible.
-* Deploy your models as RESTful APIs with just one click.
-* Monitor your model performance with manageable dashboards (This is only available in enterprise version).
+* Record your machine learning models with versions, make them auditable and reproducible.
+* Deploy your models as RESTful APIs with one click.
+* Monitor your model performance with manageable dashboards.
 
-If you are looking for a enterprise version of NTCore, please send an email to info@nantutech.com.
+Join our community on [Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4).
 
 ----
+![Docker Pulls](https://img.shields.io/docker/pulls/ntcore/webserver)
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
 
 ## This document includes
 
@@ -31,7 +30,7 @@ If you are looking for a enterprise version of NTCore, please send an email to i
 
 ## Deploy your first model in 10 minutes
 
-0. Follow this [instruction](https://docs.docker.com/get-started/#download-and-install-docker) to download and install the Docker engine. Make sure docker compose is installed properly via 
+0. Follow this [instruction](https://docs.docker.com/get-started/#download-and-install-docker) to install the Docker engine. Confirm docker-compose is installed properly via 
 ```
 docker-compose --version
 ```
@@ -44,8 +43,11 @@ git clone https://github.com/nantu-io/ntcore.git
 docker-compose up
 ```
 3. Open this url [http://localhost:8000/dsp/console/workspaces](http://localhost:8000/dsp/console/workspaces) in your browser.
-4. Create your first workspace. `Workspace` helps you organize your codes, data, models and deployments for a Machine Learning project.
-5. Launch a development instance based on your preference, e.g., Jupyter Notebook.
+4. Create your first workspace to organize your models and deployments of a project.
+5. Install the ntcore client via
+```
+pip install ntcore
+```
 6. Below is an example based on `sklearn` to classify iris flower types. Execute the code to log the models you've trained and check out the metadata in the `Experiment` section.
 ```
 from sklearn import datasets
