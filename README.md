@@ -1,5 +1,7 @@
 # NTCore: Machine Learning Development Lifecycle Management Platform.
 
+![workflows-intro](https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg)
+
 ![Docker Pulls](https://img.shields.io/docker/pulls/ntcore/webserver)
 
 English|[简体中文](https://github.com/nantutech/ntcore/blob/main/README-zh-CN.md)
