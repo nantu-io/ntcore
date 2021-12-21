@@ -11,7 +11,7 @@
 ----
 ## Overview
 
-NTCore helps data scientists easily version, deploy and ML/AI models. 
+NTCore helps data scientists easily version, deploy and monitor ML/AI models. 
 
 * Auto-recording models from various ML frameworks, e.g, sklearn, tensorflow and keras etc., with metadata.
 * One-click deployment with Docker, Kubernetes and cloud providers, e.g, AWS, Azure, Alicloud etc.
