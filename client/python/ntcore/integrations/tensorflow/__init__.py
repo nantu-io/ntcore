@@ -15,6 +15,7 @@ import os
 
 settings = gorilla.Settings(allow_hit=True)
 FRAMEWORK = 'tensorflow'
+patched_methods = set()
 
 
 def _get_runtime_version():
@@ -32,10 +33,14 @@ def _patch_save_model(module, method_name):
         tar.close()
         experiment = client.get_experiment()
         experiment.set_model(open(model_filename, "rb").read())
-        experiment.emit()
-        os.remove(model_filename)
-    patch = gorilla.Patch(module, method_name, _save_model, settings=settings)
-    gorilla.apply(patch)
+        try:
+            experiment.emit()
+        finally:
+            os.remove(model_filename)
+    if method_name not in patched_methods:
+        patch = gorilla.Patch(module, method_name, _save_model, settings=settings)
+        gorilla.apply(patch)
+        patched_methods.add(method_name)
 
 
 def _patch_save(module):
@@ -50,10 +55,14 @@ def _patch_save(module):
         tar.close()
         experiment = client.get_experiment()
         experiment.set_model(open(model_filename, "rb").read())
-        experiment.emit()
-        os.remove(model_filename)
-    patch = gorilla.Patch(module, method_name, _save, settings=settings)
-    gorilla.apply(patch)
+        try:
+            experiment.emit()
+        finally:
+            os.remove(model_filename)
+    if method_name not in patched_methods:
+        patch = gorilla.Patch(module, method_name, _save, settings=settings)
+        gorilla.apply(patch)
+        patched_methods.add(method_name)
 
 
 def _patch_evaluate(module):
@@ -67,8 +76,10 @@ def _patch_evaluate(module):
         if return_dict:
             return evaluation
         return flatten_metrics_in_order(evaluation, self.metrics_names)
-    patch = gorilla.Patch(module, method_name, _evaluate, settings=settings)
-    gorilla.apply(patch)
+    if method_name not in patched_methods:
+        patch = gorilla.Patch(module, method_name, _evaluate, settings=settings)
+        gorilla.apply(patch)
+        patched_methods.add(method_name)
 
 
 def _patch_fit(module):
@@ -83,8 +94,10 @@ def _patch_fit(module):
         experiment.set_parameters(params_to_log)
         experiment.set_runtime(_get_runtime_version())
         experiment.set_framework(FRAMEWORK)
-    patch = gorilla.Patch(module, method_name, _fit, settings=settings)
-    gorilla.apply(patch)
+    if method_name not in patched_methods:
+        patch = gorilla.Patch(module, method_name, _fit, settings=settings)
+        gorilla.apply(patch)
+        patched_methods.add(method_name)
 
 
 def _patch_fit_generator(module):
@@ -99,8 +112,10 @@ def _patch_fit_generator(module):
         experiment.set_parameters(params_to_log)
         experiment.set_runtime(_get_runtime_version())
         experiment.set_framework(FRAMEWORK)
-    patch = gorilla.Patch(module, method_name, _fit, settings=settings)
-    gorilla.apply(patch)
+    if method_name not in patched_methods:
+        patch = gorilla.Patch(module, method_name, _fit, settings=settings)
+        gorilla.apply(patch)
+        patched_methods.add(method_name)
 
 
 def _patch_train(module):
@@ -125,8 +140,10 @@ def _patch_train(module):
         experiment.set_parameters(params)
         experiment.set_runtime(_get_runtime_version())
         experiment.set_framework(FRAMEWORK)
-    patch = gorilla.Patch(module, method_name, _train, settings=settings)
-    gorilla.apply(patch)
+    if method_name not in patched_methods:
+        patch = gorilla.Patch(module, method_name, _train, settings=settings)
+        gorilla.apply(patch)
+        patched_methods.add(method_name)
 
 
 def patch():
