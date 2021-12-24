@@ -1,9 +1,6 @@
 # NTCore: Make AI/ML Model Lifecycle Management Easy
 
-<p align="center">
-  <img src="https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg" />
-</p>
-
+![workflows-intro](https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg)
 ![Docker Image Version (latest by date)](https://img.shields.io/docker/v/ntcore/webserver)
 ![Docker Pulls](https://img.shields.io/docker/pulls/ntcore/webserver)
 ![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
