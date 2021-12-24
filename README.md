@@ -1,7 +1,8 @@
 # NTCore: Make AI/ML Model Lifecycle Management Easy
 
-![workflows-intro](https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg)
-
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg" />
+</p>
 ![Docker Image Version (latest by date)](https://img.shields.io/docker/v/ntcore/webserver)
 ![Docker Pulls](https://img.shields.io/docker/pulls/ntcore/webserver)
 ![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
@@ -11,14 +12,14 @@
 ----
 ## Overview
 
-NTCore helps data scientists easily version, deploy and monitor ML/AI models. 
+NTCore helps data scientists easily version, deploy and monitor AI/ML models. 
 
 * Auto-recording models from various ML frameworks, e.g, sklearn, tensorflow and keras etc., with metadata.
 * One-click deployment with Docker, Kubernetes and cloud providers, e.g, AWS, Azure, Alicloud etc.
 * Clean dashboards to monitor and report ML model performance metrics.
 
 ## Features
-* Easy-to-integrate python clients that automatically versions models from multiple ML/AI frameworks including sklearn, tensorflow and keras etc.
+* Easy-to-integrate python clients that automatically versions models from multiple AI/ML frameworks including sklearn, tensorflow and keras etc.
 * Model auditability and reproducibility through metadata from training, e.g., recall and precision.
 * Out of the box RESTful endpoints that're callable through curl, Postman and HTTP clients.
 * One-click deployment in production for models using Docker, Kubernetes and cloud providers, e.g, Amazon EKS, Microsoft AKS etc.
