@@ -1,4 +1,4 @@
-gao# NTCore：让AI/ML模型周期管理变得简单
+# NTCore：让AI/ML模型周期管理变得简单
 
 ![workflows-intro](https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg)
 
