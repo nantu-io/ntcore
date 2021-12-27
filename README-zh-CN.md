@@ -1,96 +1,108 @@
-# NTCore：机器学习开发与部署管理平台
+# NTCore：让 AI/ML 模型周期管理变得简单
 
+![workflows-intro](https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg)
+
+
+![Docker Image Version (latest by date)](https://img.shields.io/docker/v/ntcore/webserver)
 ![Docker Pulls](https://img.shields.io/docker/pulls/ntcore/webserver)
-
-[English](https://github.com/nantutech/ntcore/blob/main/README.md)|简体中文
-
-----
-
-NTCore 是一个用于管理机器学习模型开发生命周期的开源平台。它有助于本地开发环境设置、模型版本控制和元数据跟踪，以及生产中的模型部署和监控。
-使用 NTCore，用户可以：
-
-* 一分钟内设置开发环境，包括 Jupyter Notebook 和 Python IDE。
-* 对模型实验进行版本控制，并使它们可审计和可重现。
-* 一键将模型部署为 RESTful API。
-* 使用可管理的仪表板监控模型性能（仅在企业版中可用）。
-
-如果需要NTCore的企业版，请发送电子邮件至info@nantutech.com。 
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
+![PyPI](https://img.shields.io/pypi/v/ntcore)
+![GitHub last commit](https://img.shields.io/github/last-commit/nantu-io/ntcore) 
 
 ----
 
-## This document includes
+## 概述
 
-- [十分钟内部署您的第一个模型](#十分钟内部署您的第一个模型)
-- [用户文档](#文档)
-- [社区](#社区)
-- [执照](#执照)
+NTCore 可帮助数据科学家和机器学习工程师轻松地对 AI/ML 模型进行版本控制、部署和监控。
+
+* 来自各种机器学习框架的自动记录模型，例如 sklearn、tensorflow 和 keras 等，带有元数据。
+* 与 Docker、Kubernetes 和云提供商（例如 AWS、Azure、Alicloud 等）一键部署。
+* 仪表盘监控和报告模型性能与指标。
+
+
+## 特征
+* 易于集成的 Python 客户端，可自动对来自多个 AI/ML 框架（包括 sklearn、tensorflow 和 keras 等）的模型进行版本控制。
+* 通过来自训练的元数据（例如召回率和精确度）对可审计性和再现性进行建模。
+* 可通过 curl、Postman 和 HTTP 客户端调用的开箱即用 RESTful 端点。
+* 使用 Docker、Kubernetes 和云提供商（例如 Amazon EKS、Microsoft AKS 等）的模型在生产中一键部署。
+* 具有 ML 模型的易于扩展且高度可用的预测服务，以支持最先进的 Web 和移动应用程序架构。
+* 每个模型一个端点，为多个端点提供服务。
+* 与 Prometheus 集成的模型性能监控（路线图）。
+* 清理 UI 仪表板以管理 ML 模型版本、部署和性能指标（路线图）。
+* 高级 API，用于通过与工作流管理器（例如 Apache Airflow）的集成来自动化 ML 工作流。
+
+
+加入我们的[Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4)社区.
+
+[English](https://github.com/nantu-io/ntcore/blob/main/README.md) | 简体中文
 
 ----
+## What’s In This Document
+- [快速开始](#quickstart)
+- [文档](#documentation)
+- [为什么选择NTCore](#why-ntcore)
+- [社区](#community)
+- [执照](#license)
 
-## 十分钟内部署您的第一个模型
+## 快速开始
+0. 使用 [docker compose](https://docs.docker.com/compose/install/)安装 docker 引擎。
+1. 克隆这个存储库并通过 docker compose 启动 ntcore
+    ``` 
+    docker-compose -f docker-compose.yml up
+    ```
+2. 安装ntcore客户端
+    ```
+    pip install ntcore
+    ```
+3. 到[http://localhost:8000/dsp/console/workspaces](http://localhost:8000/dsp/console/workspaces) 并创建您的第一个工作区。  
+4. 模型版本控制。可以从[这里](https://github.com/nantu-io/ntcore/tree/promotion/client/examples)了解更多。
+    ```python
+    from sklearn import datasets
+    # Config the ntcore client
+    from ntcore import client
+    client.set_endpoint('http://localhost:8000')
+    client.autolog('{workspace_id}')
 
-0. 按照此[说明](https://docs.docker.com/get-started/#download-and-install-docker) 下载并安装Docker，并确保其正确安装。
-```
-docker-compose --version
-```
-1. 复制这个仓库
-``` 
-git clone https://github.com/nantu-io/ntcore.git
-```
-2. 在ntcore路径，启动ntcore服务器
-```
-docker-compose up
-```
-3. 在浏览器中打开[http://localhost:8000/dsp/console/workspaces](http://localhost:8000/dsp/console/workspaces)
-4. 创建您的第一个workspace. `Workspace` 可帮助您组织机器学习项目的代码、数据、模型和部署。  
-5. 根据您的偏好启动开发实例，例如 Jupyter Notebook。
-6. 下面是一个基于sklearn对鸢尾花类型进行分类的例子。执行代码以记录您训练过的模型并查看`Experiment`部分中的元数据。
-```
-# Config the ntcore client
-from ntcore import client
-client.set_endpoint('http://localhost:8000')
-client.autolog('C8W60XEPH7DA3AAH3S41PJZ3OV')
+    # Prepare the training dataset
+    from sklearn import datasets
+    iris = datasets.load_iris()
 
-# Prepare the training dataset
-from sklearn import datasets
-iris = datasets.load_iris()
+    # Init the model
+    from sklearn.ensemble import RandomForestClassifier
+    clf = RandomForestClassifier(max_depth=2, random_state=0)
 
-# Init the model
-from sklearn.ensemble import RandomForestClassifier
-clf = RandomForestClassifier(max_depth=2, random_state=0)
+    # Start an experiment run
+    with client.start_run():
+        clf.fit(iris.data, iris.target_names[iris.target])
+    ```
+5. 查看模型版本并注册一个用于预生产部署。 
+    <kbd>
+        <img width="1674" alt="Screen Shot 2021-12-20 at 10 08 08 AM" src="https://user-images.githubusercontent.com/42594415/146832457-addbbc54-c18a-4024-8cea-ca935c67ce5e.png">
+    </kbd>
+<br /> 
 
-# Start an experiment run
-with client.start_run():
-    clf.fit(iris.data, iris.target_names[iris.target])
-```
-7. 将经过训练的模型部署为 RESTful API。在`Experiment`部分，选择版本并单击`Deploy`按钮以创建您的第一个预测endpoint。
-8. 调用您的 RESTful API。例如，通过对鸢尾花类型进行分类。
-```
-curl -H "Content-Type: application/json" -X POST --data '{"data": [[5.1,3.5,1.4,0.2]]}' http://localhost:8000/s/{workspace_id}/predict
-```
-这里的`workspace_id`是NTCore根据你的工作区名称分配的。您将看到 API 调用的结果，如下所示。  
-```
-{"prediction":["setosa"]}
-```
-祝贺您首次部署模型！
-
----
+6. 部署您注册的模型版本并在部署成功后调用 RESTful 端点。
+    ```bash
+    curl -H "Content-Type: application/json" -X POST --data '{"data": [[5.1,3.5,1.4,0.2]]}' http://localhost:8000/s/{workspace_id}/predict
+    ```
 
 ## 文档
-请查看我们的[用户文档](https://nantu-io.github.io/ntcore-doc/#/zh-cn/)
+NTCore 文档: https://nantu-io.github.io/ntcore-doc.
 
-----
+- [快速开始](https://nantu-io.github.io/ntcore-doc/#/quick_start)
+- [模型部署]](https://nantu-io.github.io/ntcore-doc/#/production)
+- [例子](https://github.com/nantu-io/ntcore/tree/promotion/client/examples)
+
+## 为什么选择NTCore
+假设您是一名数据科学家，为 10 个不同的场景优化 AI/ML 模型，每个场景都需要 100 次迭代。您如何保留这 1000 个实验的输入/输出，比较它们以找到最佳模型并重现它们？这并不容易。但这并不是你噩梦的结束。如果要将“最佳”模型部署为预测端点，则必须重构代码以创建 API，然后 DevOps 团队才能部署。这个过程通常需要几天时间。更重要的是，当这个过程每小时、每天甚至每月重复一次时，疼痛会变得更糟。
+NTCore 是一个旨在减轻痛苦的平台。它提供了 UI 工具和 API，以帮助数据科学家以最少的与 DevOps 团队的互动，将他们训练有素的模型持续无缝地传送到生产环境。它还提供监控功能，以便数据科学家可以快速访问其模型的最新性能指标。
+
 
 ## 社区
-
 有关入门指南、教程和 API 参考，请查看我们的文档。
 
 要报告错误、提交文档问题或提交功能请求，请打开 GitHub 问题。
 
-----
 
 ## 执照
-
-NTCore 在 Apache 2.0 下获得许可。
-
-----
+NTCore在[Apache 2.0](https://github.com/nantu-io/ntcore/blob/main/LICENSE)下获得许可.
