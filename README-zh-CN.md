@@ -90,7 +90,7 @@ NTCore 可帮助数据科学家和机器学习工程师轻松地对 AI/ML 模型
 NTCore 文档: https://nantu-io.github.io/ntcore-doc.
 
 - [快速开始](https://nantu-io.github.io/ntcore-doc/#/quick_start)
-- [模型部署]](https://nantu-io.github.io/ntcore-doc/#/production)
+- [模型部署](https://nantu-io.github.io/ntcore-doc/#/production)
 - [例子](https://github.com/nantu-io/ntcore/tree/promotion/client/examples)
 
 ## 为什么选择NTCore
