@@ -90,7 +90,7 @@ NTCore documentation: https://nantu-io.github.io/ntcore-doc.
 - [Examples](https://github.com/nantu-io/ntcore/tree/promotion/client/examples)
 
 ## Why NTCore
-Imagine you are a data scientist optimizing ML/AI models for 10 different scenarios, each of which requires 100 iterations. How can you retain inputs/outputs of these 1000 experiments, compare them to find the best models and reproduce them? I hear you, it's not easy. But that's not the end of your nightmare. If you want to deploy the "best" models as prediction endpoints, you have to refactor your codes to create APIs before DevOps team can deploy. This process usually takes days. More importantly, the pain becomes worse when the processes are repeated hourly, daily or even monthly.
+Imagine you are a data scientist optimizing AI/ML models for 10 different scenarios, each of which requires 100 iterations. How can you retain inputs/outputs of these 1000 experiments, compare them to find the best models and reproduce them? I hear you, it's not easy. But that's not the end of your nightmare. If you want to deploy the "best" models as prediction endpoints, you have to refactor your codes to create APIs before DevOps team can deploy. This process usually takes days. More importantly, the pain becomes worse when the processes are repeated hourly, daily or even monthly.
 
 NTCore is a platform built to relieve the pain. It provides the UI tools as well as the APIs to help data scientists continuously and seamlessly ship their trained models to production environments with minimal interactions with DevOps teams. It also provides the monitoring functionality so that data scientists can quickly access the latest performance metrics of their models.
 
