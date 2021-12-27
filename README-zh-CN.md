@@ -1,4 +1,4 @@
-# NTCore：让AI/ML模型周期管理变得简单
+gao# NTCore：让AI/ML模型周期管理变得简单
 
 ![workflows-intro](https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg)
 
@@ -27,9 +27,9 @@ NTCore 可帮助数据科学家和机器学习工程师轻松地对 AI/ML 模型
 * 使用 Docker、Kubernetes 和云提供商（例如 Amazon EKS、Microsoft AKS 等）的模型在生产中一键部署。
 * 具有 ML 模型的易于扩展且高度可用的预测服务，以支持最先进的 Web 和移动应用程序架构。
 * 每个模型一个端点，为多个端点提供服务。
-* 与 Prometheus 集成的模型性能监控（路线图）。
-* 清理 UI 仪表板以管理 ML 模型版本、部署和性能指标（路线图）。
-* 高级 API，用于通过与工作流管理器（例如 Apache Airflow）的集成来自动化 ML 工作流。
+* 与 Prometheus 集成的模型性能监控（持续开发中）。
+* UI仪表板以管理 ML 模型版本、部署和性能指标（持续开发中）。
+* API，用于通过与工作流管理器（例如 Apache Airflow）的集成来自动化 ML 工作流。
 
 
 加入我们的[Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4)社区.
