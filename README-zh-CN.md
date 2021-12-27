@@ -37,7 +37,7 @@ NTCore 可帮助数据科学家和机器学习工程师轻松地对 AI/ML 模型
 [English](https://github.com/nantu-io/ntcore/blob/main/README.md) | 简体中文
 
 ----
-## What’s In This Document
+## 目录
 - [快速开始](#quickstart)
 - [文档](#documentation)
 - [为什么选择NTCore](#why-ntcore)
