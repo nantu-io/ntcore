@@ -15,7 +15,7 @@
 
 NTCore 可帮助数据科学家和机器学习工程师轻松地对 AI/ML 模型进行版本控制、部署和监控。
 
-* 来自各种机器学习框架的自动记录模型，例如 sklearn、tensorflow 和 keras 等，带有元数据。
+* 自动记录各种机器学习框架的模型实验元数据，例如 sklearn、tensorflow 和 keras 等。
 * 与 Docker、Kubernetes 和云提供商（例如 AWS、Azure、Alicloud 等）一键部署。
 * 仪表盘实时监控和报告模型各项参数与性能。
 
