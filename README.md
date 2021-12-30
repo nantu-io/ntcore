@@ -8,6 +8,8 @@
 ![PyPI](https://img.shields.io/pypi/v/ntcore)
 ![GitHub last commit](https://img.shields.io/github/last-commit/nantu-io/ntcore)
 
+English | [简体中文](https://github.com/nantutech/ntcore/blob/main/README-zh-CN.md)
+
 ----
 ## Overview
 
@@ -29,8 +31,6 @@ NTCore helps data scientists and machine learning engineers easily version, depl
 * High-level APIs to automate ML workflows with integration to workflow managers, e.g, Apache Airflow.
 
 Join our community on [Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4).
-
-English | [简体中文](https://github.com/nantutech/ntcore/blob/main/README-zh-CN.md)
 
 ----
 ## What’s In This Document
