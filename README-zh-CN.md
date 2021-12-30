@@ -9,6 +9,8 @@
 ![PyPI](https://img.shields.io/pypi/v/ntcore)
 ![GitHub last commit](https://img.shields.io/github/last-commit/nantu-io/ntcore) 
 
+[English](https://github.com/nantu-io/ntcore/blob/main/README.md) | 简体中文
+
 ----
 
 ## 概述
@@ -33,8 +35,6 @@ NTCore 可帮助数据科学家和机器学习工程师轻松地对 AI/ML 模型
 
 
 加入我们的[Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4)社区.
-
-[English](https://github.com/nantu-io/ntcore/blob/main/README.md) | 简体中文
 
 ----
 ## 目录
