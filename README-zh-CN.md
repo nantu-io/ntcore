@@ -15,23 +15,22 @@
 
 ## 概述
 
-NTCore 可帮助数据科学家和机器学习工程师轻松地对 AI/ML 模型进行版本控制、部署和监控。
+NTCore可帮助数据科学家和机器学习工程师轻松地对AI/ML模型进行版本控制、部署和监控。
 
 * 自动记录各种机器学习框架的模型实验元数据，例如 sklearn、tensorflow 和 keras 等。
-* 与 Docker、Kubernetes 和云提供商（例如 AWS、Azure、Alicloud 等）一键部署。
-* 仪表盘实时监控和报告模型各项参数与性能。
+* 支持Docker、Kubernetes并一键部署到公有云（例如 AWS、Azure、Alicloud 等）或私有云（On-premises）。
+* 实时仪表盘，监控和报告模型各项参数与运行情况。
 
 
 ## 特征
-* 易于集成的 Python 客户端，可自动对来自多个 AI/ML 框架（包括 sklearn、tensorflow 和 keras 等）的模型进行版本控制。
-* 通过来自训练的元数据（例如召回率和精确度）对可审计性和再现性进行建模。
-* 可通过 curl、Postman 和 HTTP 客户端调用的开箱即用 RESTful 端点。
-* 使用 Docker、Kubernetes 和云提供商（例如 Amazon EKS、Microsoft AKS 等）的模型在生产中一键部署。
-* 具有 ML 模型的易于扩展且高度可用的预测服务，以支持最先进的 Web 和移动应用程序架构。
+* 自动对主流AI/ML模型框架（包括 sklearn、tensorflow 和 keras 等）进行版本控制。
+* 记录模型训练元数据（例如召回率和精确度），易于模型审计与重复利用。
+* 提供通过 curl、Postman 和 HTTP 客户端调用的 RESTful 端点。
+* 支持 Docker、Kubernetes ，一键部署到各大云提供商（例如 Amazon EKS、Microsoft AKS 等）或私有云（On-premises）。
 * 每个模型一个端点，为多个端点提供服务。
 * 与 Prometheus 集成的模型性能监控（持续开发中）。
-* UI仪表板以管理 ML 模型版本、部署和性能指标（持续开发中）。
-* API，用于通过与工作流管理器（例如 Apache Airflow）的集成来自动化 ML 工作流。
+* UI仪表板实时监控 ML 模型版本、部署和性能指标（持续开发中）。
+* API与工作流管理器（例如 Apache Airflow）无缝连接，自动化ML工作流（持续开发中）。
 
 
 加入我们的[Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4)社区.
