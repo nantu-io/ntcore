@@ -1,23 +1,15 @@
-from mlflow.sklearn import SERIALIZATION_FORMAT_CLOUDPICKLE
-from mlflow.sklearn import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.sklearn import ModelSignature
-from mlflow.sklearn import ModelInputExample
 from mlflow.sklearn import utils
 from mlflow.sklearn.utils import _is_parameter_search_estimator
 from ntcore import client
+from ..utils import get_runtime_version
 import mlflow.sklearn as sklearn
 import numpy as np
 import gorilla
-import platform
 import pickle
 
 settings = gorilla.Settings(allow_hit=True)
 FRAMEWORK = "sklearn"
 patched_methods = set()
-
-
-def _get_runtime_version():
-    return "python-" + ".".join(platform.python_version().split('.')[0:2])
 
 
 def _get_estimator_params(estimator):
@@ -35,7 +27,7 @@ def _patch_log_params(module):
         params = _get_estimator_params(estimator)
         experiment = client.get_experiment()
         experiment.set_parameters({**info_tags, **params})
-        experiment.set_runtime(_get_runtime_version())
+        experiment.set_runtime(get_runtime_version())
         experiment.set_framework(FRAMEWORK)
         return info_tags
     if method_name not in patched_methods:

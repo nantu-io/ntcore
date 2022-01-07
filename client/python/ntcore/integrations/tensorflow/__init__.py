@@ -1,14 +1,12 @@
-from mlflow.models.signature import ModelSignature
-from mlflow.models.utils import ModelInputExample
 from mlflow.utils.autologging_utils import get_mlflow_run_params_for_fn_args
 from tensorflow.python.keras.engine.training import flatten_metrics_in_order
 from tensorflow.keras.models import Model
 from tensorflow import estimator
+from ..utils import get_runtime_version
 import tensorflow
 from ntcore import client
 import gorilla
 import tarfile
-import platform
 from packaging import version
 import os
 
@@ -16,10 +14,6 @@ import os
 settings = gorilla.Settings(allow_hit=True)
 FRAMEWORK = 'tensorflow'
 patched_methods = set()
-
-
-def _get_runtime_version():
-    return "python-" + ".".join(platform.python_version().split('.')[0:2])
 
 
 def _patch_save_model(module, method_name):
@@ -92,7 +86,7 @@ def _patch_fit(module):
         params_to_log = get_mlflow_run_params_for_fn_args(original, args, kwargs, unlogged_params)
         experiment = client.get_experiment()
         experiment.set_parameters(params_to_log)
-        experiment.set_runtime(_get_runtime_version())
+        experiment.set_runtime(get_runtime_version())
         experiment.set_framework(FRAMEWORK)
     if method_name not in patched_methods:
         patch = gorilla.Patch(module, method_name, _fit, settings=settings)
@@ -110,7 +104,7 @@ def _patch_fit_generator(module):
         params_to_log = get_mlflow_run_params_for_fn_args(original, args, kwargs, unlogged_params)
         experiment = client.get_experiment()
         experiment.set_parameters(params_to_log)
-        experiment.set_runtime(_get_runtime_version())
+        experiment.set_runtime(get_runtime_version())
         experiment.set_framework(FRAMEWORK)
     if method_name not in patched_methods:
         patch = gorilla.Patch(module, method_name, _fit, settings=settings)
@@ -138,7 +132,7 @@ def _patch_train(module):
 
         experiment = client.get_experiment()
         experiment.set_parameters(params)
-        experiment.set_runtime(_get_runtime_version())
+        experiment.set_runtime(get_runtime_version())
         experiment.set_framework(FRAMEWORK)
     if method_name not in patched_methods:
         patch = gorilla.Patch(module, method_name, _train, settings=settings)
