@@ -38,8 +38,8 @@ class Experiments extends Component {
             selectedFramework: null,
             rowsSelected: [],
             model: null,
-            // rows: [{id: 1, version: '1', createdBy: 'ntcore', createdAt: '2021-01-01 10:30:00', runtime: 'python-3.8', framework: 'sklearn', metrics: {"auc":0.9}, parameters: {"penalty": "l1"}, description: 'Logistic Regression'}]
-            rows: []
+            rows: [{id: 1, version: '1', createdBy: 'ntcore', createdAt: '2021-01-01 10:30:00', runtime: 'python-3.8', framework: 'sklearn', metrics: {"auc":0.9}, parameters: {"penalty": "l1"}, description: 'Logistic Regression'}]
+            // rows: []
         }
         this._createRegisterButton = this._createRegisterButton.bind(this);
         this._fetchExperiments = this._fetchExperiments.bind(this);
@@ -102,8 +102,9 @@ class Experiments extends Component {
               label: "Actions", 
               options: { customBodyRenderLite: this._createRegisterButton, filter: false, sort: false, viewColumns: false }},
             { name: 'id', label: 'Version' },
-            { name: 'createdBy', label: 'Created User' },
-            { name: 'createdAt', label: 'Created Date', options: { filter: false, sort: true } },
+            { name: 'owner', label: 'Owner' },
+            { name: 'date', label: 'Date', options: { filter: false, sort: true } },
+            { name: 'time', label: 'Time', options: { filter: false, sort: true } },
             { name: 'runtime', label: 'Runtime' },
             { name: 'framework', label: 'Framework' },
         ];
@@ -161,13 +162,15 @@ class Experiments extends Component {
         const { rows, rowsSelected } = this.state;
         const extendedColumns = this._extendColumns();
         const expandedRows = rows.map(row => {
+            const datetime = row.createdAt.split(" ");
             return {
                 id: row.id,
                 runtime: row.runtime, 
                 framework: row.framework,
                 description: (row.description) ? row.description : "", 
-                createdBy: row.createdBy, 
-                createdAt: row.createdAt,
+                owner: row.createdBy, 
+                date: datetime[0],
+                time: datetime[1],
                 ...row.parameters,
                 ...row.metrics
             }
