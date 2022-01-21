@@ -2,10 +2,7 @@ import requests
 import base64
 import json
 import mlflow
-import uuid
 
-from requests.api import request
-from requests.models import RequestEncodingMixin
 NTCORE_DEFAULT_BASE_ENDPOINT = 'http://localhost:8000'
 
 class Experiment(object):
@@ -176,8 +173,9 @@ class Client(object):
         """
         register experiment
         """
+        payload = {"version": version}
         try:
-            requests.post(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry/{version}")
+            requests.post(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry",data=payload)
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
@@ -185,19 +183,10 @@ class Client(object):
         """
         get registry
         """
-        try: 
+        try:
             requests.get(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry")
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
-
-    def deploy_experiment(self, experiment:Experiment, workspace_id, version):
-        """
-        deploy experiment
-        """
-        runtime = experiment.get_runtime()
-        framework = experiment.get_framework()
-        deployment_id = uuid.uuid4()
-        type = "FLASK_" + framework.upper()
     
     def unregister_experiment(self,workspace_id):
         """
@@ -207,6 +196,7 @@ class Client(object):
             requests.delete(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry")
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
+    
     def delete_experiment(self, workspace_id, version):
         """
         delete an experiment
@@ -226,6 +216,7 @@ class Client(object):
             requests.post(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/model/{version}/deploy")
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
+    
     def download_model(self, workspace_id, version):
         """
         download the model
@@ -235,14 +226,16 @@ class Client(object):
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
-    def create_workspace(self, id):
+    def create_workspace(self):
         """
         create a workspace 
         """
+        payload={"type":"API", "name":"test"}
         try:
-            requests.post(f"{self._endpoint}/dsp/api/v1/workspace")
+            requests.post(f"{self._endpoint}/dsp/api/v1/workspace",data=payload)
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
+    
     def get_workspace(self, id):
         """
         get a workspace
@@ -251,6 +244,7 @@ class Client(object):
             requests.get(f"{self._endpoint}/dsp/api/v1/workspace/{id}")
         except requests.exceptions.ConnectionError as e:
             raise  RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
+    
     def delete_workspace(self, id):
         """
         delete a workspace based on id
@@ -259,6 +253,7 @@ class Client(object):
             requests.delete(f"{self._endpoint}/dsp/api/v1/workspace/{id}")
         except requests.exceptions.ConnectionError as e:
             raise  RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
+    
     def list_workspaces(self):
         """
         list all workspaces
@@ -267,6 +262,7 @@ class Client(object):
             requests.get(f"{self._endpoint}/dsp/api/v1/workspaces")
         except requests.exceptions.ConnectionError as e:
             raise  RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
+    
     def list_active_deployments(self):
         """
         list all active deployments
