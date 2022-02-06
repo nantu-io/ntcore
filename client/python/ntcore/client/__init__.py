@@ -19,9 +19,16 @@ class Experiment(object):
     emit(experiment)
         Sends the experiment metadata and serialized object to NTCore.
     """
-    def __init__(self, client) -> None:
+    def __init__(self, client, workspace_id=None) -> None:
         super().__init__()
         self._client = client
+        self._workspace_id = workspace_id
+
+    def set_workspace_id(self, workspace_id):
+        self._workspace_id = workspace_id
+
+    def get_workspace_id(self):
+        return self._workspace_id
 
     def get_runtime(self):
         return self._runtime
@@ -91,6 +98,7 @@ class Client(object):
             The endpoint of NTCore server.
         """
         self._endpoint = NTCORE_DEFAULT_BASE_ENDPOINT if endpoint is None else endpoint.strip("/")
+        self._workspace_id = None
 
     def autolog(self, workspace_id):
         """
@@ -101,15 +109,29 @@ class Client(object):
         workspace_id : str
             The workspace id to group the experiments.
         """
-        from ntcore.integrations import sklearn
-        from ntcore.integrations import tensorflow
+        self._workspace_id = workspace_id
+        self._try_patch(self._patch_sklearn)
+        self._try_patch(self._patch_tensorflow)
+        self._try_patch(self._patch_torch)
 
-        # Patch sklearn
+    def _patch_sklearn(self):
+        from ntcore.integrations import sklearn
         sklearn.patch()
         mlflow.sklearn.autolog()
-        # Patch tensorflow
+
+    def _patch_tensorflow(self):
+        from ntcore.integrations import tensorflow
         tensorflow.patch()
-        self._workspace_id = workspace_id
+
+    def _patch_torch(self):
+        from ntcore.integrations import torch
+        torch.patch()
+
+    def _try_patch(self, func):
+        try:
+            func()
+        except ImportError:
+            pass
 
     def get_workspace_id(self):
         """
@@ -139,8 +161,9 @@ class Client(object):
         RuntimeError
             If NTCore server is not available at the given endpoint.
         """
-        if self._workspace_id is None:
-            raise ValueError('Experiment wasn\'t logged since workspace id wasn\'t provided.')
+        workspace_id = self._workspace_id if experiment.get_workspace_id() is None else experiment.get_workspace_id()
+        if workspace_id is None:
+            raise ValueError('Experiment is not recorded since workspace id is not provided.')
 
         payload = {
             "runtime": experiment.get_runtime(),
@@ -150,17 +173,17 @@ class Client(object):
             "model": base64.b64encode(experiment.get_model())
         }
         try:
-            r = requests.post(self._get_experiment_endpoint(), data=payload).json()
+            r = requests.post(self._get_experiment_endpoint(workspace_id), data=payload).json()
             print('[INFO] Successfully logged model version {} of workspace {}.'.format(r['version'], r['workspaceId']))
         except requests.exceptions.ConnectionError as e:
-            print('[WARN] Experiment wasn\'t logged since ntcore wasn\'t available at {0}.'.format(self._endpoint))
+            print('[WARN] Experiment is not logged since ntcore is not available at {0}.'.format(self._endpoint))
 
-    def _get_experiment_endpoint(self):
+    def _get_experiment_endpoint(self, workspace_id):
         """
         Returns the NTCore endpoint for sending experiment data.
         """
         return '{base_endpoint}/dsp/api/v1/workspace/{workspace_id}/experiment'.format(
-            base_endpoint=self._endpoint, workspace_id=self._workspace_id)
+            base_endpoint=self._endpoint, workspace_id=workspace_id)
 
     def get_experiment(self):
         """
