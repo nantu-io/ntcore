@@ -16,19 +16,19 @@
     PYTORCH = "pytorch",
 }
 /**
- * Runtime mapping.
+ * Framework mapping.
  */
  export const FrameworkMapping = {
     /**
-     * Python 3.7
+     * Sklearn.
      */
     "sklearn": Framework.SKLEARN,
     /**
-     * Python 3.8
+     * Tensorflow.
      */
     "tensorflow": Framework.TENSORFLOW,
     /**
-     * Python 3.9
+     * Pytorch.
      */
     "pytorch": Framework.PYTORCH,
 }

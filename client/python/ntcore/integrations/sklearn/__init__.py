@@ -1,21 +1,15 @@
-from mlflow.sklearn import SERIALIZATION_FORMAT_CLOUDPICKLE
-from mlflow.sklearn import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.sklearn import ModelSignature
-from mlflow.sklearn import ModelInputExample
 from mlflow.sklearn import utils
 from mlflow.sklearn.utils import _is_parameter_search_estimator
 from ntcore import client
+from ..utils import get_runtime_version
 import mlflow.sklearn as sklearn
 import numpy as np
 import gorilla
-import platform
 import pickle
 
 settings = gorilla.Settings(allow_hit=True)
-
-
-def _get_runtime_version():
-    return "python-" + ".".join(platform.python_version().split('.')[0:2])
+FRAMEWORK = "sklearn"
+patched_methods = set()
 
 
 def _get_estimator_params(estimator):
@@ -33,11 +27,13 @@ def _patch_log_params(module):
         params = _get_estimator_params(estimator)
         experiment = client.get_experiment()
         experiment.set_parameters({**info_tags, **params})
-        experiment.set_runtime(_get_runtime_version())
-        experiment.set_framework('sklearn')
+        experiment.set_runtime(get_runtime_version())
+        experiment.set_framework(FRAMEWORK)
         return info_tags
-    patch = gorilla.Patch(module, method_name, _log_params, settings=settings)
-    gorilla.apply(patch)
+    if method_name not in patched_methods:
+        patch = gorilla.Patch(module, method_name, _log_params, settings=settings)
+        gorilla.apply(patch)
+        patched_methods.add(method_name)
 
 
 def _patch_log_metrics(module):
@@ -50,43 +46,38 @@ def _patch_log_metrics(module):
         experiment = client.get_experiment()
         experiment.set_metrics(rounded_metrics)
         return metrics
-    patch = gorilla.Patch(module, method_name, _log_metrics, settings=settings)
-    gorilla.apply(patch)
+    if method_name not in patched_methods:
+        patch = gorilla.Patch(module, method_name, _log_metrics, settings=settings)
+        gorilla.apply(patch)
+        patched_methods.add(method_name)
 
 
 def _patch_log_model(module):
     method_name = 'log_model'
     @gorilla.patch(module)
-    def _log_model(sk_model, 
-            artifact_path,
-            conda_env=None,
-            serialization_format=SERIALIZATION_FORMAT_CLOUDPICKLE,
-            registered_model_name=None,
-            signature: ModelSignature = None,
-            input_example: ModelInputExample = None,
-            await_registration_for=DEFAULT_AWAIT_MAX_SLEEP_SECONDS,
-            pip_requirements=None,
-            extra_pip_requirements=None):
+    def _log_model(*args, **kwargs):
         original = gorilla.get_original_attribute(module, method_name)
-        model = original(
-            sk_model, 
-            artifact_path, 
-            conda_env, 
-            serialization_format, 
-            registered_model_name,
-            signature,
-            input_example,
-            await_registration_for,
-            pip_requirements,
-            extra_pip_requirements)
+        model = original(*args, **kwargs)
         experiment = client.get_experiment()
-        experiment.set_model(pickle.dumps(sk_model))
+        experiment.set_model(pickle.dumps(args[0]))
         experiment.emit()
         return model
-    patch = gorilla.Patch(module, method_name, _log_model, settings=settings)
-    gorilla.apply(patch)
+    if method_name not in patched_methods:
+        patch = gorilla.Patch(module, method_name, _log_model, settings=settings)
+        gorilla.apply(patch)
+        patched_methods.add(method_name)
 
 
+<<<<<<< HEAD
 _patch_log_params(utils)
 _patch_log_metrics(utils)
 _patch_log_model(sklearn)
+=======
+def patch():
+    """
+    Patch mlflow sklearn methods to intercept training params and metrics
+    """
+    _patch_log_params(utils)
+    _patch_log_metrics(utils)
+    _patch_log_model(sklearn)
+>>>>>>> main

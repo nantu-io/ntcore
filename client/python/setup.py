@@ -32,7 +32,8 @@ setup(
         "numpy",
         "pandas",
         "scikit-learn",
-        "mlflow<=1.21.0"
+        "mlflow<=1.21.0",
+        "gorilla"
     ],
     entry_points={
         "console_scripts": [

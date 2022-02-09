@@ -1,0 +1,1 @@
+FROM ntcore/tensorflow-serving

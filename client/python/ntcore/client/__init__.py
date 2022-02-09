@@ -101,9 +101,14 @@ class Client(object):
         workspace_id : str
             The workspace id to group the experiments.
         """
-        import ntcore.integrations.sklearn
+        from ntcore.integrations import sklearn
+        from ntcore.integrations import tensorflow
 
+        # Patch sklearn
+        sklearn.patch()
         mlflow.sklearn.autolog()
+        # Patch tensorflow
+        tensorflow.patch()
         self._workspace_id = workspace_id
 
     def get_workspace_id(self):
@@ -145,9 +150,10 @@ class Client(object):
             "model": base64.b64encode(experiment.get_model())
         }
         try:
-            requests.post(self._get_experiment_endpoint(), data=payload)
+            r = requests.post(self._get_experiment_endpoint(), data=payload).json()
+            print('[INFO] Successfully logged model version {} of workspace {}.'.format(r['version'], r['workspaceId']))
         except requests.exceptions.ConnectionError as e:
-            raise RuntimeError('Experiment wasn\'t logged since ntcore wasn\'t available at {0}.'.format(self._endpoint))
+            print('[WARN] Experiment wasn\'t logged since ntcore wasn\'t available at {0}.'.format(self._endpoint))
 
     def _get_experiment_endpoint(self):
         """
