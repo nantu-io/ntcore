@@ -169,6 +169,7 @@ class Client(object):
         if Client.experiment is None:
             Client.experiment = Experiment(self)
         return Client.experiment
+        
     def start_run(self):
         """
         Start the experiment run backed by mlflow ActiveRun.
