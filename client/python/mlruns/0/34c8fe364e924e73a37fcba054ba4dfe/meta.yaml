@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/jxt/Projects/ntcore/client/python/mlruns/0/34c8fe364e924e73a37fcba054ba4dfe/artifacts
+end_time: 1644376886048
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: 34c8fe364e924e73a37fcba054ba4dfe
+run_uuid: 34c8fe364e924e73a37fcba054ba4dfe
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1644376884070
+status: 3
+tags: []
+user_id: jxt
