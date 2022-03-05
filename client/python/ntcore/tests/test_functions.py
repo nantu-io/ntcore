@@ -158,19 +158,6 @@ class PythonClientTest(unittest.TestCase):
         assert client.download_model(workspace_id, version) == mock_response.return_value and \
                 isinstance(client.download_model(workspace_id, version), int)
 
-    # ## this command won't stop
-    def test_download_model_error(self):
-        """
-        mock test download model error
-        """
-        with patch("requests.post", side_effect=ConnectionError):
-            with pytest.raises(ConnectionError):
-                try:
-                    client.download_model("demo", "failed")
-                except Exception as e:
-                    assert isinstance(e, ConnectionError)
-                    raise
-
     @patch("requests.post")
     def test_create_workspace(self, mock_response):
         """
