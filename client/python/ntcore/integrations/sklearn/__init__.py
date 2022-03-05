@@ -9,7 +9,6 @@ import pickle
 
 settings = gorilla.Settings(allow_hit=True)
 FRAMEWORK = "sklearn"
-patched_methods = set()
 
 
 def _get_estimator_params(estimator):
@@ -30,10 +29,8 @@ def _patch_log_params(module):
         experiment.set_runtime(get_runtime_version())
         experiment.set_framework(FRAMEWORK)
         return info_tags
-    if method_name not in patched_methods:
-        patch = gorilla.Patch(module, method_name, _log_params, settings=settings)
-        gorilla.apply(patch)
-        patched_methods.add(method_name)
+    patch = gorilla.Patch(module, method_name, _log_params, settings=settings)
+    gorilla.apply(patch)
 
 
 def _patch_log_metrics(module):
@@ -46,10 +43,8 @@ def _patch_log_metrics(module):
         experiment = client.get_experiment()
         experiment.set_metrics(rounded_metrics)
         return metrics
-    if method_name not in patched_methods:
-        patch = gorilla.Patch(module, method_name, _log_metrics, settings=settings)
-        gorilla.apply(patch)
-        patched_methods.add(method_name)
+    patch = gorilla.Patch(module, method_name, _log_metrics, settings=settings)
+    gorilla.apply(patch)
 
 
 def _patch_log_model(module):
@@ -62,10 +57,8 @@ def _patch_log_model(module):
         experiment.set_model(pickle.dumps(args[0]))
         experiment.emit()
         return model
-    if method_name not in patched_methods:
-        patch = gorilla.Patch(module, method_name, _log_model, settings=settings)
-        gorilla.apply(patch)
-        patched_methods.add(method_name)
+    patch = gorilla.Patch(module, method_name, _log_model, settings=settings)
+    gorilla.apply(patch)
 
 
 def patch():
@@ -75,4 +68,3 @@ def patch():
     _patch_log_params(utils)
     _patch_log_metrics(utils)
     _patch_log_model(sklearn)
-
