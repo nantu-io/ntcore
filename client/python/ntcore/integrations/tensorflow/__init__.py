@@ -1,3 +1,5 @@
+from mlflow.models.signature import ModelSignature
+from mlflow.models.utils import ModelInputExample
 from mlflow.utils.autologging_utils import get_mlflow_run_params_for_fn_args
 from tensorflow.python.keras.engine.training import flatten_metrics_in_order
 from tensorflow.keras.models import Model

@@ -150,13 +150,8 @@ class Client(object):
             "model": base64.b64encode(experiment.get_model())
         }
         try:
-<<<<<<< HEAD
             r = requests.post(self._get_experiment_endpoint(), data=payload).json()
             print('[INFO] Successfully logged model version {} of workspace {}.'.format(r['version'], r['workspaceId']))
-=======
-            response = requests.post(self._get_experiment_endpoint(), data=payload)
-            return response.status_code
->>>>>>> 5b48238 (feature: unit test python client)
         except requests.exceptions.ConnectionError as e:
             print('[WARN] Experiment wasn\'t logged since ntcore wasn\'t available at {0}.'.format(self._endpoint))
 
@@ -244,19 +239,11 @@ class Client(object):
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
-<<<<<<< HEAD
     def create_workspace(self, name):
         """
         create a workspace 
         """
         payload={"type":"API", "name":name}
-=======
-    def create_workspace(self, type, name):
-        """
-        create a workspace 
-        """
-        payload={"type": type, "name": name}
->>>>>>> 5b48238 (feature: unit test python client)
         try:
             response = requests.post(f"{self._endpoint}/dsp/api/v1/workspace",data=payload)
             return response

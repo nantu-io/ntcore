@@ -75,3 +75,4 @@ def patch():
     _patch_log_params(utils)
     _patch_log_metrics(utils)
     _patch_log_model(sklearn)
+
