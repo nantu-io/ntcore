@@ -5,12 +5,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-from torchsummary import summary
 
 from ntcore import client
 client.set_endpoint('http://localhost:8000')
-client.autolog('C8W60XEPH7DA3AAH3S41PJZ3OV')
-
 
 class Net(nn.Module):
     def __init__(self):
@@ -122,15 +119,34 @@ def main():
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
-    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
-    for epoch in range(1, args.epochs + 1):
-        train(args, model, device, train_loader, optimizer, epoch)
-        test(model, device, test_loader)
-        scheduler.step()
+    # scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
+    # for epoch in range(1, args.epochs + 1):
+    #     train(args, model, device, train_loader, optimizer, epoch)
+    #     test(model, device, test_loader)
+    #     scheduler.step()
 
-    if args.save_model:
-        torch.save(model.state_dict(), "mnist_cnn.pt", workspace_id='CCGRODF5Y9R5PELB1DNL2Q3I8P')
+    # model_script = torch.jit.script(model)
+    # # extra_files = {'transform': pickle.dumps(transform)}
+    # # model_script.save('model_script.pt', _extra_files=extra_files)
+    # model_script.save('model.pt')
 
+    ########################################
+    ## Usage example
+    # extra_files = {'transform': None}
+    # model = torch.jit.load('model_script.pt', _extra_files=extra_files)
+    # transform = pickle.loads(extra_files['transform'])
+    # model.eval()
+    ########################################
+
+    model = torch.jit.load('model.pt')
+    model.eval()
+    
+    test_data = []
+    for data, _ in test_loader:
+        test_data.append(data)
+    output = model(test_data[0])
+    print(output)
+    
 
 if __name__ == '__main__':
     main()

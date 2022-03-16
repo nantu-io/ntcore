@@ -169,7 +169,7 @@ class Client(object):
             "runtime": experiment.get_runtime(),
             "framework": experiment.get_framework(),
             "parameters": json.dumps(experiment.get_parameters()),
-            "metrics": json.dumps(experiment.get_metrics()), 
+            "metrics": json.dumps(experiment.get_metrics()),
             "model": base64.b64encode(experiment.get_model())
         }
         try:
