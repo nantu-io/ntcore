@@ -233,11 +233,11 @@ class Client(object):
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
-    def create_workspace(self):
+    def create_workspace(self, name):
         """
         create a workspace 
         """
-        payload={"type":"API", "name":"test"}
+        payload={"type":"API", "name":name}
         try:
             requests.post(f"{self._endpoint}/dsp/api/v1/workspace",data=payload)
         except requests.exceptions.ConnectionError as e:
