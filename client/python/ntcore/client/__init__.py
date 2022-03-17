@@ -150,8 +150,13 @@ class Client(object):
             "model": base64.b64encode(experiment.get_model())
         }
         try:
+<<<<<<< HEAD
             r = requests.post(self._get_experiment_endpoint(), data=payload).json()
             print('[INFO] Successfully logged model version {} of workspace {}.'.format(r['version'], r['workspaceId']))
+=======
+            response = requests.post(self._get_experiment_endpoint(), data=payload)
+            return response.status_code
+>>>>>>> 5b48238 (feature: unit test python client)
         except requests.exceptions.ConnectionError as e:
             print('[WARN] Experiment wasn\'t logged since ntcore wasn\'t available at {0}.'.format(self._endpoint))
 
@@ -182,7 +187,8 @@ class Client(object):
         """
         payload = {"version": version}
         try:
-            requests.post(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry",data=payload)
+            response = requests.post(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry",data=payload)
+            return response
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
@@ -191,7 +197,8 @@ class Client(object):
         get registry
         """
         try:
-            requests.get(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry")
+            response = requests.get(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry")
+            return response
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
@@ -200,7 +207,8 @@ class Client(object):
         unregister experiment
         """
         try:
-            requests.delete(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry")
+            response = requests.delete(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/registry")
+            return response
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
@@ -209,7 +217,8 @@ class Client(object):
         delete an experiment
         """
         try:
-            requests.delete(f"{self._endpoint}/dsp/api/v1/{workspace_id}/experiment/{version}")
+            response = requests.delete(f"{self._endpoint}/dsp/api/v1/{workspace_id}/experiment/{version}")
+            return response
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
@@ -220,7 +229,8 @@ class Client(object):
         
         """
         try:
-            requests.post(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/model/{version}/deploy")
+            response = requests.post(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/model/{version}/deploy")
+            return response
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
@@ -229,26 +239,37 @@ class Client(object):
         download the model
         """
         try:
-            requests.get(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/model/{version}")
+            response = requests.get(f"{self._endpoint}/dsp/api/v1/workspace/{workspace_id}/model/{version}")
+            return response.status_code
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
+<<<<<<< HEAD
     def create_workspace(self, name):
         """
         create a workspace 
         """
         payload={"type":"API", "name":name}
+=======
+    def create_workspace(self, type, name):
+        """
+        create a workspace 
+        """
+        payload={"type": type, "name": name}
+>>>>>>> 5b48238 (feature: unit test python client)
         try:
-            requests.post(f"{self._endpoint}/dsp/api/v1/workspace",data=payload)
+            response = requests.post(f"{self._endpoint}/dsp/api/v1/workspace",data=payload)
+            return response
         except requests.exceptions.ConnectionError as e:
             raise RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
-    
+    #sample response {"id":"CAHCEWM6X6PN2HADX7TR138XB8","name":"test","type":"API","created_by":"ntcore","created_at":1643322510,"max_version":1}
     def get_workspace(self, id):
         """
         get a workspace
         """
         try:
-            requests.get(f"{self._endpoint}/dsp/api/v1/workspace/{id}")
+            response = requests.get(f"{self._endpoint}/dsp/api/v1/workspace/{id}")
+            return response
         except requests.exceptions.ConnectionError as e:
             raise  RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
@@ -257,7 +278,8 @@ class Client(object):
         delete a workspace based on id
         """
         try:
-            requests.delete(f"{self._endpoint}/dsp/api/v1/workspace/{id}")
+            response = requests.delete(f"{self._endpoint}/dsp/api/v1/workspace/{id}")
+            return response
         except requests.exceptions.ConnectionError as e:
             raise  RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
@@ -266,7 +288,8 @@ class Client(object):
         list all workspaces
         """
         try:
-            requests.get(f"{self._endpoint}/dsp/api/v1/workspaces")
+            response = requests.get(f"{self._endpoint}/dsp/api/v1/workspaces")
+            return response
         except requests.exceptions.ConnectionError as e:
             raise  RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
     
@@ -275,6 +298,11 @@ class Client(object):
         list all active deployments
         """
         try:
-            requests.get(f"{self._endpoint}/dsp/api/v1/deployments/active")
+            response = requests.get(f"{self._endpoint}/dsp/api/v1/deployments/active")
+            return response
         except requests.exceptions.ConnectionError as e:
             raise  RuntimeError(f"Experiment wasn\'t logged since ntcore wasn\'t available at {self._endpoint}")
+
+if __name__ == "__main__":
+    client = Client()
+    client.get_registry("CAHCEWM6X6PN2HADX7TR138XB8")
