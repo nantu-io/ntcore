@@ -3,70 +3,12 @@ import {
     ServiceState,
     GenericService,
     ServiceTypeMapping,
-    GenericContainer,
 } from "../GenericServiceProvider";
+import { LocalContainerService } from "./LocalContainerService";
 import Dockerode = require("dockerode");
 
-/**
- * Local container definition.
- */
-export class LocalContainer extends GenericContainer {
-    Image?: string;
-    Env?: string[];
-    HostConfig?: LocalHostConfig;
-    Labels?: LocalServiceLabels;
-}
-/**
- * Local container service.
- */
-export class LocalContainerService extends GenericService {
-    ExposedPorts?: LocalExposedPorts<{}>;
-    Containers?: LocalContainer[];
-}
-/**
- * Local exposed ports.
- */
-export class LocalExposedPorts<T> {
-    [key: string]: T
-}
-/**
- * Local host config.
- */
-export class LocalHostConfig {
-    NetworkMode?: string;
-    PortBindings?: LocalPortBindings;
-    Mounts?: LocalHostMount[];
-    CpuQuota?: number;
-    Memory?: number;
-}
-/**
- * Local host mount.
- */
-export class LocalHostMount {
-    Target: string;
-    Source: string;
-    Type: 'bind' | 'volume' | 'tmpfs';
-}
-/**
- * Local host port bindings.
- */
-export class LocalPortBindings {
-    [key: string]: Array<LocalHostPort>
-}
-/**
- * Local host port.
- */
-export class LocalHostPort {
-    HostPort: string
-}
-/**
- * Docker labels.
- */
-export class LocalServiceLabels {
-    [label: string]: string;
-}
-
-export class GenericLocalServiceProvider implements GenericServiceProvider {
+export class GenericLocalServiceProvider implements GenericServiceProvider 
+{
     private readonly _dockerClient: Dockerode;
 
     constructor(dockerClient: Dockerode) {
@@ -78,7 +20,8 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async provision(config: LocalContainerService): Promise<GenericService> {
+    public async provision(config: LocalContainerService): Promise<GenericService> 
+    {
         await this.buildLocalImage(config);
         return config;
     }
@@ -88,7 +31,8 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async start(config: LocalContainerService): Promise<GenericService> {
+    public async start(config: LocalContainerService): Promise<GenericService> 
+    {
         const container = await this.getContainerByName(config.name);
         if (container) {
             await this.stop(config);
@@ -103,7 +47,8 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async stop(config: LocalContainerService): Promise<GenericService> {
+    public async stop(config: LocalContainerService): Promise<GenericService> 
+    {
         try {
             const container = await this.getContainerByName(config.name);
             if (container) await container.stop()
@@ -119,7 +64,8 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async delete(config: LocalContainerService): Promise<GenericService> {
+    public async delete(config: LocalContainerService): Promise<GenericService> 
+    {
         const container = await this.getContainerByName(config.name);
         if (container) {
             await container.remove()
@@ -132,16 +78,8 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
      * @param config Local service config.
      * @returns Promise of the local container configuration.
      */
-     public async update(config: LocalContainerService): Promise<GenericService> {
-        const container = await this.getContainerByName(config.name);
-        if (!container) {
-            return config;
-        }
-        if (config.vars instanceof Array) {
-            const vars = config.vars.join('\n');
-            const execObj = await container.exec({Cmd: ['/bin/bash', '-c', `echo '${vars}' > ~/.ntcorevar`]});
-            await execObj.start({});
-        }
+    public async update(config: LocalContainerService): Promise<GenericService> 
+    {
         return config;
     }
 
@@ -150,21 +88,8 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
      * @param config Local service config.
      * @returns Promise of the local container configuration.
      */
-     public async createWorkspace(name: string, workspaceId: string): Promise<any> {
-        const container = await this.getContainerByName(name);
-        if (!container) {
-            return;
-        }
-        const execObj = await container.exec({Cmd: ['/bin/bash', '-c', `mkdir -p $DSP_INSTANCE_HOME/${workspaceId}`]});
-        await execObj.start({});
-    }
-
-    /**
-     * Execute command on the container.
-     * @param config Local service config.
-     * @returns Promise of the local container configuration.
-     */
-     public async exec(name: string, command: string): Promise<any> {
+    public async exec(name: string, command: string): Promise<any> 
+    {
         const container = await this.getContainerByName(name);
         if (!container) {
             return;
@@ -178,14 +103,16 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
      * @param config Local container configuration.
      * @returns Promise of the local container configuration list.
      */
-    public listServices(): Promise<Array<GenericService>> {
+    public listServices(): Promise<Array<GenericService>> 
+    {
         return this.listContainers({});
     }
 
     /**
      * Wait for a specific state of a service.
      */
-    public async getState(config: LocalContainerService): Promise<GenericService> {
+    public async getState(config: LocalContainerService): Promise<GenericService> 
+    {
         const options = {"limit": 1, "filters": `{"name": ["/${config.name}"]}`};
         const containers = await this.listContainers(options);
         if (containers && containers.length > 0) {
@@ -196,9 +123,10 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
         }
     }
 
-    private async buildLocalImage(config: LocalContainerService): Promise<any> {
+    private async buildLocalImage(config: LocalContainerService): Promise<any> 
+    {
         const stream = await this._dockerClient.buildImage(
-            { context: `${__dirname}/../dockerfiles/${config.type}`, src: ["Dockerfile"] }, 
+            { context: `${__dirname}/../dockerfiles/${config.type.toLowerCase()}`, src: ["Dockerfile"] }, 
             { t: config.Containers[0].Image }
         );
         await new Promise((resolve, reject) => {
@@ -206,7 +134,8 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
         });
     }
 
-    private async startLocalContainer(config: LocalContainerService) {
+    private async startLocalContainer(config: LocalContainerService) 
+    {
         const containerConfig = config.Containers[0];
         const localContainerContext: Dockerode.ContainerCreateOptions = {
             name: config.name,
@@ -216,18 +145,18 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
             Env: containerConfig.Env,
             Labels: containerConfig.Labels
         }
-        const container = await this._dockerClient.createContainer(localContainerContext);
-        return await container.start();
+        return (await this._dockerClient.createContainer(localContainerContext)).start();
     }
 
-    private async listContainers(options: {}): Promise<LocalContainerService[]> {
+    private async listContainers(options: {}): Promise<LocalContainerService[]> 
+    {
         const containers = await this._dockerClient.listContainers(options);
-        
         return containers.map((container: Dockerode.ContainerInfo) => ({
             type: ServiceTypeMapping[container.Labels['type']],
             state: this.mapServiceState(container),
             name: container.Names[0].substring(1),
-            Containers: [{
+            Containers: 
+            [{
                 name: container.Names[0].substring(1),
                 Image: container.Image,
                 Labels: container.Labels,
@@ -235,7 +164,8 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
         }));
     }
 
-    private mapServiceState(container: Dockerode.ContainerInfo): ServiceState {
+    private mapServiceState(container: Dockerode.ContainerInfo): ServiceState 
+    {
         const state = container.State;
         const status = container.Status;
         if (status.includes('(healthy)')) {
@@ -247,7 +177,8 @@ export class GenericLocalServiceProvider implements GenericServiceProvider {
         }
     }
 
-    private async getContainerByName(name: string): Promise<Dockerode.Container> {
+    private async getContainerByName(name: string): Promise<Dockerode.Container> 
+    {
         const options = {"limit": 1, "filters": `{"name": ["/${name}"]}`};
         const containers = await this._dockerClient.listContainers(options);
         if (!containers || containers.length === 0) {

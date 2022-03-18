@@ -4,7 +4,8 @@ import { Framework } from '../../commons/Framework';
 /**
  * Defines the service loading states
  */
-export const enum ServiceState {
+export const enum ServiceState 
+{
     /**
      * Indicates the container is being initilialized.
      */
@@ -33,7 +34,8 @@ export const enum ServiceState {
 /**
  * Defines the service types.
  */
-export const enum ServiceType {
+export const enum ServiceType 
+{
     /**
      * Jupyter notebook or Jupyter lab.
      */
@@ -89,57 +91,18 @@ export const ServiceTypeMapping = {
     FLASK_SKLEARN: ServiceType.FLASK_SKLEARN,
 }
 /**
- * Docker environment variable.
- */
-export class EnvironmentVariable {
-    name: string;
-    value: string;
-}
-/**
- * Docker labels
- */
-export class DockerLabels {
-    [key: string]: string;
-}
-/**
- * Mount point configuration
- */
-export class MountPoint {
-    containerPath: string;
-    sourceVolume: string;
-}
-/**
- * Docker volumn.
- */
-export class Volume {
-    name: string;
-}
-/**
- * Volum from container.
- */
-export class VolumeFrom {
-    sourceContainer: string;
-    readonly: boolean;
-}
-/**
- * Port mapping.
- */
-export class PortMapping {
-    containerPort: number;
-    hostPort: number;
-    protocol: string;
-}
-/**
  * Container definition.
  */
- export abstract class GenericContainer {
+export abstract class GenericContainer 
+{
     id?: string;
     name?: string;
 }
 /**
  * Service config base.
  */
-export abstract class GenericService {
+export abstract class GenericService 
+{
     type?: ServiceType;
     name?: string;
     state?: ServiceState;
@@ -148,7 +111,8 @@ export abstract class GenericService {
 /**
  * Interface for container provider.
  */
-export interface GenericServiceProvider {
+export interface GenericServiceProvider 
+{
     /**
      * Prepare the setup before launching any service.
      */
@@ -185,7 +149,8 @@ export interface GenericServiceProvider {
 /**
  * Interface for service state provider.
  */
-export interface GenericServiceStateProvider {
+export interface GenericServiceStateProvider 
+{
     /**
      * Initialize required resource.
      */
@@ -206,7 +171,8 @@ export interface GenericServiceStateProvider {
 /**
  * Interface for config provider.
  */
-export interface GenericServiceConfigProvider {
+export interface GenericServiceConfigProvider 
+{
     /**
      * Create config for development instances.
      */
@@ -219,7 +185,8 @@ export interface GenericServiceConfigProvider {
 /**
  * Provider factory.
  */
-export interface GenericProviderFactory<T> {
+export interface GenericProviderFactory<T> 
+{
     /**
      * Creates provider.
      */

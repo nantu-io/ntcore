@@ -6,7 +6,8 @@ import { appConfig } from './libs/config/AppConfigProvider';
 import fileUpload = require('express-fileupload');
 import { initialize } from "./libs/config/AppModule";
 
-export class App {
+export class App 
+{
     public app: express.Application;
     private _routes: Routes;
 

@@ -3,12 +3,14 @@ import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STAT
 import { Runtime } from "../../../commons/Runtime";
 import Database = require("better-sqlite3");
 
-export class LocalServiceStateProvider implements GenericServiceStateProvider {
+export class LocalServiceStateProvider implements GenericServiceStateProvider 
+{
     private _databaseClient: Database.Database;
     /**
      * Initialize the experiments table.
      */
-    constructor(databaseClient: Database.Database) {
+    constructor(databaseClient: Database.Database) 
+    {
         this._databaseClient = databaseClient;
     }
 
@@ -27,7 +29,8 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider {
      * @param state State of the service.
      * @returns Promise of the service config.
      */
-    public async record(config: GenericService, username: string, state: ServiceState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<GenericService> {
+    public async record(config: GenericService, username: string, state: ServiceState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<GenericService> 
+    {
         this._databaseClient.prepare(INSTANCE_STATE_UPSERT).run({
             name: config.name,
             createdBy: username,
@@ -48,7 +51,8 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider {
      * @param username Username the service is associated with.
      * @returns Promise of the service state.
      */
-    public async get(name: string, username: string): Promise<{}> {
+    public async get(name: string, username: string): Promise<{}> 
+    {
         const res = this._databaseClient.prepare(INSTANCES_READ).get({name: name, createdBy: username});
         if (res) {
             return { name, state: res.state, runtime: res.runtime, cpus: res.cpus, memory: res.memory, packages: res.packages };
@@ -61,7 +65,8 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider {
      * @param username Username the service is associated with.
      * @returns Promise of the service config.
      */
-    public async list(username: string): Promise<GenericService[]> {
+    public async list(username: string): Promise<GenericService[]> 
+    {
         const response = this._databaseClient.prepare(INSTANCES_LIST).all({createdBy: username});
         if (response) {
             return response.map((i: any) => ({type: i.type, name: i.name, state: i.state}));

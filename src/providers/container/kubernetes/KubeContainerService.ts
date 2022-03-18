@@ -3,7 +3,8 @@ import { GenericService, GenericContainer } from "../GenericServiceProvider";
 /**
  * Kubernetes container service.
  */
-export class KubeContainerService extends GenericService {
+export class KubeContainerService extends GenericService 
+{
     namespace?: string;
     service?: KubernetesServiceV1;
     deployment?: KubernetesDeploymentV1;
@@ -12,7 +13,8 @@ export class KubeContainerService extends GenericService {
 /**
  * Kubernetes container.
  */
-export class KubernetesContainer extends GenericContainer {
+export class KubernetesContainer extends GenericContainer 
+{
     name: string;
     image: string;
     env: KubernetesEnvironmentVariable[];
@@ -42,7 +44,8 @@ export class KubernetesContainer extends GenericContainer {
 /**
  * Kubernetes resource metadata.
  */
-export class KubernetesResourceMetadata {
+export class KubernetesResourceMetadata 
+{
     namespace?: string;
     name?: string;
     labels?: {}
@@ -50,14 +53,16 @@ export class KubernetesResourceMetadata {
 /**
  * Kubernetes environment variable.
  */
-export class KubernetesEnvironmentVariable {
+export class KubernetesEnvironmentVariable 
+{
     name: string;
     value: string;
 }
 /**
  * Kubernetes service configuration.
  */
-export class KubernetesServiceV1 {
+export class KubernetesServiceV1 
+{
     apiVersion: string;
     kind: string;
     metadata: KubernetesResourceMetadata;
@@ -74,7 +79,8 @@ export class KubernetesServiceV1 {
 /**
  * Kubernetes deployment.
  */
- export class KubernetesDeploymentV1 {
+ export class KubernetesDeploymentV1 
+ {
     kind: string;
     apiVersion: string;
     metadata: KubernetesResourceMetadata;
@@ -92,7 +98,8 @@ export class KubernetesServiceV1 {
 /**
  * Kubernetes ingress route.
  */
- export class KubernetesIngressRouteV1Alpha1 {
+ export class KubernetesIngressRouteV1Alpha1 
+ {
     kind: string;
     apiVersion: string;
     metadata: KubernetesResourceMetadata;
@@ -111,7 +118,8 @@ export class KubernetesServiceV1 {
 /**
  * Kubernetes ingress v1.
  */
-class KubernetesIngressV1 {
+class KubernetesIngressV1 
+{
     apiVersion: string;
     kind: string;
     metadata: KubernetesResourceMetadata;
@@ -135,7 +143,8 @@ class KubernetesIngressV1 {
 /**
  * Kubernetes ingress v1beta1.
  */
- class KubernetesIngressV1Beta1 {
+ class KubernetesIngressV1Beta1 
+ {
     apiVersion: string;
     kind: string;
     metadata: KubernetesResourceMetadata;

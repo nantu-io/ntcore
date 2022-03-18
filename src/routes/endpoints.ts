@@ -4,20 +4,23 @@ import { ExperimentController } from "../controllers/ExperimentController";
 import { InstanceController } from "../controllers/InstanceController";
 import { WorkspaceController } from "../controllers/WorkspaceController";
 
-export class Routes {
+export class Routes 
+{
     private workspaceController: WorkspaceController;
     private instanceController: InstanceController;
     private experimentController: ExperimentController;
     private deploymentController: DeploymentController;
 
-    constructor() {
+    constructor() 
+    {
         this.workspaceController = new WorkspaceController();
         this.instanceController = new InstanceController();
         this.experimentController = new ExperimentController();
         this.deploymentController = new DeploymentController();
     }
 
-    public routes(app: express.Application): void {
+    public routes(app: express.Application): void 
+    {
         app.route('/dsp/api/v1/service/:name')
             .get(this.instanceController.getServiceStateV1)
             .put(this.instanceController.stopServiceV1)

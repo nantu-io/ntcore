@@ -3,7 +3,8 @@ import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STAT
 import { Runtime } from "../../../commons/Runtime";
 import { Pool } from 'pg';
 
-export class PostgresServiceStateProvider implements GenericServiceStateProvider {
+export class PostgresServiceStateProvider implements GenericServiceStateProvider 
+{
     private _pgPool: Pool;
     /**
      * Initialize the experiments table.

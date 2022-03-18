@@ -13,7 +13,7 @@
         "async-wait-until": "^2.0.5",
         "aws-sdk": "^2.384.0",
         "axios": "^0.21.1",
-        "better-sqlite3": "^7.1.2",
+        "better-sqlite3": "7.5.0",
         "body-parser": "^1.18.3",
         "dockerode": "^3.2.1",
         "dynamoose": "^2.7.0",

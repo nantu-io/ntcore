@@ -12,19 +12,22 @@ import {
 } from "./PostgresDeploymentQueries";
 import { Pool } from 'pg';
 
-export class PostgresDeploymentProvider implements GenericDeploymentProvider {
+export class PostgresDeploymentProvider implements GenericDeploymentProvider 
+{
     private _pgPool: Pool;
     /**
      * Initialize the experiments table.
      */
-    constructor(pool: Pool) {
+    constructor(pool: Pool) 
+    {
         this._pgPool = pool;
     }
 
     /**
      * Initialize deployment table.
      */
-    public async initialize() {
+    public async initialize() 
+    {
         await this._pgPool.query(DEPLOYMENTS_INITIALIZATION);
         await this._pgPool.query(DEPLOYMENT_LOCK_INITIALIZATION);
         console.log('Initialized deployments table.');
@@ -34,7 +37,8 @@ export class PostgresDeploymentProvider implements GenericDeploymentProvider {
      * Create a new deployment.
      * @param experiment Deployment object.
      */
-    public async create(deployment: Deployment) {
+    public async create(deployment: Deployment) 
+    {
         const { deploymentId, workspaceId, version, status, createdBy, createdAt } = deployment;
         const row = [deploymentId, workspaceId, version, status, createdBy, Math.floor(createdAt.getTime()/1000)];
         await this._pgPool.query(DEPLOYMENT_CREATE, row);
@@ -45,14 +49,16 @@ export class PostgresDeploymentProvider implements GenericDeploymentProvider {
      * List all the deployments in a workspace.
      * @param workspaceId Workspace id.
      */
-    public async list(workspaceId: string) {
+    public async list(workspaceId: string) 
+    {
         return await this._pgPool.query(DEPLOYMENTS_LIST, [workspaceId]).then(res => res.rows ? res.rows : []);
     }
 
     /**
      * List all active deployments.
      */
-     public async listActive() {
+    public async listActive() 
+    {
         return this._pgPool.query(DEPLOYMENTS_ACTIVE_LIST).then(res => res.rows ? res.rows : []);
     }
 
@@ -61,7 +67,8 @@ export class PostgresDeploymentProvider implements GenericDeploymentProvider {
      * @param workspaceId Workspace id.
      * @param version Experiment version.
      */
-    public async read(workspaceId: string, version: string) {
+    public async read(workspaceId: string, version: string) 
+    {
         return await this._pgPool.query(DEPLOYMENT_READ, [workspaceId, version]).then(res => res.rows.length > 0 ? res.rows[0] : null);
     }
 
@@ -70,7 +77,8 @@ export class PostgresDeploymentProvider implements GenericDeploymentProvider {
      * @param workspaceId Workspace id.
      * @param version Experiment version.
      */
-    public async aquireLock(workspaceId: string, version: number) {
+    public async aquireLock(workspaceId: string, version: number) 
+    {
         await this._pgPool.query(DEPLOYMENT_LOCK_CREATE, [workspaceId, version, 'ntcore', Math.floor(new Date().getTime()/1000)]);
     }
 
@@ -78,7 +86,8 @@ export class PostgresDeploymentProvider implements GenericDeploymentProvider {
      * Releases the lock of the deployment for a workspace.
      * @param workspaceId Workspace id.
      */
-    public async releaseLock(workspaceId: string) {
+    public async releaseLock(workspaceId: string) 
+    {
         await this._pgPool.query(DEPLOYMENT_LOCK_DELETE, [workspaceId]);
     }
 
@@ -88,7 +97,8 @@ export class PostgresDeploymentProvider implements GenericDeploymentProvider {
      * @param id Deployment id.
      * @param status Status of the deployment.
      */
-    public async updateStatus(workspaceId: string, id: string, status: DeploymentStatus) {
+    public async updateStatus(workspaceId: string, id: string, status: DeploymentStatus) 
+    {
         await this._pgPool.query(DEPLOYMENT_STATUS_UPDATE, [workspaceId, id, status]);
     }
 }

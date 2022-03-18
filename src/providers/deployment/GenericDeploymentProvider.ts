@@ -85,7 +85,8 @@ export class DeploymentProviderFactory
      * @param type Provider type, e.g., LOCAL, AWS etc.
      * @returns Deployment provider.
      */
-    public createProvider(): GenericDeploymentProvider {
+    public createProvider(): GenericDeploymentProvider 
+    {
         const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
             case DatabaseType.POSTGRES: return new PostgresDeploymentProvider(PostgresClientProvider.get());

@@ -12,7 +12,8 @@ import {
 } from "./LocalDeploymentQueries";
 import Database = require("better-sqlite3");
 
-export class LocalDeploymentProvider implements GenericDeploymentProvider {
+export class LocalDeploymentProvider implements GenericDeploymentProvider 
+{
     private _databaseClient: Database.Database;
     /**
      * Initialize the experiments table.

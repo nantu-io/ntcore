@@ -1,9 +1,10 @@
 import { ServiceType, GenericServiceConfigProvider } from '../GenericServiceProvider';
-import { LocalContainerService } from './LocalServiceProvider';
+import { LocalContainerService } from './LocalContainerService';
 import { Runtime } from '../../../commons/Runtime';
 import { Framework } from '../../../commons/Framework';
 
-export class LocalServiceConfigProvider implements GenericServiceConfigProvider {
+export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
+{
     /**
      * Provides local service configuration.
      * @param serviceType service type.
@@ -11,7 +12,8 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
      * @param cpu cpu number.
      * @param memory memory number in GB.
      */
-    public createDevelopmentConfig(name: string, type: ServiceType, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService {
+    public createDevelopmentConfig(name: string, type: ServiceType, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService 
+    {
         // TODO: replace "_" in names with "-".
         switch (type) {
             case ServiceType.JUPYTER: return this.createJupyterConfig(type, name, runtime, cpus, memory, packages);
@@ -30,7 +32,8 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
      * @param publishedPort 
      * @returns 
      */
-    public createDeploymentConfig(type: ServiceType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): LocalContainerService {
+    public createDeploymentConfig(type: ServiceType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): LocalContainerService 
+    {
         switch (type) {
             case ServiceType.FLASK_SKLEARN: return this.createFlaskAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory, publishedPort);
             case ServiceType.TENSORFLOW: return this.createTensorflowAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory);
@@ -38,7 +41,8 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
         }
     }
 
-    private createJupyterConfig(type: ServiceType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService {
+    private createJupyterConfig(type: ServiceType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService 
+    {
         const traefikLabel = `traefik.http.routers.${name}.rule`;
         const traefikValue = `PathPrefix(\`/i/${name}\`)`;
         return {
@@ -70,7 +74,8 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
         };
     }
 
-    private createTheiaConfig(type: ServiceType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService {
+    private createTheiaConfig(type: ServiceType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService 
+    {
         const traefikLabel = `traefik.http.routers.${name}.rule`;
         const traefikValue = `PathPrefix(\`/i/${name}\`)`;
         return {
@@ -102,7 +107,8 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
         };
     }
 
-    private createFlaskAPIConfig(type: ServiceType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): LocalContainerService {
+    private createFlaskAPIConfig(type: ServiceType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): LocalContainerService 
+    {
         const traefikLabel = `traefik.http.routers.${workspaceId.toLowerCase()}.rule`;
         const traefikValue = `PathPrefix(\`/s/${workspaceId}\`)`;
         return {
@@ -131,7 +137,8 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
         };
     }
 
-    private createTensorflowAPIConfig(type: ServiceType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): LocalContainerService {
+    private createTensorflowAPIConfig(type: ServiceType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): LocalContainerService 
+    {
         const name = `tfserving-${workspaceId.toLowerCase()}`;
         const traefikRouterLabel = `traefik.http.routers.${workspaceId.toLowerCase()}.rule`;
         const traefikRouterValue = `Path(\`/s/${workspaceId}/predict\`)`;
@@ -174,7 +181,8 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider 
      * @param name container name.
      * @returns 
      */
-    private createMinimalConfig(name: string): LocalContainerService  {
+    private createMinimalConfig(name: string): LocalContainerService  
+    {
         return { name: name }
     }
 }

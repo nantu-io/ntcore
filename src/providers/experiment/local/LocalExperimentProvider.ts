@@ -13,19 +13,22 @@ import {
 } from "./LocalExperimentQueries"; 
 import Database = require("better-sqlite3");
 
-export class LocalExperimentProvider implements GenericExperimentProvider {
+export class LocalExperimentProvider implements GenericExperimentProvider 
+{
     private _databaseClient: Database.Database;
     /**
      * Initialize the experiments table.
      */
-    constructor(databaseClient: Database.Database) {
+    constructor(databaseClient: Database.Database) 
+    {
         this._databaseClient = databaseClient;
     }
     /**
      * Create a new experiment.
      * @param experiment experiment object.
      */
-    public async create(experiment: Experiment) {
+    public async create(experiment: Experiment) 
+    {
         this._databaseClient.prepare(EXPERIMENT_CREATE).run({
             workspace_id: experiment.workspaceId,
             version: experiment.version,
@@ -42,7 +45,8 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
         return experiment.version;
     }
 
-    public async initialize() {
+    public async initialize() 
+    {
         this._databaseClient.exec(EXPERIMENTS_INITIALIZATION);
         this._databaseClient.exec(EXPERIMENTS_CREATE_STATE_INDEX);
     }
@@ -51,7 +55,8 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * List experiments for a given workspace.
      * @param workspaceId Workspace id.
      */
-    public async list(workspaceId: string) {
+    public async list(workspaceId: string) 
+    {
         return this._databaseClient.prepare(EXPERIMENTS_LIST).all({workspace_id: workspaceId});
     }
 
@@ -60,7 +65,8 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * @param workspaceId Workspace id.
      * @param version Experiment version.
      */
-    public async read(workspaceId: string, version: number) {
+    public async read(workspaceId: string, version: number) 
+    {
         return this._databaseClient.prepare(EXPERIMENT_READ).get({workspace_id: workspaceId, version: version});
     }
 
@@ -69,7 +75,8 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * @param workspace Workspace id.
      * @param version version number.
      */
-     public async delete(workspaceId: string, version: number) {
+    public async delete(workspaceId: string, version: number) 
+    {
         return this._databaseClient.prepare(EXPERIMENT_DELETE).run({workspaceId: workspaceId, version: version});
     }
 
@@ -79,7 +86,8 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * @param version Experiment version.
      * @returns Model path.
      */
-    public async loadModel(workspaceId: string, version: number) {
+    public async loadModel(workspaceId: string, version: number) 
+    {
         return this._databaseClient.prepare(EXPERIMENT_MODEL_READ).get({workspace_id: workspaceId, version: version});
     }
 
@@ -88,7 +96,8 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * @param workspaceId Workspace id.
      * @param version Experiment version.
      */
-    public async register(workspaceId: string, version: number) {
+    public async register(workspaceId: string, version: number) 
+    {
         this._databaseClient.transaction((workspaceId: string, version: number) => {
             this._databaseClient.prepare(EXPERIMENT_UNREGISTER).run({workspace_id: workspaceId});
             this._databaseClient.prepare(EXPERIMENT_STATE_UPDATE).run({workspace_id: workspaceId, version: version, state: ExperimentState.REGISTERED});
@@ -99,7 +108,8 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * Unregister an experiment version.
      * @param workspaceId Workspace id.
      */
-    public async unregister(workspaceId: string) {
+    public async unregister(workspaceId: string) 
+    {
         this._databaseClient.prepare(EXPERIMENT_UNREGISTER).run({workspace_id: workspaceId});
     }
 
@@ -107,7 +117,8 @@ export class LocalExperimentProvider implements GenericExperimentProvider {
      * Returns an registered experiment.
      * @param workspaceId Workspace id.
      */
-    public async getRegistry(workspaceId: string) {
+    public async getRegistry(workspaceId: string) 
+    {
         return this._databaseClient.prepare(EXPERIMENT_REGISTRY_READ).get({workspace_id: workspaceId});
     }
 }

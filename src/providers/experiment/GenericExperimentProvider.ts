@@ -7,7 +7,8 @@ import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresExperimentProvider } from "./postgres/PostgresExperimentProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 
-export const enum ExperimentState {
+export const enum ExperimentState 
+{
     /**
      * Deploy instances locally with docker.
      */
@@ -41,7 +42,8 @@ export const ExperimentStateMapping = {
 /**
  * Experiment class.
  */
-export class Experiment {
+export class Experiment 
+{
     workspaceId: string;
     version: number;
     runtime: Runtime;

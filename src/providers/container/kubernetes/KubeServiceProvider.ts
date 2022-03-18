@@ -3,7 +3,8 @@ import { KubeContainerService } from "./KubeContainerService";
 import { KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node';
 import { IncomingMessage } from "http";
 
-export class KubeContainerServiceProvider implements GenericServiceProvider {
+export class KubeContainerServiceProvider implements GenericServiceProvider 
+{
     private readonly _kubernetesClient: KubernetesObjectApi;
 
     constructor(kubernetesClient: KubernetesObjectApi) {

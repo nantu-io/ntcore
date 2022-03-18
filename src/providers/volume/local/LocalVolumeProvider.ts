@@ -12,7 +12,8 @@ export class LocalVolume extends GenericVolume {}
 export class LocalVolumeProvider implements GenericVolumeProvider {
     private readonly _dockerClient: Dockerode;
 
-    constructor(dockerClient: Dockerode) {
+    constructor(dockerClient: Dockerode) 
+    {
         this._dockerClient = dockerClient;
     }
     
@@ -21,7 +22,8 @@ export class LocalVolumeProvider implements GenericVolumeProvider {
      * @param volume Volume config.
      * @returns 
      */
-    public async create(volume: LocalVolume) {
+    public async create(volume: LocalVolume) 
+    {
         return await this._dockerClient.createVolume({Name: volume.name})
     }
 
@@ -30,7 +32,8 @@ export class LocalVolumeProvider implements GenericVolumeProvider {
      * @param volume Volume config.
      * @returns 
      */
-    public async delete(volume: LocalVolume) {
+    public async delete(volume: LocalVolume)
+    {
         return await this._dockerClient.getVolume(volume.name).remove();
     }
 }

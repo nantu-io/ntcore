@@ -13,16 +13,19 @@ import {
 } from "./PostgresExperimentQueries"; 
 import { Pool } from 'pg';
 
-export class PostgresExperimentProvider implements GenericExperimentProvider {
+export class PostgresExperimentProvider implements GenericExperimentProvider 
+{
     private _pgPool: Pool;
     /**
      * Initialize the experiments table.
      */
-    constructor(pool: Pool) {
+    constructor(pool: Pool) 
+    {
         this._pgPool = pool;
     }
 
-    public async initialize() {
+    public async initialize() 
+    {
         await this._pgPool.query(EXPERIMENTS_INITIALIZATION);
         await this._pgPool.query(EXPERIMENTS_CREATE_STATE_INDEX);
         console.log('Initialized experiments table.');
@@ -32,7 +35,8 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
      * Create a new experiment.
      * @param experiment experiment object.
      */
-    public async create(experiment: Experiment) {
+    public async create(experiment: Experiment) 
+    {
         this._pgPool.query(EXPERIMENT_CREATE, [
             experiment.workspaceId,
             experiment.version,
@@ -53,7 +57,8 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
      * List experiments for a given workspace.
      * @param workspaceId Workspace id.
      */
-    public async list(workspaceId: string) {
+    public async list(workspaceId: string) 
+    {
         return await this._pgPool.query(EXPERIMENTS_LIST, [ workspaceId ]).then(res => res.rows ? res.rows : []);
     }
 
@@ -62,7 +67,8 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
      * @param workspaceId Workspace id.
      * @param version Experiment version.
      */
-    public async read(workspaceId: string, version: number) {
+    public async read(workspaceId: string, version: number) 
+    {
         return await this._pgPool.query(EXPERIMENT_READ, [workspaceId, version]).then(res => res.rows ? res.rows[0] : null);
     }
 
@@ -71,7 +77,8 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
      * @param workspace Workspace id.
      * @param version version number.
      */
-     public async delete(workspaceId: string, version: number) {
+    public async delete(workspaceId: string, version: number) 
+    {
         await this._pgPool.query(EXPERIMENT_DELETE, [workspaceId, version]);
     }
 
@@ -81,7 +88,8 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
      * @param version Experiment version.
      * @returns Model path.
      */
-    public async loadModel(workspaceId: string, version: number) {
+    public async loadModel(workspaceId: string, version: number) 
+    {
         return await this._pgPool.query(EXPERIMENT_MODEL_READ, [workspaceId, version]).then(res => res.rows ? res.rows[0] : null);
     }
 
@@ -90,7 +98,8 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
      * @param workspaceId Workspace id.
      * @param version Experiment version.
      */
-    public async register(workspaceId: string, version: number) {
+    public async register(workspaceId: string, version: number) 
+    {
         const client = await this._pgPool.connect();
         try {
             await client.query('BEGIN');
@@ -109,7 +118,8 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
      * Unregister an experiment version.
      * @param workspaceId Workspace id.
      */
-    public async unregister(workspaceId: string) {
+    public async unregister(workspaceId: string) 
+    {
         await this._pgPool.query(EXPERIMENT_UNREGISTER, [workspaceId]);
     }
 
@@ -117,7 +127,8 @@ export class PostgresExperimentProvider implements GenericExperimentProvider {
      * Returns an registered experiment.
      * @param workspaceId Workspace id.
      */
-    public async getRegistry(workspaceId: string) {
+    public async getRegistry(workspaceId: string) 
+    {
         return await this._pgPool.query(EXPERIMENT_REGISTRY_READ, [ workspaceId ]).then(res => res.rows ? res.rows[0] : null);
     }
 }

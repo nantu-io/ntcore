@@ -6,7 +6,8 @@ import DockerClientProvider from "../../libs/client/DockerClientProvider";
 /**
  * Volume config base.
  */
-export abstract class GenericVolume {
+export abstract class GenericVolume 
+{
     name: string;
     size?: number;
     label?: string;
@@ -14,7 +15,8 @@ export abstract class GenericVolume {
 /**
  * Interface for volume provider.
  */
-export interface GenericVolumeProvider {
+export interface GenericVolumeProvider 
+{
     /**
      * Creates a new volume.
      */

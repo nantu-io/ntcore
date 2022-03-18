@@ -3,7 +3,8 @@ import { Runtime } from '../../../commons/Runtime';
 import { Framework } from '../../../commons/Framework';
 import { KubeContainerService, KubernetesDeploymentV1, KubernetesIngressRouteV1Alpha1, KubernetesServiceV1, KubernetesContainer, KubernetesEnvironmentVariable } from './KubeContainerService';
 
-export class KubeServiceConfigProvider implements GenericServiceConfigProvider {
+export class KubeServiceConfigProvider implements GenericServiceConfigProvider 
+{
     /**
      * Provides kubernetes service configuration.
      * @param name Service name generated based on service type and user name.

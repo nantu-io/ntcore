@@ -7,11 +7,13 @@ import { RuntimeMapping } from '../commons/Runtime';
 import { ContainerTimeoutException } from "../commons/Errors"
 import { serviceStateProvider } from "../libs/config/AppModule";
 
-export class InstanceController {
+export class InstanceController 
+{
     private readonly _configProvider: GenericServiceConfigProvider;
     private readonly _serviceProvider: GenericServiceProvider;
 
-    public constructor() {
+    public constructor() 
+    {
         this._serviceProvider = new ContainerProviderFactory().createProvider();
         this._configProvider = new ServiceConfigProviderFactory().createProvider();
         this.createServiceV1 = this.createServiceV1.bind(this);
@@ -28,7 +30,8 @@ export class InstanceController {
      * Example usage: 
      * curl -H "Content-Type: application/json" -d '{"type":"JUPYTER", "cpus":1, "memory":2, "runtime": "python-3.8"}' -X POST http://localhost:8180/dsp/api/v1/service
      */
-    public async createServiceV1(req: Request, res: Response) {
+    public async createServiceV1(req: Request, res: Response) 
+    {
         const type = ServiceTypeMapping[req.body.type];
         const runtime = RuntimeMapping[req.body.runtime];
         const cpus = req.body.cpus ? parseFloat(req.body.cpus) : 0;
@@ -58,7 +61,8 @@ export class InstanceController {
      * Example usage: 
      * curl -H 'Content-Type: application/json' -X PUT http://localhost:8180/dsp/api/v1/service/:name
      */
-    public async stopServiceV1(req: Request, res: Response) {
+    public async stopServiceV1(req: Request, res: Response) 
+    {
         const username = 'ntcore';
         const name = req.params.name;
         const config = this._configProvider.createDevelopmentConfig(name);
@@ -82,7 +86,8 @@ export class InstanceController {
      * Example usage: 
      * curl -X DELETE http://localhost:8180/dsp/api/v1/service/:name
      */
-    public async deleteServiceV1(req: Request, res: Response) {
+    public async deleteServiceV1(req: Request, res: Response) 
+    {
         const username = 'ntcore';
         const name = req.params.name;
         const config = this._configProvider.createDevelopmentConfig(name);
@@ -107,7 +112,8 @@ export class InstanceController {
      * Example usage: 
      * curl -X GET 'http://localhost:8180/dsp/api/v1/services'
      */
-    public async listServicesV1(req: Request, res: Response) {
+    public async listServicesV1(req: Request, res: Response) 
+    {
         try {
             const services = await serviceStateProvider.list('ntcore');
             res.status(200).send(services);
@@ -123,7 +129,8 @@ export class InstanceController {
      * Example usage: 
      * curl http://localhost:8180/dsp/api/v1/service/{name}
      */
-    public async getServiceStateV1(req: Request, res: Response) {
+    public async getServiceStateV1(req: Request, res: Response) 
+    {
         try {
             const state = await serviceStateProvider.get(req.params.name, 'ntcore');
             res.status(200).send(state);
@@ -138,7 +145,8 @@ export class InstanceController {
      * @param targetState target service state.
      * @returns service configuration.
      */
-    private async waitForInstanceState(config: GenericService, targetState: ServiceState) {
+    private async waitForInstanceState(config: GenericService, targetState: ServiceState) 
+    {
         try {
             return await waitUntil(async () => (await this._serviceProvider.getState(config)).state === targetState, 
                 { timeout: 900000, intervalBetweenAttempts: 5000 });
@@ -147,7 +155,8 @@ export class InstanceController {
         }
     }
 
-    private async handleServiceProviderError(err: any, service: GenericService, username: string) {
+    private async handleServiceProviderError(err: any, service: GenericService, username: string) 
+    {
         if (err instanceof ContainerTimeoutException) {
             await serviceStateProvider.record(service, username, ServiceState.INACTIVE);
         } else {
@@ -156,7 +165,8 @@ export class InstanceController {
         console.error(err);
     }
 
-    private async synchronizeServiceState(service: GenericService, username: string) {
+    private async synchronizeServiceState(service: GenericService, username: string) 
+    {
         const recordStatePromise = serviceStateProvider.get(service.name, username);
         const actualStatePromise = this._serviceProvider.getState(service);
         // Wait until both promises are finished.
