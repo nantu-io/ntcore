@@ -6,12 +6,6 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from ntcore.integrations.torch import ModelRecorder
-from ntcore import client
-client.set_endpoint('http://localhost:8000')
-client.autolog("CCGRODF5Y9R5PELB1DNL2Q3I8P")
-
-
 class MNISTModel(pl.LightningModule):
     def __init__(self):
         super(MNISTModel, self).__init__()
@@ -53,8 +47,12 @@ mnist_model = MNISTModel()
 train_ds = MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor())
 train_loader = DataLoader(train_ds, batch_size=32)
 
-# Initialize a trainer
-trainer = pl.Trainer(max_epochs=5, callbacks=[ModelRecorder("CCGRODF5Y9R5PELB1DNL2Q3I8P")])
+# Initialize a trainer with ntcore ModelRecorder
+from ntcore.integrations.torch import ModelRecorder
+from ntcore.client import Client
+client = Client()
+run = client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT')
+trainer = pl.Trainer(max_epochs=5, callbacks=[ModelRecorder(run)])
 
 # Train the model
 trainer.fit(mnist_model, train_loader)
