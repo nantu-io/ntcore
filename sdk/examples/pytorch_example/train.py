@@ -6,9 +6,6 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
-from ntcore import client
-client.set_endpoint('http://localhost:8000')
-
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -119,33 +116,18 @@ def main():
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
-    # scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
-    # for epoch in range(1, args.epochs + 1):
-    #     train(args, model, device, train_loader, optimizer, epoch)
-    #     test(model, device, test_loader)
-    #     scheduler.step()
+    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
 
-    # model_script = torch.jit.script(model)
-    # # extra_files = {'transform': pickle.dumps(transform)}
-    # # model_script.save('model_script.pt', _extra_files=extra_files)
-    # model_script.save('model.pt')
+    from ntcore.client import Client
+    client = Client()
+    client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT')
 
-    ########################################
-    ## Usage example
-    # extra_files = {'transform': None}
-    # model = torch.jit.load('model_script.pt', _extra_files=extra_files)
-    # transform = pickle.loads(extra_files['transform'])
-    # model.eval()
-    ########################################
+    for epoch in range(1, args.epochs + 1):
+        train(args, model, device, train_loader, optimizer, epoch)
+        test(model, device, test_loader)
+        scheduler.step()
 
-    model = torch.jit.load('model.pt')
-    model.eval()
-    
-    test_data = []
-    for data, _ in test_loader:
-        test_data.append(data)
-    output = model(test_data[0])
-    print(output)
+    client.save_model(model)
     
 
 if __name__ == '__main__':

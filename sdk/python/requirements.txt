@@ -35,5 +35,4 @@ xgboost
 # documentation
 -r docs/requirements.txt
 
-# verta
 -e .

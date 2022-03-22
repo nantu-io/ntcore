@@ -11,12 +11,10 @@ settings = gorilla.Settings(allow_hit=True)
 FRAMEWORK = "sklearn"
 patched_methods = set()
 
-
 def _get_estimator_params(estimator):
     should_log_params_deeply = not _is_parameter_search_estimator(estimator)
     params = estimator.get_params(deep=should_log_params_deeply)
     return {k: str(v) if isinstance(v, bool) else v for k, v in params.items() if v}
-
 
 def _patch_log_params(module):
     method_name = '_get_estimator_info_tags'
@@ -35,7 +33,6 @@ def _patch_log_params(module):
         gorilla.apply(patch)
         patched_methods.add(method_name)
 
-
 def _patch_log_metrics(module):
     method_name = '_log_estimator_content'
     @gorilla.patch(module)
@@ -51,7 +48,6 @@ def _patch_log_metrics(module):
         gorilla.apply(patch)
         patched_methods.add(method_name)
 
-
 def _patch_log_model(module):
     method_name = 'log_model'
     @gorilla.patch(module)
@@ -66,7 +62,6 @@ def _patch_log_model(module):
         patch = gorilla.Patch(module, method_name, _log_model, settings=settings)
         gorilla.apply(patch)
         patched_methods.add(method_name)
-
 
 def patch():
     """
