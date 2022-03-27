@@ -1,12 +1,8 @@
 from queue import Queue
-
 from .models.experiment import Experiment
 from .resources.api_client import ApiClient
 from .integrations.utils import get_runtime_version
 import json, base64, pickle, tarfile, tempfile
-import sklearn
-import tensorflow as tf
-import torch
 
 class Client(object):
     '''
@@ -144,9 +140,9 @@ class Client(object):
         '''
         Serializes model to bytes.
         '''
-        if isinstance(model, sklearn.base.BaseEstimator):
+        if self.__is_sklearn_model(model):
             return pickle.dumps(model), None, 'sklearn'
-        elif isinstance(model, tf.keras.Model):
+        elif self.__is_tensorflow_model(model):
             with tempfile.TemporaryDirectory() as model_dir:
                 model.save(model_dir)
                 model_file = tempfile.NamedTemporaryFile(suffix='.tar.gz')
@@ -154,20 +150,44 @@ class Client(object):
                 buffer.add(model_dir, arcname="model")
                 buffer.close()
             return open(model_file.name, "rb").read(), model_file, 'tensorflow'
-        elif isinstance(model, torch.nn.Module):
-            ### Saving and loading extra files
+        elif self.__is_torch_model(model):
+            ##################################
+            ## Saving and loading extra files
+            ##################################
             # extra_files = {'transform': pickle.dumps(transform)}
             # model_script.save('model_script.pt', _extra_files=extra_files)
             # extra_files = {'transform': None}
             # model = torch.jit.load('model_script.pt', _extra_files=extra_files)
             # transform = pickle.loads(extra_files['transform'])
+            from torch.jit import script
             model_file = tempfile.NamedTemporaryFile(suffix='.pt')
-            buffer = torch.jit.script(model)
+            buffer = script(model)
             buffer.save(model_file.name)
             return open(model_file.name, "rb").read(), model_file, 'pytorch'
+                
+    def __is_sklearn_model(self, model):
+        try:
+            from sklearn.base import BaseEstimator
+            return isinstance(model, BaseEstimator)
+        except Exception:
+            return False
+
+    def __is_tensorflow_model(self, model):
+        try:
+            from tensorflow.keras import Model
+            return isinstance(model, Model)
+        except Exception:
+            return False
+
+    def __is_torch_model(self, model):
+        try:
+            from torch.nn import Module
+            return isinstance(model, Module)
+        except Exception:
+            return False
 
     def __build_url(self, *paths):
-        """
+        '''
         Returns the NTCore endpoint for sending experiment data.
-        """
+        '''
         return '/'.join(s.strip('/') for s in paths)

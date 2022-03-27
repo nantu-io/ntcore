@@ -37,6 +37,7 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider
         switch (type) {
             case ServiceType.FLASK_SKLEARN: return this.createFlaskAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory, publishedPort);
             case ServiceType.TENSORFLOW: return this.createTensorflowAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory);
+            case ServiceType.PYTORCH: return this.createTorchAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory);
             default: throw new Error('Invalid service type.');
         }
     }
@@ -164,6 +165,41 @@ export class LocalServiceConfigProvider implements GenericServiceConfigProvider
                     [traefikRouterLabel]: traefikRouterValue,
                     [traefikMiddlewareLabel]: traefikMiddlewareValue,
                     [traefikServerPortLabel]: traefikServerPortValue,
+                    [traefikRouterMiddlewareLabel]: traefikRouterMiddleWareValue,
+                    'traefik.enable': 'true',
+                },
+                Env: [
+                    'DSP_API_ENDPOINT=ntcore:8180',
+                    `DSP_WORKSPACE_ID=${workspaceId}`,
+                    `DSP_MODEL_VERSION=${version}`,
+                ],
+            }],
+        };
+    }
+
+    private createTorchAPIConfig(type: ServiceType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): LocalContainerService
+    {
+        const name = `torch-${workspaceId.toLowerCase()}`;
+        const traefikRouterLabel = `traefik.http.routers.${workspaceId.toLowerCase()}.rule`;
+        const traefikRouterValue = `PathPrefix(\`/s/${workspaceId}\`)`;
+        const traefikMiddlewareLabel = `traefik.http.middlewares.${workspaceId.toLowerCase()}.stripprefix.prefixes`;
+        const traefikMiddlewareValue = `/s/${workspaceId}`;
+        const traefikRouterMiddlewareLabel = `traefik.http.routers.${workspaceId.toLowerCase()}.middlewares`;
+        const traefikRouterMiddleWareValue = `${workspaceId.toLowerCase()}`;
+        return {
+            type: type, name: name,
+            ExposedPorts: { "80/tcp": {} },
+            Containers: [{
+                HostConfig: { 
+                    PortBindings: { },
+                    NetworkMode: 'ntcore_gateway',
+                    CpuQuota: cpus * 100000, // CpuQuota * CpuPeriod
+                    Memory: memory * 1024 * 1024 * 1024, // GB
+                },
+                Image: `ntcore/fast-torch`,
+                Labels: { 
+                    [traefikRouterLabel]: traefikRouterValue,
+                    [traefikMiddlewareLabel]: traefikMiddlewareValue,
                     [traefikRouterMiddlewareLabel]: traefikRouterMiddleWareValue,
                     'traefik.enable': 'true',
                 },

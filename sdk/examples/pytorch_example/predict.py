@@ -9,6 +9,5 @@ test_data = [ data for data, _ in data_loader ]
 data = {"data": test_data[0].tolist()}
 
 # Call Prediction API endpoint
-response = requests.post("http://localhost:8000/predict", json=data)
-
+response = requests.post("http://localhost:8000/s/CEPYLVMD0GMSFEMMYKP8QPA9DT/predict", json=data)
 print(response.content)

@@ -161,6 +161,7 @@ export class ExperimentController
         switch(FrameworkMapping[framework]) {
             case Framework.SKLEARN: return ServiceType.FLASK_SKLEARN;
             case Framework.TENSORFLOW: return ServiceType.TENSORFLOW;
+            case Framework.PYTORCH: return ServiceType.PYTORCH;
             default: throw new Error("Invalid framework.");
         }
     }
