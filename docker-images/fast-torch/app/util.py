@@ -29,21 +29,13 @@ def get_torch_handler(handler_name: Optional[str]):
     else:
         return BaseHandler()
 
-def build_context():
-    model_name = _get_env("DSP_WORKSPACE_ID", "")
-    model_dir = _get_env("DSP_MODEL_DIR", "")
+def build_context(model_name, model_dir, model_file):
     manifest = {
         "model": {
-            "serializedFile": "model.pt" 
+            "serializedFile": model_file
         }
     }
     context = Context(model_name, model_dir, manifest, None, None, None)
     context.request_processor = [RequestProcessor({})]
     context.metrics = MetricsStore(uuid.uuid4(), model_name)
     return context
-
-def _get_env(name, default):
-    try:
-        return os.environ[name]
-    except Exception as _:
-        return default
