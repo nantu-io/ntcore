@@ -51,7 +51,7 @@ train_loader = DataLoader(train_ds, batch_size=32)
 from ntcore.integrations.torch import ModelRecorder
 from ntcore.client import Client
 client = Client()
-experiment = client.start_run('C98MWIJEPOIXWUAQSR61Y2ANCN')
+experiment = client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT')
 trainer = pl.Trainer(max_epochs=5, callbacks=[ModelRecorder(experiment)])
 
 # Train the model

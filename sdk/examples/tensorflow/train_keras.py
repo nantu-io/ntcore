@@ -14,10 +14,9 @@ model = tf.keras.models.Sequential([
 loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
 
-from ntcore.client import Client
-import ntcore
+from ntcore import Client
 client = Client()
-run = client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT')
-model.fit(x_train, y_train, epochs=2, experiment=run)
-model.evaluate(x_test,  y_test, verbose=2, experiment=run)
-client.save_model(model)
+with client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT') as exper:
+  model.fit(x_train, y_train, epochs=2, experiment=exper)
+  model.evaluate(x_test,  y_test, verbose=2, experiment=exper)
+  exper.save_model(model)

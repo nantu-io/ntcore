@@ -1,72 +1,27 @@
-from mlflow.sklearn import utils
-from mlflow.sklearn.utils import _is_parameter_search_estimator
-from ntcore import client
-from ..utils import get_runtime_version
-import mlflow.sklearn as sklearn
-import numpy as np
 import gorilla
-import pickle
+from .utils import get_pretraining_metadata, get_posttraining_metadata, get_estimators_to_patch
 
-settings = gorilla.Settings(allow_hit=True)
-FRAMEWORK = "sklearn"
-patched_methods = set()
-
-def _get_estimator_params(estimator):
-    should_log_params_deeply = not _is_parameter_search_estimator(estimator)
-    params = estimator.get_params(deep=should_log_params_deeply)
-    return {k: str(v) if isinstance(v, bool) else v for k, v in params.items() if v}
-
-def _patch_log_params(module):
-    method_name = '_get_estimator_info_tags'
+def _patch_fit(module, method_name):
+    '''
+    Patches fit, fit_transform and fit_predict from sklearn estimators.
+    '''
     @gorilla.patch(module)
-    def _log_params(estimator):
+    def __fit(self, *args, experiment=None, **kwargs):
         original = gorilla.get_original_attribute(module, method_name)
-        info_tags = original(estimator)
-        params = _get_estimator_params(estimator)
-        experiment = client.get_experiment()
-        experiment.set_parameters({**info_tags, **params})
-        experiment.set_runtime(get_runtime_version())
-        experiment.set_framework(FRAMEWORK)
-        return info_tags
-    if method_name not in patched_methods:
-        patch = gorilla.Patch(module, method_name, _log_params, settings=settings)
-        gorilla.apply(patch)
-        patched_methods.add(method_name)
+        fit_output = original(self, *args, **kwargs)
+        if experiment is not None:
+            pretraining_metadata = get_pretraining_metadata(self, *args, **kwargs)
+            posttraining_metadata = get_posttraining_metadata(self, *args, **kwargs)
+            experiment.pretraining_metadata = pretraining_metadata
+            experiment.posttraining_metadata = posttraining_metadata
+            experiment.serializable_model = self
+            experiment.save()
+        return fit_output
 
-def _patch_log_metrics(module):
-    method_name = '_log_estimator_content'
-    @gorilla.patch(module)
-    def _log_metrics(autologging_client, estimator, run_id, prefix, X, y_true=None, sample_weight=None):
-        original = gorilla.get_original_attribute(module, method_name)
-        metrics = original(autologging_client, estimator, run_id, prefix, X, y_true, sample_weight)
-        rounded_metrics = {k: round(v, 8) if isinstance(v, (np.floating, float)) else v for k, v in metrics.items()}
-        experiment = client.get_experiment()
-        experiment.set_metrics(rounded_metrics)
-        return metrics
-    if method_name not in patched_methods:
-        patch = gorilla.Patch(module, method_name, _log_metrics, settings=settings)
-        gorilla.apply(patch)
-        patched_methods.add(method_name)
+    patch = gorilla.Patch(module, method_name, __fit, settings=gorilla.Settings(allow_hit=True))
+    gorilla.apply(patch)
 
-def _patch_log_model(module):
-    method_name = 'log_model'
-    @gorilla.patch(module)
-    def _log_model(*args, **kwargs):
-        original = gorilla.get_original_attribute(module, method_name)
-        model = original(*args, **kwargs)
-        experiment = client.get_experiment()
-        experiment.set_model(pickle.dumps(args[0]))
-        experiment.emit()
-        return model
-    if method_name not in patched_methods:
-        patch = gorilla.Patch(module, method_name, _log_model, settings=settings)
-        gorilla.apply(patch)
-        patched_methods.add(method_name)
-
-def patch():
-    """
-    Patch mlflow sklearn methods to intercept training params and metrics
-    """
-    _patch_log_params(utils)
-    _patch_log_metrics(utils)
-    _patch_log_model(sklearn)
+for class_def in get_estimators_to_patch():
+    # Patch fitting methods
+    for method_name in ["fit", "fit_transform", "fit_predict"]:
+        _patch_fit(class_def, method_name)

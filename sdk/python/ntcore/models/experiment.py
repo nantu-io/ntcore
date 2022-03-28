@@ -23,7 +23,7 @@ class Experiment(object):
 
     @property
     def workspace_id(self):
-        return self._workspace_id        
+        return self._workspace_id
 
     @property
     def runtime(self):
@@ -65,7 +65,41 @@ class Experiment(object):
     def serializable_model(self, serializable_model):
         self._serializable_model = serializable_model
 
+    def log_pretraining_metadata(self, pretraining_metadata: dict):
+        '''
+        Logs pre-training metadata from model
+        '''
+        self._pretraining_metadata = pretraining_metadata
+
+    def log_posttraining_metadata(self, posttraining_metadata: dict):
+        '''
+        Logs post-training metadata from model
+        '''
+        self._pretraining_metadata = posttraining_metadata
+
+    def save_model(self, serializable_model):
+        '''
+        Saves the serializable model to NTCore server.
+        '''
+        self.serializable_model = serializable_model
+        self._client.save(self)
+
     def save(self):
+        '''
+        Same as save_model, only used after setting serializable_model property.
+        '''
         if self._serializable_model is None:
-            raise ValueError('Model is empty')
-        self._client.save_model(self._serializable_model)
+            raise ValueError('Serializable model is not provided.')
+        self._client.save(self)
+
+    def __enter__(self):
+        '''
+        Returns self as an experiment object.
+        '''
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        '''
+        Removes self from active experiments.
+        '''
+        self._client.stop_run(self)

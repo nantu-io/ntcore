@@ -5,7 +5,7 @@ import uuid
 
 from .encryption import Encryption
 from ..exceptions.exceptions import NTCoreAPIException
-from ntcore import __version__
+from ..__about__ import __version__
 from requests_toolbelt.adapters.ssl import SSLAdapter
 try:
     from urllib.parse import urljoin
@@ -117,7 +117,8 @@ class ApiClient(object):
         if response.status_code == 204:
             return {}
 
-        self.__checkResponseHeaderContentType(response)
+        if not self.__hasJsonContentTypeInHeaders(response):
+            return response.content
 
         content = response.content
         if hasattr(content, 'decode'):  # Python 2
@@ -214,7 +215,7 @@ class ApiClient(object):
             url=partialUrl,
         )
 
-    def __checkResponseHeaderContentType(self, response):
+    def __hasJsonContentTypeInHeaders(self, response):
         '''
         Check response header Content-Type.
 
@@ -224,9 +225,7 @@ class ApiClient(object):
 
         contentType = response.headers['Content-Type']
         expectedContentType = 'application/jose+json' if self.encrypted else 'application/json'
-        invalidContentType = response.status_code != 204 and contentType is not None and expectedContentType not in contentType
-        if (invalidContentType):
-            raise NTCoreAPIException('Invalid Content-Type specified in Response Header')
+        return response.status_code != 204 and contentType is not None and expectedContentType in contentType
 
     def __getRequestData(self, data):
         '''
