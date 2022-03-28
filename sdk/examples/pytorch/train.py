@@ -115,19 +115,20 @@ def main():
     device = torch.device("cuda" if use_cuda else "cpu")
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
-
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
 
-    from ntcore.client import Client
+    from ntcore import Client
     client = Client()
-    client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT')
+    exper = client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT')
 
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
         scheduler.step()
-
-    client.save_model(model)
+    
+    exper.log_pretraining_metadata({'param': 'test_param'})
+    exper.log_posttraining_metadata({'metric': 'test_metric'})
+    exper.save_model(model)
     
 
 if __name__ == '__main__':

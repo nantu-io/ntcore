@@ -1,4 +1,3 @@
-from queue import Queue
 from .models.experiment import Experiment
 from .resources.api_client import ApiClient
 from .integrations.utils import get_runtime_version
@@ -35,7 +34,7 @@ class Client(object):
         self._password = password
         self._program_token = program_token
         self._server = server
-        self._queue = Queue()
+        self._active_experiments = set()
         self._api_client = ApiClient(self._username, self._password, self._server, encryption_data)
 
     def create_workspace(self, name):
@@ -86,46 +85,38 @@ class Client(object):
         '''
         return self._api_client.doPost(self.__build_url('workspace', workspace_id, 'model', str(version), 'deploy'), data={})
     
-    def download_model(self, workspace_id, version):
+    def download_model(self, path, workspace_id, version):
         '''
         Deploy a trained model as API based on the given workspace id and version.
         '''
-        return self._api_client.doGet(self.__build_url('workspace', workspace_id, 'model', str(version)))
+        serialized = self._api_client.doGet(self.__build_url('workspace', workspace_id, 'model', str(version)))
+        with open(path, 'wb') as f:
+            f.write(serialized)
 
     def start_run(self, workspace_id):
         '''
         Starts a new experiment run with given workspace id.
         '''
         experiment = Experiment(self, workspace_id)
-        self._queue.put(experiment)
+        self._active_experiments.add(experiment)
         return experiment
 
-    def log_pretraining_metadata(self, metadata: dict):
+    def stop_run(self, experiment):
         '''
-        Logs the metadata before training.
+        Starts a new experiment run with given workspace id.
         '''
-        if len(self._queue) == 0:
-            raise ValueError('No active experiment')
-        self._queue[0].pretraining_metadata = metadata
+        self._active_experiments.discard(experiment)
 
-    def log_posttraining_metadata(self, metadata):
-        '''
-        Logs the metadata after training.
-        '''
-        if len(self._queue) == 0:
-            raise ValueError('No active experiment')
-        self._queue[0].posttraining_metadata = metadata
-
-    def save_model(self, model):
+    def save(self, experiment: Experiment):
         '''
         Emits the metadata and serialized model to NTCore server.
         '''
-        experiment: Experiment = self._queue.get()
         workspace_id = experiment.workspace_id
+        model = experiment.serializable_model
         if workspace_id is None:
             raise ValueError('Workspace id is required')
 
-        serialized_model, model_file, framework = self.__serialize_model(model)
+        serialized_model, framework, model_file = self.__serialize_model(model)
         payload = dict(
             runtime = get_runtime_version(),
             framework = framework,
@@ -133,15 +124,18 @@ class Client(object):
             metrics = json.dumps(experiment.posttraining_metadata).encode('utf-8'),
             model = base64.b64encode(serialized_model))
         
-        print(model_file.name)
-        return self._api_client.doPost(self.__build_url('workspace', workspace_id, 'experiment'), payload)
+        self._api_client.doPost(self.__build_url('workspace', workspace_id, 'experiment'), payload)
+
+        if model_file is not None:
+            model_file.close()
+        self._active_experiments.discard(experiment)
 
     def __serialize_model(self, model):
         '''
         Serializes model to bytes.
         '''
         if self.__is_sklearn_model(model):
-            return pickle.dumps(model), None, 'sklearn'
+            return pickle.dumps(model), 'sklearn', None
         elif self.__is_tensorflow_model(model):
             with tempfile.TemporaryDirectory() as model_dir:
                 model.save(model_dir)
@@ -149,7 +143,7 @@ class Client(object):
                 buffer = tarfile.open(model_file.name, "w:gz")
                 buffer.add(model_dir, arcname="model")
                 buffer.close()
-            return open(model_file.name, "rb").read(), model_file, 'tensorflow'
+            return open(model_file.name, "rb").read(), 'tensorflow', model_file
         elif self.__is_torch_model(model):
             ##################################
             ## Saving and loading extra files
@@ -163,7 +157,7 @@ class Client(object):
             model_file = tempfile.NamedTemporaryFile(suffix='.pt')
             buffer = script(model)
             buffer.save(model_file.name)
-            return open(model_file.name, "rb").read(), model_file, 'pytorch'
+            return open(model_file.name, "rb").read(), 'pytorch', model_file
                 
     def __is_sklearn_model(self, model):
         try:

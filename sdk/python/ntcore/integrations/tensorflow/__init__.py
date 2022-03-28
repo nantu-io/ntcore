@@ -30,7 +30,6 @@ def set_attributes(experiment, pretraining_metadata=None, posttraining_metadata=
         experiment.posttraining_metadata = posttraining_metadata
     if serializable_model:
         experiment.serializable_model = serializable_model
-        experiment.save()
 
 @gorilla.patch(estimator.Estimator)
 def __export_saved_model(self, *args, experiment=None, **kwargs):
@@ -40,6 +39,8 @@ def __export_saved_model(self, *args, experiment=None, **kwargs):
     original = gorilla.get_original_attribute(estimator.Estimator, 'export_saved_model')
     original(self, *args, **kwargs)
     set_attributes(experiment, serializable_model=self)
+    if experiment is not None:
+        experiment.save()
 
 @gorilla.patch(estimator.Estimator)
 def __export_savedmodel(self, *args, experiment=None, **kwargs):
@@ -49,6 +50,8 @@ def __export_savedmodel(self, *args, experiment=None, **kwargs):
     original = gorilla.get_original_attribute(estimator.Estimator, 'export_savedmodel')
     original(self, *args, **kwargs)
     set_attributes(experiment, serializable_model=self)
+    if experiment is not None:
+        experiment.save()
 
 @gorilla.patch(Model)
 def __save(self, *args, experiment=None, **kwargs):
@@ -58,6 +61,8 @@ def __save(self, *args, experiment=None, **kwargs):
     original = gorilla.get_original_attribute(Model, 'save')
     original(self, *args, **kwargs)
     set_attributes(experiment, serializable_model=self)
+    if experiment is not None:
+        experiment.save()
 
 @gorilla.patch(Model)
 def __evaluate(self, *args, experiment=None, return_dict=False, **kwargs):
@@ -79,7 +84,7 @@ def __fit(self, *args, experiment=None, **kwargs):
     original = gorilla.get_original_attribute(Model, 'fit')
     original(self, *args, **kwargs)
     unlogged_params = ["self", "x", "y", "callbacks", "validation_data", "verbose"]
-    params_to_log = __get_mlflow_run_params_for_fn_args(original, args, kwargs, unlogged_params)
+    params_to_log = __get_run_params_for_fn_args(original, args, kwargs, unlogged_params)
     set_attributes(experiment, pretraining_metadata=params_to_log)
 
 @gorilla.patch(Model)
@@ -90,7 +95,7 @@ def __fit_generator(self, *args, experiment=None, **kwargs):
     original = gorilla.get_original_attribute(Model, 'fit_generator')
     original(self, *args, **kwargs)
     unlogged_params = ["self", "x", "y", "callbacks", "validation_data", "verbose"]
-    params_to_log = __get_mlflow_run_params_for_fn_args(original, args, kwargs, unlogged_params)
+    params_to_log = __get_run_params_for_fn_args(original, args, kwargs, unlogged_params)
     set_attributes(experiment, pretraining_metadata=params_to_log)
 
 @gorilla.patch(estimator.Estimator)
@@ -111,11 +116,13 @@ def __train(self, *args, experiment=None, **kwargs):
         params["max_steps"] = kwargs["max_steps"]
     set_attributes(experiment, pretraining_metadata=params)
 
-def __get_mlflow_run_params_for_fn_args(fn, args, kwargs, unlogged=None):
+def __get_run_params_for_fn_args(fn, args, kwargs, unlogged=None):
     """
+    This method is derived from MLFlow.
+    GitHub: https://github.com/mlflow/mlflow.
+
     Given arguments explicitly passed to a function, generate a dictionary of MLflow Run
     parameter key / value pairs.
-
     :param fn: function whose parameters are to be logged
     :param args: arguments explicitly passed into fn. If `fn` is defined on a class,
                  `self` should not be part of `args`; the caller is responsible for

@@ -29,18 +29,14 @@ class ModelRecorder(Callback):
 
             if hasattr(optimizer, "defaults"):
                 params.update(optimizer.defaults)
-        
+
         self._experiment.pretraining_metadata = params
 
     def on_fit_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
         """Called when fit ends."""
         cur_metrics = trainer.callback_metrics
         metrics = dict(map(lambda x: (x[0], float(x[1])), cur_metrics.items()))
-        try:
-            # Convert model to ONNX: pl_module.to_onnx("model.onnx")
-            self._experiment.posttraining_metadata = metrics
-            self._experiment.serializable_model = pl_module
-            self._experiment.save()
-        except ValueError as e:
-            print(e)
-            print('[WARN] Model is not recorded because \'model.example_input_array\' is not set!')
+        # Convert model to ONNX: pl_module.to_onnx("model.onnx")
+        self._experiment.posttraining_metadata = metrics
+        self._experiment.serializable_model = pl_module
+        self._experiment.save()

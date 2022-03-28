@@ -6,7 +6,7 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 about = {}
-with open(os.path.join(HERE, "ntcore", "__init__.py"), "r") as f:
+with open(os.path.join(HERE, "ntcore", "__about__.py"), "r") as f:
     exec(f.read(), about)
 
 with open("README.md", "r") as f:
@@ -31,8 +31,6 @@ setup(
         "importlib_metadata>=3.7.0,!=4.7.0",
         "numpy",
         "pandas",
-        "scikit-learn",
-        "mlflow<=1.21.0",
         "gorilla",
         "jwcrypto",
         "jose",

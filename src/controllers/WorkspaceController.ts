@@ -23,16 +23,20 @@ export class WorkspaceController
      */
     public async createWorkspaceV1(req: Request, res: Response) 
     {
-        const id = this.createWorkspaceId(req.body.name);
-        await workspaceProvider.create({
-            id: id,
+        const workspace = {
+            id: this.createWorkspaceId(req.body.name),
             name: req.body.name,
             type: req.body.type,
             createdBy: 'ntcore',
             createdAt: new Date(),
             maxVersion: 0
-        });
-        res.status(201).send({id: id});
+        }
+        try {
+            await workspaceProvider.create(workspace);
+            res.status(201).send(workspace);
+        } catch (err) {
+            res.status(400).send({error: err});
+        }
     }
 
     private createWorkspaceId(name: string) 
