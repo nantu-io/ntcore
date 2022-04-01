@@ -137,7 +137,7 @@ class ApiClient(object):
                 }]
             })
 
-        if 'errors' in json_body:
+        if 'errors' in json_body or 'error' in json_body:
             # The response is a valid JSON error object
             raise NTCoreAPIException(json_body)
 

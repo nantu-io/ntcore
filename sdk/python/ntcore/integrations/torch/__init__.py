@@ -2,7 +2,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback
 from packaging import version
 
-class ModelRecorder(Callback):
+class TorchModelRecorder(Callback):
 
     def __init__(self, experiment) -> None:
         super().__init__()

@@ -48,11 +48,10 @@ train_ds = MNIST(os.getcwd(), train=True, download=True, transform=transforms.To
 train_loader = DataLoader(train_ds, batch_size=32)
 
 # Initialize a trainer with ntcore ModelRecorder
-from ntcore.integrations.torch import ModelRecorder
-from ntcore.client import Client
+from ntcore import Client, TorchModelRecorder
 client = Client()
 experiment = client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT')
-trainer = pl.Trainer(max_epochs=5, callbacks=[ModelRecorder(experiment)])
+trainer = pl.Trainer(max_epochs=5, callbacks=[TorchModelRecorder(experiment)])
 
 # Train the model
 trainer.fit(mnist_model, train_loader)

@@ -3,7 +3,12 @@ from ntcore import Client
 client = Client()
 
 # Step 1: Create a workspace.
-workspace = client.create_workspace('workflow')
+try:
+    workspace = client.create_workspace('workflow')
+except Exception as e:
+    print("Unable to create workspace, please confirm the workspace name is not already used.")
+    exit(1)
+
 workspace_id = workspace['id']
 
 # Step 2: Produce an experiment record.
@@ -24,7 +29,7 @@ client.register_experiment(workspace_id, 1)
 client.deploy_model(workspace_id, 1)
 
 # Step 5: Unregister experiments.
-client.unregister_experiment(workspace_id)
+# client.unregister_experiment(workspace_id)
 
 # Step 6: Delete workspace.
-client.delete_workspace(workspace_id)
+# client.delete_workspace(workspace_id)
