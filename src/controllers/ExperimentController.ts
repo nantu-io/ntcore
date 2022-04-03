@@ -1,29 +1,15 @@
 import { Request, Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';
-import { Runtime } from '../commons/Runtime';
-import { ContainerProviderFactory } from '../providers/container/ServiceProviderFactory';
-import { ServiceConfigProviderFactory } from '../providers/container/ServiceProviderFactory';
-import { waitUntil } from 'async-wait-until';
-import { Framework, FrameworkMapping } from '../commons/Framework';
 import { ExperimentState } from "../providers/experiment/GenericExperimentProvider";
-import { DeploymentStatus } from '../providers/deployment/GenericDeploymentProvider';
-import { GenericServiceProvider, GenericServiceConfigProvider, ServiceState, ServiceType } from '../providers/container/GenericServiceProvider';
-import { workspaceProvider, experimentProvider, deploymentProvider } from "../libs/config/AppModule";
+import { workspaceProvider, experimentProvider } from "../libs/config/AppModule";
 
 export class ExperimentController 
 {
-    private readonly _serviceProvider: GenericServiceProvider;
-    private readonly _configProvider: GenericServiceConfigProvider;
-
     public constructor() 
     {
-        this._serviceProvider = new ContainerProviderFactory().createProvider();
-        this._configProvider = new ServiceConfigProviderFactory().createProvider();
         this.createExperimentV1 = this.createExperimentV1.bind(this);
         this.listExperimentsV1 = this.listExperimentsV1.bind(this);
         this.getExperimentsV1 = this.getExperimentsV1.bind(this);
         this.downloadModelV1 = this.downloadModelV1.bind(this);
-        this.deployModelV1 = this.deployModelV1.bind(this);
         this.deleteExperimentV1 = this.deleteExperimentV1.bind(this);
         this.registerExperimentV1 = this.registerExperimentV1.bind(this);
         this.getRegistryV1 = this.getRegistryV1.bind(this);
@@ -114,71 +100,6 @@ export class ExperimentController
     }
 
     /**
-     * Endpoint to deploy a model based on the given workspace id and version.
-     * @param req Request
-     * @param res Response
-     * Example usage:
-     * curl -X POST -H "Content-Type: application/json" localhost:8180/dsp/api/v1/workspace/{workspaceId}/model/{version}/deploy
-     */
-    public async deployModelV1(req: Request, res: Response) 
-    {
-        const workspaceId = req.params.workspaceId;
-        const version = parseInt(req.params.version);
-        const runtime = Runtime.PYTHON_38;
-        const deploymentId = uuidv4();
-        const model = await experimentProvider.read(workspaceId, version);
-        const type = this.getServiceType(model.framework);
-        const config = this._configProvider.createDeploymentConfig(type, workspaceId, version, runtime, model.framework, 1, 2);
-
-        try {
-            await deploymentProvider.aquireLock(workspaceId, version);
-        } catch (err) {
-            if (err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
-                res.status(400).send({error: 'Deployment in progress'});
-            } else {
-                res.status(500).send({error: err.toString()});
-            }
-            throw err;
-        }
-
-        try {
-            await this.createDeployment(workspaceId, deploymentId, version);
-            res.status(201).send({info: `Started Deployment ${deploymentId}`});
-            // Create containers with container service provider.
-            await this._serviceProvider.provision(config);
-            await this._serviceProvider.start(config);
-            await this.waitForServiceRunning(type, workspaceId);
-            await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.SUCCEED);
-        } catch (err) {
-            await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.FAILED);
-        } finally {
-            await deploymentProvider.releaseLock(workspaceId);
-        }
-    }
-
-    private getServiceType(framework: string): ServiceType
-    {
-        switch(FrameworkMapping[framework]) {
-            case Framework.SKLEARN: return ServiceType.FLASK_SKLEARN;
-            case Framework.TENSORFLOW: return ServiceType.TENSORFLOW;
-            case Framework.PYTORCH: return ServiceType.PYTORCH;
-            default: throw new Error("Invalid framework.");
-        }
-    }
-
-    private async createDeployment(workspaceId: string, deploymentId: string, version: number) 
-    {
-        return await deploymentProvider.create({
-            workspaceId,
-            deploymentId,
-            version,
-            status: DeploymentStatus.PENDING,
-            createdBy: 'ntcore',
-            createdAt: new Date(),
-        });
-    }
-
-    /**
      * Endpoint to delete a experiment version.
      * @param req Request
      * @param res Response
@@ -231,13 +152,5 @@ export class ExperimentController
         const workspaceId = req.params.workspaceId;
         const registry = await experimentProvider.getRegistry(workspaceId);
         res.status(200).send(registry);
-    }
-
-    private async waitForServiceRunning(type: ServiceType, workspaceId: string) 
-    {
-        const config = this._configProvider.createDeploymentConfig(type, workspaceId);
-        await waitUntil(async () => (await this._serviceProvider.getState(config)).state === ServiceState.RUNNING,
-            { timeout: 900000, intervalBetweenAttempts: 10000 });
-        return config;
     }
 }

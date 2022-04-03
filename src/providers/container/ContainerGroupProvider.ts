@@ -4,7 +4,7 @@ import { Framework } from '../../commons/Framework';
 /**
  * Defines the service loading states
  */
-export const enum ServiceState 
+export const enum ContainerGroupState 
 {
     /**
      * Indicates the container is being initilialized.
@@ -34,7 +34,7 @@ export const enum ServiceState
 /**
  * Defines the service types.
  */
-export const enum ServiceType 
+export const enum ContainerGroupType
 {
     /**
      * Jupyter notebook or Jupyter lab.
@@ -64,36 +64,36 @@ export const enum ServiceType
 /**
  * Mapping from string to ServiceType.
  */
-export const ServiceTypeMapping = {
+export const GroupTypeMapping = {
     /**
      * Jupyter notebook/lab.
      */
-    JUPYTER: ServiceType.JUPYTER,
+    JUPYTER: ContainerGroupType.JUPYTER,
     /**
      * Jupyter notebook/lab with Pytorch
      */
-    PYTORCH: ServiceType.PYTORCH,
+    PYTORCH: ContainerGroupType.PYTORCH,
     /**
      * Rstudio suite.
      */
-    RSTUDIO: ServiceType.RSTUDIO,
+    RSTUDIO: ContainerGroupType.RSTUDIO,
     /**
      * Jupyter notebook/lab with Tensorflow.
      */
-    TENSORFLOW: ServiceType.TENSORFLOW,
+    TENSORFLOW: ContainerGroupType.TENSORFLOW,
     /**
      * Jupyter notebook/lab with Tensorflow.
      */
-    THEIA_PYTHON: ServiceType.THEIA_PYTHON,
+    THEIA_PYTHON: ContainerGroupType.THEIA_PYTHON,
     /**
      * Flask for sklearn.
      */
-    FLASK_SKLEARN: ServiceType.FLASK_SKLEARN,
+    FLASK_SKLEARN: ContainerGroupType.FLASK_SKLEARN,
 }
 /**
  * Container definition.
  */
-export abstract class GenericContainer 
+export abstract class IContainer 
 {
     id?: string;
     name?: string;
@@ -101,38 +101,38 @@ export abstract class GenericContainer
 /**
  * Service config base.
  */
-export abstract class GenericService 
+export abstract class IContainerGroup 
 {
-    type?: ServiceType;
+    type?: ContainerGroupType;
     name?: string;
-    state?: ServiceState;
+    state?: ContainerGroupState;
     vars?: string[]
 }
 /**
  * Interface for container provider.
  */
-export interface GenericServiceProvider 
+export interface IContainerGroupProvider
 {
     /**
      * Prepare the setup before launching any service.
      */
-    provision: (config: GenericService) => Promise<GenericService>;
+    provision: (config: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Starts the service and returns the container id.
      */
-    start: (config: GenericService) => Promise<GenericService>;
+    start: (config: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Stops the service based on given id.
      */
-    stop: (config: GenericService) => Promise<GenericService>;
+    stop: (config: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Deletes the service 
      */
-    delete: (config: GenericService) => Promise<GenericService>;
+    delete: (config: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Execute command on the container.
      */
-    update: (config: GenericService) => Promise<GenericService>;
+    update: (config: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Create workspace directory in container.
      */
@@ -140,16 +140,16 @@ export interface GenericServiceProvider
     /**
      * Lists all containers.
      */
-    listServices: () => Promise<Array<GenericService>>;
+    listServices: () => Promise<Array<IContainerGroup>>;
     /**
      * Returns the state of a service.
      */
-    getState: (config: GenericService) => Promise<GenericService>
+    getState: (config: IContainerGroup) => Promise<IContainerGroup>
 }
 /**
  * Interface for service state provider.
  */
-export interface GenericServiceStateProvider 
+export interface IContainerGroupStateProvider
 {
     /**
      * Initialize required resource.
@@ -158,34 +158,34 @@ export interface GenericServiceStateProvider
     /**
      * Records the service state.
      */
-    record: (config: GenericService, username: string, state: ServiceState, runtime?: Runtime, cpus?: any, memory?: any, packages?: string[]) => Promise<GenericService>;
+    record: (config: IContainerGroup, username: string, state: ContainerGroupState, runtime?: Runtime, cpus?: any, memory?: any, packages?: string[]) => Promise<IContainerGroup>;
     /**
      * Gets the service state.
      */
-    get: (name: string, username: string) => Promise<GenericService>;
+    get: (name: string, username: string) => Promise<IContainerGroup>;
     /**
      * Lists service states.
      */
-    list: (username: string) => Promise<GenericService[]>
+    list: (username: string) => Promise<IContainerGroup[]>
 }
 /**
  * Interface for config provider.
  */
-export interface GenericServiceConfigProvider 
+export interface IContainerGroupConfigProvider 
 {
     /**
      * Create config for development instances.
      */
-    createDevelopmentConfig: (name: string, type?: ServiceType, runtime?: Runtime, cpus?: any, memory?: any, packages?: string[]) => GenericService
+    createDevelopmentConfig: (name: string, type?: ContainerGroupType, runtime?: Runtime, cpus?: any, memory?: any, packages?: string[]) => IContainerGroup
     /**
      * Create config for deployment instances.
      */
-    createDeploymentConfig: (type: ServiceType, workspaceId: string, version?: number, runtime?: Runtime, framework?: Framework, cpus?: any, memory?: any, publishedPort?: number) => GenericService
+    createDeploymentConfig: (type: ContainerGroupType, workspaceId: string, version?: number, runtime?: Runtime, framework?: Framework, cpus?: any, memory?: any, publishedPort?: number) => IContainerGroup
 }
 /**
  * Provider factory.
  */
-export interface GenericProviderFactory<T> 
+export interface IProviderFactory<T> 
 {
     /**
      * Creates provider.

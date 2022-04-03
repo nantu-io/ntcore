@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { workspaceProvider } from "../libs/config/AppModule";
 import short = require('short-uuid');
+import { WorkspaceTypeMapping } from '../commons/WorkspaceType';
 
 const NAMESPACE = '0a285782-a757-44ed-ad94-094509b1494e';
 
@@ -25,8 +26,8 @@ export class WorkspaceController
     {
         const workspace = {
             id: this.createWorkspaceId(req.body.name),
+            type: WorkspaceTypeMapping[req.body.type],
             name: req.body.name,
-            type: req.body.type,
             createdBy: 'ntcore',
             createdAt: new Date(),
             maxVersion: 0

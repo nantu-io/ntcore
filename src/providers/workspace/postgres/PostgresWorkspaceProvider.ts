@@ -1,5 +1,5 @@
 import { 
-    GenericWorkspaceProvider,
+    IWorkspaceProvider,
     Workspace
 } from '../GenericWorkspaceProvider';
 import {
@@ -13,7 +13,7 @@ import {
 } from './PostgresWorkspaceQueries';
 import { Pool } from 'pg';
 
-export class PostgresWorkspaceProvider implements GenericWorkspaceProvider 
+export class PostgresWorkspaceProvider implements IWorkspaceProvider 
 {
     private _pgPool: Pool;
     

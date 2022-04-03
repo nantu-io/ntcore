@@ -112,7 +112,7 @@ class Registry extends React.Component {
     }
 
     render() {
-        const { classes, onSuccess, onError, workspaceId } = this.props;
+        const { classes, onSuccess, onError } = this.props;
         const { version, framework, createdBy, createdAt, runtime, description } = this.state;
 
         const closeModel = () => {

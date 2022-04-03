@@ -1,9 +1,9 @@
-import { GenericService, GenericContainer } from "../GenericServiceProvider";
+import { IContainerGroup, IContainer } from "../ContainerGroupProvider";
 
 /**
  * Kubernetes container service.
  */
-export class KubeContainerService extends GenericService 
+export class KubeContainerGroup extends IContainerGroup 
 {
     namespace?: string;
     service?: KubernetesServiceV1;
@@ -13,7 +13,7 @@ export class KubeContainerService extends GenericService
 /**
  * Kubernetes container.
  */
-export class KubernetesContainer extends GenericContainer 
+export class KubernetesContainer extends IContainer 
 {
     name: string;
     image: string;

@@ -1,4 +1,4 @@
-import { Experiment, ExperimentState, GenericExperimentProvider } from "../GenericExperimentProvider";
+import { Experiment, ExperimentState, IExperimentProvider } from "../GenericExperimentProvider";
 import {
     EXPERIMENTS_INITIALIZATION,
     EXPERIMENTS_LIST,
@@ -13,7 +13,7 @@ import {
 } from "./PostgresExperimentQueries"; 
 import { Pool } from 'pg';
 
-export class PostgresExperimentProvider implements GenericExperimentProvider 
+export class PostgresExperimentProvider implements IExperimentProvider 
 {
     private _pgPool: Pool;
     /**

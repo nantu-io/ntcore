@@ -1,5 +1,5 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
-import { LocalDeploymentProvider } from "./local/LocalDeploymentProvider";
+import { LocalDeploymentProvider } from "./sqlite/SQLiteDeploymentProvider";
 import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresDeploymentProvider } from "./postgres/PostgresDeploymentProvider";
@@ -14,6 +14,10 @@ export const enum DeploymentStatus
      * Indicates the deployment is succeed.
      */
     SUCCEED = "SUCCEED",
+    /**
+     * Indicates the deployment is succeed.
+     */
+    RUNNING = "RUNNING",
     /**
      * Indicates the deployment is failed.
      */
@@ -82,7 +86,6 @@ export class DeploymentProviderFactory
 {
     /**
      * Create a provider for local deployments.
-     * @param type Provider type, e.g., LOCAL, AWS etc.
      * @returns Deployment provider.
      */
     public createProvider(): GenericDeploymentProvider 

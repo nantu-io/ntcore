@@ -1,9 +1,9 @@
-import { GenericServiceStateProvider, GenericService, ServiceState } from "../GenericServiceProvider";
-import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./PostgresServiceStateQueries";
+import { IContainerGroupStateProvider, IContainerGroup, GroupState } from "../ContainerGroupProvider";
+import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./KubeContainerGroupStateQueries";
 import { Runtime } from "../../../commons/Runtime";
 import { Pool } from 'pg';
 
-export class PostgresServiceStateProvider implements GenericServiceStateProvider 
+export class PostgresServiceStateProvider implements IContainerGroupStateProvider 
 {
     private _pgPool: Pool;
     /**
@@ -29,7 +29,7 @@ export class PostgresServiceStateProvider implements GenericServiceStateProvider
      * @param state State of the service.
      * @returns Promise of the service config.
      */
-    public async record(config: GenericService, username: string, state: ServiceState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<GenericService> 
+    public async record(config: IContainerGroup, username: string, state: GroupState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<IContainerGroup> 
     {
         await this._pgPool.query(INSTANCE_STATE_UPSERT, [
             config.name, 
@@ -57,7 +57,7 @@ export class PostgresServiceStateProvider implements GenericServiceStateProvider
             const row = res.rows[0];
             return { name, state: row.state, runtime: row.runtime, cpus: row.cpus, memory: row.memory, packages: row.packages };
         }
-        return { name, state: ServiceState.UNKNOWN };
+        return { name, state: GroupState.UNKNOWN };
     }
 
     /**
@@ -65,7 +65,7 @@ export class PostgresServiceStateProvider implements GenericServiceStateProvider
      * @param username Username the service is associated with.
      * @returns Promise of the service config.
      */
-    public async list(username: string): Promise<GenericService[]> 
+    public async list(username: string): Promise<IContainerGroup[]> 
     {
         const res = await this._pgPool.query(INSTANCES_LIST, [username]);
         if (res.rows && res.rowCount > 0) {

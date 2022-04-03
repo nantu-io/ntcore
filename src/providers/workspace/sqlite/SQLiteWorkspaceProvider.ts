@@ -1,4 +1,4 @@
-import { GenericWorkspaceProvider,Workspace } from '../GenericWorkspaceProvider';
+import { IWorkspaceProvider,Workspace } from '../GenericWorkspaceProvider';
 import {
     WORKPACE_INITIALIZATION,
     WORKSPACE_CREATE,
@@ -7,10 +7,10 @@ import {
     WORKSPACE_LIST,
     WORKSPACE_DELETE,
     MAX_VERSION_INCREMENT,
-} from './LocalWorkspaceQueries';
+} from './SQLiteWorkspaceQueries';
 import Database = require("better-sqlite3");
 
-export class LocalWorkspaceProvider implements GenericWorkspaceProvider 
+export class LocalWorkspaceProvider implements IWorkspaceProvider 
 {
     private _databaseClient: Database.Database
     /**

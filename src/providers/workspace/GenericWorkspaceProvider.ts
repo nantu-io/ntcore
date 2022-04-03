@@ -1,24 +1,11 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
-import { LocalWorkspaceProvider } from "./local/LocalWorkspaceProvider";
+import { LocalWorkspaceProvider } from "./sqlite/SQLiteWorkspaceProvider";
 import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresWorkspaceProvider } from "./postgres/PostgresWorkspaceProvider";
+import { WorkspaceType } from '../../commons/WorkspaceType';
 
-/**
- * Workspace types.
- */
-export const enum WorkspaceType 
-{
-    /**
-     * RShiny app.
-     */
-    RSHINY_APP = "RSHINY_APP",
-    /**
-     * Flask app.
-     */
-    FLASK_APP = "FLASK_APP"
-}
 /**
  * Workspace class.
  */
@@ -34,7 +21,7 @@ export class Workspace
 /**
  * Interface for workspace provider.
  */
-export interface GenericWorkspaceProvider 
+export interface IWorkspaceProvider 
 {
     /**
      * Initialize required resources.
@@ -70,10 +57,9 @@ export class WorkpaceProviderFactory
 {
     /**
      * Create a provider for local workspaces.
-     * @param type Provider type, e.g., LOCAL, AWS etc.
      * @returns Workspace provider.
      */
-    public createProvider(): GenericWorkspaceProvider {
+    public createProvider(): IWorkspaceProvider {
         const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
             case DatabaseType.POSTGRES: return new PostgresWorkspaceProvider(PostgresClientProvider.get());

@@ -1,4 +1,4 @@
-import { Experiment, ExperimentState, GenericExperimentProvider } from "../GenericExperimentProvider";
+import { Experiment, ExperimentState, IExperimentProvider } from "../GenericExperimentProvider";
 import {
     EXPERIMENTS_INITIALIZATION,
     EXPERIMENTS_LIST,
@@ -10,10 +10,10 @@ import {
     EXPERIMENT_UNREGISTER,
     EXPERIMENT_REGISTRY_READ,
     EXPERIMENT_MODEL_READ
-} from "./LocalExperimentQueries"; 
+} from "./SQLiteExperimentQueries"; 
 import Database = require("better-sqlite3");
 
-export class LocalExperimentProvider implements GenericExperimentProvider 
+export class LocalExperimentProvider implements IExperimentProvider 
 {
     private _databaseClient: Database.Database;
     /**

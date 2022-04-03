@@ -1,9 +1,9 @@
-import { GenericService, GenericContainer } from "../GenericServiceProvider";
+import { IContainerGroup, IContainer } from "../ContainerGroupProvider";
 
 /**
  * Local container definition.
  */
-export class LocalContainer extends GenericContainer 
+export class LocalContainer extends IContainer 
 {
     Image?: string;
     Env?: string[];
@@ -25,7 +25,7 @@ export class LocalContainer extends GenericContainer
  /**
   * Local container service.
   */
-export class LocalContainerService extends GenericService 
+export class LocalContainerService extends IContainerGroup 
 {
     ExposedPorts?: { [key: string]: {}};
     Containers?: LocalContainer[];

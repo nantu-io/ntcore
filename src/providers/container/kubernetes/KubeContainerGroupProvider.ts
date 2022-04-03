@@ -1,9 +1,9 @@
-import { GenericServiceProvider, ServiceState } from "../GenericServiceProvider";
-import { KubeContainerService } from "./KubeContainerService";
+import { IContainerGroupProvider, GroupState } from "../ContainerGroupProvider";
+import { KubeContainerGroup } from "./KubeContainerGroup";
 import { KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node';
 import { IncomingMessage } from "http";
 
-export class KubeContainerServiceProvider implements GenericServiceProvider 
+export class KubeContainerGroupProvider implements IContainerGroupProvider 
 {
     private readonly _kubernetesClient: KubernetesObjectApi;
 
@@ -16,7 +16,7 @@ export class KubeContainerServiceProvider implements GenericServiceProvider
      * @param config Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async provision(config: KubeContainerService): Promise<KubeContainerService>  {
+    public async provision(config: KubeContainerGroup): Promise<KubeContainerGroup>  {
         return config;
     }
 
@@ -25,7 +25,7 @@ export class KubeContainerServiceProvider implements GenericServiceProvider
      * @param config Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async start(config: KubeContainerService): Promise<KubeContainerService>  {
+    public async start(config: KubeContainerGroup): Promise<KubeContainerGroup>  {
         const servicePromise = this.applyResource(() => this._kubernetesClient.create(config.service), console.warn);
         const ingressPromise = this.applyResource(() => this._kubernetesClient.create(config.ingress), console.warn);
         const deploymentPromise = this.applyResource(() => this._kubernetesClient.create(config.deployment), console.warn);
@@ -38,7 +38,7 @@ export class KubeContainerServiceProvider implements GenericServiceProvider
      * @param config Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async stop(config: KubeContainerService): Promise<KubeContainerService>  {
+    public async stop(config: KubeContainerGroup): Promise<KubeContainerGroup>  {
         const deploymentPromise = this.applyResource(() => this._kubernetesClient.delete(config.deployment), console.warn);
         const servicePromise = this.applyResource(() => this._kubernetesClient.delete(config.ingress), console.warn);
         const ingressPromise = this.applyResource(() => this._kubernetesClient.delete(config.service), console.warn);
@@ -51,7 +51,7 @@ export class KubeContainerServiceProvider implements GenericServiceProvider
      * @param config Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async delete(config: KubeContainerService) {
+    public async delete(config: KubeContainerGroup) {
         return config;
     }
     
@@ -60,7 +60,7 @@ export class KubeContainerServiceProvider implements GenericServiceProvider
      * @param config Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async update(config: KubeContainerService) {
+    public async update(config: KubeContainerGroup) {
         await this.applyResource(() => this._kubernetesClient.patch(config.deployment), console.warn)
         return config;
     }
@@ -79,7 +79,7 @@ export class KubeContainerServiceProvider implements GenericServiceProvider
      * @param config Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async listServices(): Promise<KubeContainerService[]> {
+    public async listServices(): Promise<KubeContainerGroup[]> {
         return;
     }
 
@@ -88,14 +88,14 @@ export class KubeContainerServiceProvider implements GenericServiceProvider
      * @param config Kubernetes container service config.
      * @returns Kubernetes service states.
      */
-    public async getState(config: KubeContainerService): Promise<KubeContainerService> {
+    public async getState(config: KubeContainerGroup): Promise<KubeContainerGroup> {
         try {
             const conditions = (await this._kubernetesClient.read(config.deployment)).body['status'].conditions;
             const isAvailable = conditions.some((c: { type: string; status: string; }) => c.type === "Available" && c.status === "True");
-            const serviceState = isAvailable ? ServiceState.RUNNING : ServiceState.PENDING;
+            const serviceState = isAvailable ? GroupState.RUNNING : GroupState.PENDING;
             return { namespace: config.namespace, type: config.type, name: config.name, state: serviceState };
         } catch (e) {
-            return { namespace: config.namespace, type: config.type, name: config.name, state: ServiceState.INACTIVE };
+            return { namespace: config.namespace, type: config.type, name: config.name, state: GroupState.INACTIVE };
         }
     }
 

@@ -1,43 +1,41 @@
 import { ProviderType, DatabaseType } from "../../commons/ProviderType";
-import { GenericLocalServiceProvider } from "./local/LocalServiceProvider";
-import { LocalServiceStateProvider } from "./local/LocalServiceStateProvider";
-import { LocalServiceConfigProvider } from "./local/LocalServiceConfigProvider";
-import { KubeContainerServiceProvider } from "./kubernetes/KubeServiceProvider";
-import { KubeServiceConfigProvider } from "./kubernetes/KubeServiceConfigProvider";
+import { GenericLocalServiceProvider } from "./docker/DockerContainerGroupProvider";
+import { LocalServiceStateProvider } from "./docker/DockeContainerGroupStateProvider";
+import { LocalServiceConfigProvider } from "./docker/DockerContainerGroupConfigProvider";
+import { KubeContainerGroupProvider } from "./kubernetes/KubeContainerGroupProvider";
+import { KubeServiceConfigProvider } from "./kubernetes/KubeContainerGroupConfigProvider";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import KubernetesClientProvider from "../../libs/client/KubernetesClientProvider";
 import DockerClientProvider from "../../libs/client/DockerClientProvider";
-import { GenericServiceStateProvider, GenericProviderFactory, GenericServiceProvider, GenericServiceConfigProvider } from "./GenericServiceProvider";
-import { PostgresServiceStateProvider } from "./postgres/PostgresServiceStateProvider";
+import { IContainerGroupStateProvider, IProviderFactory, IContainerGroupProvider, IContainerGroupConfigProvider } from "./ContainerGroupProvider";
+import { PostgresServiceStateProvider } from "./kubernetes/KubeContainerGroupStateProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 
-export class ContainerProviderFactory implements GenericProviderFactory<GenericServiceProvider> 
+export class ContainerProviderFactory implements IProviderFactory<IContainerGroupProvider> 
 {
     /**
      * Create a provider for local services.
-     * @param type Provider type, e.g., LOCAL, AWS etc.
      * @returns Service provider.
      */
-    public createProvider(): GenericServiceProvider 
+    public createProvider(): IContainerGroupProvider 
     {
         const providerType: ProviderType = appConfig.container.provider;
         switch(providerType) {
-            case ProviderType.KUBERNETES: return new KubeContainerServiceProvider(KubernetesClientProvider.get());
+            case ProviderType.KUBERNETES: return new KubeContainerGroupProvider(KubernetesClientProvider.get());
             case ProviderType.DOCKER: return new GenericLocalServiceProvider(DockerClientProvider.get());
             default: throw new Error("Invalid provider type.");
         }
     }
 }
 
-export class ServiceConfigProviderFactory implements GenericProviderFactory<GenericServiceConfigProvider> 
+export class ServiceConfigProviderFactory implements IProviderFactory<IContainerGroupConfigProvider> 
 {
     /**
      * Create a provider for local service configurations.
-     * @param type Provider type, e.g., LOCAL, AWS etc.
      * @returns Service configuration provider.
      */
-    public createProvider(): GenericServiceConfigProvider 
+    public createProvider(): IContainerGroupConfigProvider 
     {
         const providerType: ProviderType = appConfig.container.provider;
         switch(providerType) {
@@ -48,14 +46,13 @@ export class ServiceConfigProviderFactory implements GenericProviderFactory<Gene
     }
 }
 
-export class ServiceStateProviderFactory implements GenericProviderFactory<GenericServiceStateProvider> 
+export class ServiceStateProviderFactory implements IProviderFactory<IContainerGroupStateProvider> 
 {
     /**
      * Create a provider for local service states.
-     * @param type Provider type, e.g., LOCAL, AWS etc.
      * @returns Service state provider.
      */
-    public createProvider(): GenericServiceStateProvider 
+    public createProvider(): IContainerGroupStateProvider 
     {
         const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {

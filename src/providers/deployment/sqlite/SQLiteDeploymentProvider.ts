@@ -9,7 +9,7 @@ import {
     DEPLOYMENT_LOCK_CREATE,
     DEPLOYMENT_LOCK_DELETE,
     DEPLOYMENT_STATUS_UPDATE
-} from "./LocalDeploymentQueries";
+} from "./SQLiteDeploymentQueries";
 import Database = require("better-sqlite3");
 
 export class LocalDeploymentProvider implements GenericDeploymentProvider 

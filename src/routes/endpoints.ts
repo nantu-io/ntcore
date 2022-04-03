@@ -50,7 +50,7 @@ export class Routes
         app.route('/dsp/api/v1/workspace/:workspaceId/model/:version')
             .get(this.experimentController.downloadModelV1)
         app.route('/dsp/api/v1/workspace/:workspaceId/model/:version/deploy')
-            .post(this.experimentController.deployModelV1)
+            .post(this.deploymentController.deployModelV1)
         app.route('/dsp/api/v1/workspace/:workspaceId/deployments')
             .get(this.deploymentController.listDeploymentsV1)
         app.route('/dsp/api/v1/deployments/active')

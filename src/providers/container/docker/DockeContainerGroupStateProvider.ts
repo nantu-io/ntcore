@@ -1,9 +1,9 @@
-import { GenericServiceStateProvider, GenericService, ServiceState } from "../GenericServiceProvider";
-import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./LocalServiceStateQueries";
+import { IContainerGroupStateProvider, IContainerGroup, GroupState } from "../ContainerGroupProvider";
+import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./DockerContainerGroupStateQueries";
 import { Runtime } from "../../../commons/Runtime";
 import Database = require("better-sqlite3");
 
-export class LocalServiceStateProvider implements GenericServiceStateProvider 
+export class LocalServiceStateProvider implements IContainerGroupStateProvider 
 {
     private _databaseClient: Database.Database;
     /**
@@ -29,7 +29,7 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider
      * @param state State of the service.
      * @returns Promise of the service config.
      */
-    public async record(config: GenericService, username: string, state: ServiceState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<GenericService> 
+    public async record(config: IContainerGroup, username: string, state: GroupState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<IContainerGroup> 
     {
         this._databaseClient.prepare(INSTANCE_STATE_UPSERT).run({
             name: config.name,
@@ -57,7 +57,7 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider
         if (res) {
             return { name, state: res.state, runtime: res.runtime, cpus: res.cpus, memory: res.memory, packages: res.packages };
         }
-        return { name, state: ServiceState.UNKNOWN };
+        return { name, state: GroupState.UNKNOWN };
     }
 
     /**
@@ -65,7 +65,7 @@ export class LocalServiceStateProvider implements GenericServiceStateProvider
      * @param username Username the service is associated with.
      * @returns Promise of the service config.
      */
-    public async list(username: string): Promise<GenericService[]> 
+    public async list(username: string): Promise<IContainerGroup[]> 
     {
         const response = this._databaseClient.prepare(INSTANCES_LIST).all({createdBy: username});
         if (response) {

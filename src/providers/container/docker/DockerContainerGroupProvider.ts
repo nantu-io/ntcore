@@ -1,13 +1,13 @@
 import {
-    GenericServiceProvider,
-    ServiceState,
-    GenericService,
-    ServiceTypeMapping,
-} from "../GenericServiceProvider";
-import { LocalContainerService } from "./LocalContainerService";
+    IContainerGroupProvider,
+    GroupState,
+    IContainerGroup,
+    GroupTypeMapping,
+} from "../ContainerGroupProvider";
+import { LocalContainerService } from "./DockerContainerGroup";
 import Dockerode = require("dockerode");
 
-export class GenericLocalServiceProvider implements GenericServiceProvider 
+export class GenericLocalServiceProvider implements IContainerGroupProvider 
 {
     private readonly _dockerClient: Dockerode;
 
@@ -20,7 +20,7 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async provision(config: LocalContainerService): Promise<GenericService> 
+    public async provision(config: LocalContainerService): Promise<IContainerGroup> 
     {
         await this.buildLocalImage(config);
         return config;
@@ -31,7 +31,7 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async start(config: LocalContainerService): Promise<GenericService> 
+    public async start(config: LocalContainerService): Promise<IContainerGroup> 
     {
         const container = await this.getContainerByName(config.name);
         if (container) {
@@ -47,7 +47,7 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async stop(config: LocalContainerService): Promise<GenericService> 
+    public async stop(config: LocalContainerService): Promise<IContainerGroup> 
     {
         try {
             const container = await this.getContainerByName(config.name);
@@ -64,7 +64,7 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async delete(config: LocalContainerService): Promise<GenericService> 
+    public async delete(config: LocalContainerService): Promise<IContainerGroup> 
     {
         const container = await this.getContainerByName(config.name);
         if (container) {
@@ -78,7 +78,7 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
      * @param config Local service config.
      * @returns Promise of the local container configuration.
      */
-    public async update(config: LocalContainerService): Promise<GenericService> 
+    public async update(config: LocalContainerService): Promise<IContainerGroup> 
     {
         return config;
     }
@@ -103,7 +103,7 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
      * @param config Local container configuration.
      * @returns Promise of the local container configuration list.
      */
-    public listServices(): Promise<Array<GenericService>> 
+    public listServices(): Promise<Array<IContainerGroup>> 
     {
         return this.listContainers({});
     }
@@ -111,7 +111,7 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
     /**
      * Wait for a specific state of a service.
      */
-    public async getState(config: LocalContainerService): Promise<GenericService> 
+    public async getState(config: LocalContainerService): Promise<IContainerGroup> 
     {
         const options = {"limit": 1, "filters": `{"name": ["/${config.name}"]}`};
         const containers = await this.listContainers(options);
@@ -119,7 +119,7 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
             const container = containers[0];
             return { type: container.type, name: container.name, state: container.state };
         } else {
-            return { type: null, name: config.name, state: ServiceState.UNKNOWN };
+            return { type: null, name: config.name, state: GroupState.UNKNOWN };
         }
     }
 
@@ -152,7 +152,7 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
     {
         const containers = await this._dockerClient.listContainers(options);
         return containers.map((container: Dockerode.ContainerInfo) => ({
-            type: ServiceTypeMapping[container.Labels['type']],
+            type: GroupTypeMapping[container.Labels['type']],
             state: this.mapServiceState(container),
             name: container.Names[0].substring(1),
             Containers: 
@@ -164,16 +164,16 @@ export class GenericLocalServiceProvider implements GenericServiceProvider
         }));
     }
 
-    private mapServiceState(container: Dockerode.ContainerInfo): ServiceState 
+    private mapServiceState(container: Dockerode.ContainerInfo): GroupState 
     {
         const state = container.State;
         const status = container.Status;
         if (status.includes('(healthy)')) {
-            return ServiceState.RUNNING;
+            return GroupState.RUNNING;
         } else if (state === 'running') {
-            return ServiceState.PENDING;
+            return GroupState.PENDING;
         } else {
-            return ServiceState.INACTIVE;
+            return GroupState.INACTIVE;
         }
     }
 

@@ -1,7 +1,7 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import { Runtime } from '../../commons/Runtime';
 import { Framework } from '../../commons/Framework';
-import { LocalExperimentProvider } from "./local/LocalExperimentProvider";
+import { LocalExperimentProvider } from "./sqlite/SQLiteExperimentProvider";
 import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresExperimentProvider } from "./postgres/PostgresExperimentProvider";
@@ -59,7 +59,7 @@ export class Experiment
 /**
  * Interface for experiment provider.
  */
-export interface GenericExperimentProvider 
+export interface IExperimentProvider 
 {
     /**
      * Initialize required resources.
@@ -106,7 +106,7 @@ export class ExperimentProviderFactory
      * @param type Provider type, e.g., LOCAL, AWS etc.
      * @returns Experiment provider.
      */
-    public createProvider(): GenericExperimentProvider
+    public createProvider(): IExperimentProvider
     {
         const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
