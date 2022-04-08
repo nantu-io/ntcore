@@ -33,8 +33,10 @@ setup(
         "pandas",
         "gorilla",
         "jwcrypto",
-        "jose",
-        "six"
+        "six",
+        "python-jose",
+        "requests_toolbelt",
+        "click"
     ],
     entry_points={
         "console_scripts": [

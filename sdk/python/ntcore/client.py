@@ -1,7 +1,7 @@
 from .models.experiment import Experiment
 from .resources.api_client import ApiClient
 from .integrations.utils import get_runtime_version
-import json, base64, pickle, tarfile, tempfile
+import json, base64, pickle, tarfile, tempfile, os
 
 class Client(object):
     '''
@@ -33,8 +33,13 @@ class Client(object):
         self._username = username
         self._password = password
         self._program_token = program_token
-        self._server = server
         self._active_experiments = set()
+
+        try:
+            self._server = 'http://' + os.environ['DSP_API_ENDPOINT']
+        except Exception:
+            self._server = server
+            
         self._api_client = ApiClient(self._username, self._password, self._server, encryption_data)
 
     def create_workspace(self, name):
@@ -85,10 +90,15 @@ class Client(object):
         '''
         return self._api_client.doPost(self.__build_url('workspace', workspace_id, 'model', str(version), 'deploy'), data={})
     
-    def download_model(self, path, workspace_id, version):
+    def download_model(self, path, workspace_id=None, version=None):
         '''
         Deploy a trained model as API based on the given workspace id and version.
         '''
+        try:
+            workspace_id = workspace_id if workspace_id is not None else os.environ['DSP_WORKSPACE_ID']
+            version = version if version is not None else os.environ['DSP_MODEL_VERSION']
+        except Exception:
+            raise ValueError('Unable to find workspace_id or model_version')
         serialized = self._api_client.doGet(self.__build_url('workspace', workspace_id, 'model', str(version)))
         with open(path, 'wb') as f:
             f.write(serialized)
@@ -117,9 +127,10 @@ class Client(object):
             raise ValueError('Workspace id is required')
 
         serialized_model, framework, model_file = self.__serialize_model(model)
+        framework = framework if framework else experiment.framework
         payload = dict(
             runtime = get_runtime_version(),
-            framework = framework,
+            framework = "" if framework is None else framework,
             parameters = json.dumps(experiment.pretraining_metadata).encode('utf-8'),
             metrics = json.dumps(experiment.posttraining_metadata).encode('utf-8'),
             model = base64.b64encode(serialized_model))
@@ -130,7 +141,7 @@ class Client(object):
             model_file.close()
         self._active_experiments.discard(experiment)
 
-    def __serialize_model(self, model):
+    def __serialize_model(self, model, framework=None):
         '''
         Serializes model to bytes.
         '''
@@ -158,6 +169,26 @@ class Client(object):
             buffer = script(model)
             buffer.save(model_file.name)
             return open(model_file.name, "rb").read(), 'pytorch', model_file
+        elif isinstance(model, str):
+            framework = framework if framework is not None else self.__get_framework_from_model_filename(model)
+            self.__validate_framework(framework)
+            return open(model, "rb").read(), framework, None
+        else:
+            self.__validate_framework(framework)
+            return model, None, None
+
+    def __validate_framework(self, framework):
+        valid_frameworks = ['sklearn', 'tensorflow', 'pytorch']
+        if framework is None or framework not in valid_frameworks:
+            raise ValueError('Invalid framework, acceptable values are: {0}'.format(valid_frameworks))
+
+    def __get_framework_from_model_filename(self, model_filename: str):
+        if model_filename.endswith(".pt") or model_filename.endswith(".pth"):
+            return 'pytorch'
+        elif model_filename.endswith(".pkl"):
+            return 'sklearn'
+        else:
+            return None
                 
     def __is_sklearn_model(self, model):
         try:
