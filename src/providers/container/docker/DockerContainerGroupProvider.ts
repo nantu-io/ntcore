@@ -1,17 +1,13 @@
-import {
-    IContainerGroupProvider,
-    GroupState,
-    IContainerGroup,
-    GroupTypeMapping,
-} from "../ContainerGroupProvider";
-import { LocalContainerService } from "./DockerContainerGroup";
+import { IContainerGroupProvider,  ContainerGroupState, IContainerGroup, ContainerGroupTypeMapping } from "../ContainerGroupProvider";
+import { DockerContainerGroup } from "./DockerContainerGroup";
 import Dockerode = require("dockerode");
 
-export class GenericLocalServiceProvider implements IContainerGroupProvider 
+export class DockerContainerGroupProvider implements IContainerGroupProvider 
 {
     private readonly _dockerClient: Dockerode;
 
-    constructor(dockerClient: Dockerode) {
+    constructor(dockerClient: Dockerode) 
+    {
         this._dockerClient = dockerClient;
     }
 
@@ -20,7 +16,7 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async provision(config: LocalContainerService): Promise<IContainerGroup> 
+    public async provision(config: DockerContainerGroup): Promise<IContainerGroup> 
     {
         await this.buildLocalImage(config);
         return config;
@@ -31,7 +27,7 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async start(config: LocalContainerService): Promise<IContainerGroup> 
+    public async start(config: DockerContainerGroup): Promise<IContainerGroup> 
     {
         const container = await this.getContainerByName(config.name);
         if (container) {
@@ -47,7 +43,7 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async stop(config: LocalContainerService): Promise<IContainerGroup> 
+    public async stop(config: DockerContainerGroup): Promise<IContainerGroup> 
     {
         try {
             const container = await this.getContainerByName(config.name);
@@ -64,7 +60,7 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
      * @param config Local container configuration.
      * @returns Promise of the local container configuration.
      */
-    public async delete(config: LocalContainerService): Promise<IContainerGroup> 
+    public async delete(config: DockerContainerGroup): Promise<IContainerGroup> 
     {
         const container = await this.getContainerByName(config.name);
         if (container) {
@@ -78,7 +74,7 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
      * @param config Local service config.
      * @returns Promise of the local container configuration.
      */
-    public async update(config: LocalContainerService): Promise<IContainerGroup> 
+    public async update(config: DockerContainerGroup): Promise<IContainerGroup> 
     {
         return config;
     }
@@ -100,7 +96,6 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
 
     /**
      * Return the list of local containers.
-     * @param config Local container configuration.
      * @returns Promise of the local container configuration list.
      */
     public listServices(): Promise<Array<IContainerGroup>> 
@@ -111,7 +106,7 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
     /**
      * Wait for a specific state of a service.
      */
-    public async getState(config: LocalContainerService): Promise<IContainerGroup> 
+    public async getState(config: DockerContainerGroup): Promise<IContainerGroup> 
     {
         const options = {"limit": 1, "filters": `{"name": ["/${config.name}"]}`};
         const containers = await this.listContainers(options);
@@ -119,11 +114,11 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
             const container = containers[0];
             return { type: container.type, name: container.name, state: container.state };
         } else {
-            return { type: null, name: config.name, state: GroupState.UNKNOWN };
+            return { type: null, name: config.name, state: ContainerGroupState.UNKNOWN };
         }
     }
 
-    private async buildLocalImage(config: LocalContainerService): Promise<any> 
+    private async buildLocalImage(config: DockerContainerGroup): Promise<any> 
     {
         const stream = await this._dockerClient.buildImage(
             { context: `${__dirname}/../dockerfiles/${config.type.toLowerCase()}`, src: ["Dockerfile"] }, 
@@ -134,7 +129,7 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
         });
     }
 
-    private async startLocalContainer(config: LocalContainerService) 
+    private async startLocalContainer(config: DockerContainerGroup) 
     {
         const containerConfig = config.Containers[0];
         const localContainerContext: Dockerode.ContainerCreateOptions = {
@@ -148,11 +143,11 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
         return (await this._dockerClient.createContainer(localContainerContext)).start();
     }
 
-    private async listContainers(options: {}): Promise<LocalContainerService[]> 
+    private async listContainers(options: {}): Promise<DockerContainerGroup[]> 
     {
         const containers = await this._dockerClient.listContainers(options);
         return containers.map((container: Dockerode.ContainerInfo) => ({
-            type: GroupTypeMapping[container.Labels['type']],
+            type: ContainerGroupTypeMapping[container.Labels['type']],
             state: this.mapServiceState(container),
             name: container.Names[0].substring(1),
             Containers: 
@@ -164,16 +159,16 @@ export class GenericLocalServiceProvider implements IContainerGroupProvider
         }));
     }
 
-    private mapServiceState(container: Dockerode.ContainerInfo): GroupState 
+    private mapServiceState(container: Dockerode.ContainerInfo): ContainerGroupState 
     {
         const state = container.State;
         const status = container.Status;
         if (status.includes('(healthy)')) {
-            return GroupState.RUNNING;
+            return ContainerGroupState.RUNNING;
         } else if (state === 'running') {
-            return GroupState.PENDING;
+            return ContainerGroupState.PENDING;
         } else {
-            return GroupState.INACTIVE;
+            return ContainerGroupState.INACTIVE;
         }
     }
 

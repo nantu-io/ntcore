@@ -76,7 +76,7 @@ class Client(object):
         '''
         Retrieves the registered experiment for a workspace.
         '''
-        return self._api_client.doGet(self.__build_url('workspaces', workspace_id, 'registry'))
+        return self._api_client.doGet(self.__build_url('workspace', workspace_id, 'registry'))
 
     def unregister_experiment(self, workspace_id):
         '''
@@ -84,22 +84,27 @@ class Client(object):
         '''
         return self._api_client.doDel(self.__build_url('workspace', workspace_id, 'registry'))
 
-    def deploy_model(self, workspace_id, version):
+    def deploy_model(self, workspace_id):
         '''
         Deploy a trained model as API based on the given workspace id and version.
         '''
-        return self._api_client.doPost(self.__build_url('workspace', workspace_id, 'model', str(version), 'deploy'), data={})
+        return self._api_client.doPost(self.__build_url('deployments'), data={'workspaceId': workspace_id})
     
     def download_model(self, path, workspace_id=None, version=None):
         '''
         Deploy a trained model as API based on the given workspace id and version.
         '''
         try:
-            workspace_id = workspace_id if workspace_id is not None else os.environ['DSP_WORKSPACE_ID']
-            version = version if version is not None else os.environ['DSP_MODEL_VERSION']
+            _workspace_id = os.environ['DSP_WORKSPACE_ID']
         except Exception:
-            raise ValueError('Unable to find workspace_id or model_version')
-        serialized = self._api_client.doGet(self.__build_url('workspace', workspace_id, 'model', str(version)))
+            _workspace_id = workspace_id
+        if _workspace_id is None:
+            raise ValueError('Unable to find workspace_id')
+
+        if version is None:
+            version = self.get_registered_experiment(_workspace_id)['version']
+        
+        serialized = self._api_client.doGet(self.__build_url('workspace', _workspace_id, 'model', str(version)))
         with open(path, 'wb') as f:
             f.write(serialized)
 

@@ -1,6 +1,6 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
-import { LocalWorkspaceProvider } from "./sqlite/SQLiteWorkspaceProvider";
+import { SQLiteWorkspaceProvider } from "./sqlite/SQLiteWorkspaceProvider";
 import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresWorkspaceProvider } from "./postgres/PostgresWorkspaceProvider";
@@ -63,7 +63,7 @@ export class WorkpaceProviderFactory
         const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
             case DatabaseType.POSTGRES: return new PostgresWorkspaceProvider(PostgresClientProvider.get());
-            case DatabaseType.SQLITE: return new LocalWorkspaceProvider(SQliteClientProvider.get());
+            case DatabaseType.SQLITE: return new SQLiteWorkspaceProvider(SQliteClientProvider.get());
             default: throw new Error("Invalide provider type.");
         }
     }

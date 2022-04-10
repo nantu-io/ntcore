@@ -1,10 +1,10 @@
-import { ProviderType } from '../../commons/ProviderType';
+import { ProviderType } from '../../commons/ProviderType'; 
 import { Runtime } from '../../commons/Runtime';
 import { Framework } from '../../commons/Framework';
 /**
  * Defines the service loading states
  */
-export const enum ContainerGroupState 
+export const enum ContainerGroupState
 {
     /**
      * Indicates the container is being initilialized.
@@ -64,7 +64,7 @@ export const enum ContainerGroupType
 /**
  * Mapping from string to ServiceType.
  */
-export const GroupTypeMapping = {
+export const ContainerGroupTypeMapping = {
     /**
      * Jupyter notebook/lab.
      */
@@ -101,7 +101,7 @@ export abstract class IContainer
 /**
  * Service config base.
  */
-export abstract class IContainerGroup 
+export abstract class IContainerGroup
 {
     type?: ContainerGroupType;
     name?: string;

@@ -1,7 +1,7 @@
 import { 
     IWorkspaceProvider,
     Workspace
-} from '../GenericWorkspaceProvider';
+} from '../WorkspaceProvider';
 import {
     WORKPACE_INITIALIZATION,
     WORKSPACE_CREATE,

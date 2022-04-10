@@ -1,23 +1,23 @@
-import { GroupType, IContainerGroupConfigProvider } from '../ContainerGroupProvider';
-import { LocalContainerService } from './DockerContainerGroup';
+import { ContainerGroupType, IContainerGroupConfigProvider } from '../ContainerGroupProvider';
+import { DockerContainerGroup } from './DockerContainerGroup';
 import { Runtime } from '../../../commons/Runtime';
 import { Framework } from '../../../commons/Framework';
 
-export class LocalServiceConfigProvider implements IContainerGroupConfigProvider 
+export class DockerContainerGroupConfigProvider implements IContainerGroupConfigProvider 
 {
     /**
      * Provides local service configuration.
-     * @param serviceType service type.
+     * @param type service type.
      * @param name service name.
-     * @param cpu cpu number.
+     * @param cpus cpu number.
      * @param memory memory number in GB.
      */
-    public createDevelopmentConfig(name: string, type: GroupType, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService 
+    public createDevelopmentConfig(name: string, type: ContainerGroupType, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): DockerContainerGroup 
     {
         // TODO: replace "_" in names with "-".
         switch (type) {
-            case GroupType.JUPYTER: return this.createJupyterConfig(type, name, runtime, cpus, memory, packages);
-            case GroupType.THEIA_PYTHON: return this.createTheiaConfig(type, name, runtime, cpus, memory, packages);
+            case ContainerGroupType.JUPYTER: return this.createJupyterConfig(type, name, runtime, cpus, memory, packages);
+            case ContainerGroupType.THEIA_PYTHON: return this.createTheiaConfig(type, name, runtime, cpus, memory, packages);
             default: return this.createMinimalConfig(name);
         }
     }
@@ -27,22 +27,22 @@ export class LocalServiceConfigProvider implements IContainerGroupConfigProvider
      * @param type service type.
      * @param workspaceId workspace id.
      * @param version model version.
-     * @param cpu cpu units.
+     * @param cpus cpu units.
      * @param memory memory amount.
      * @param publishedPort 
      * @returns 
      */
-    public createDeploymentConfig(type: GroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): LocalContainerService 
+    public createDeploymentConfig(type: ContainerGroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): DockerContainerGroup 
     {
         switch (type) {
-            case GroupType.FLASK_SKLEARN: return this.createFlaskAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory, publishedPort);
-            case GroupType.TENSORFLOW: return this.createTensorflowAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory);
-            case GroupType.PYTORCH: return this.createTorchAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory);
+            case ContainerGroupType.FLASK_SKLEARN: return this.createFlaskAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory, publishedPort);
+            case ContainerGroupType.TENSORFLOW: return this.createTensorflowAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory);
+            case ContainerGroupType.PYTORCH: return this.createTorchAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory);
             default: throw new Error('Invalid service type.');
         }
     }
 
-    private createJupyterConfig(type: GroupType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService 
+    private createJupyterConfig(type: ContainerGroupType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): DockerContainerGroup 
     {
         const traefikLabel = `traefik.http.routers.${name}.rule`;
         const traefikValue = `PathPrefix(\`/i/${name}\`)`;
@@ -75,7 +75,7 @@ export class LocalServiceConfigProvider implements IContainerGroupConfigProvider
         };
     }
 
-    private createTheiaConfig(type: GroupType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): LocalContainerService 
+    private createTheiaConfig(type: ContainerGroupType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): DockerContainerGroup 
     {
         const traefikLabel = `traefik.http.routers.${name}.rule`;
         const traefikValue = `PathPrefix(\`/i/${name}\`)`;
@@ -108,13 +108,13 @@ export class LocalServiceConfigProvider implements IContainerGroupConfigProvider
         };
     }
 
-    private createFlaskAPIConfig(type: GroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): LocalContainerService 
+    private createFlaskAPIConfig(type: ContainerGroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): DockerContainerGroup 
     {
         const traefikLabel = `traefik.http.routers.${workspaceId.toLowerCase()}.rule`;
         const traefikValue = `PathPrefix(\`/s/${workspaceId}\`)`;
         return {
             type: type,
-            name: `flask-${workspaceId.toLowerCase()}`,
+            name: `ntcore-${workspaceId.toLowerCase()}`,
             ExposedPorts: { "8000/tcp": {} },
             Containers: [{
                 HostConfig: { 
@@ -138,9 +138,9 @@ export class LocalServiceConfigProvider implements IContainerGroupConfigProvider
         };
     }
 
-    private createTensorflowAPIConfig(type: GroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): LocalContainerService 
+    private createTensorflowAPIConfig(type: ContainerGroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): DockerContainerGroup 
     {
-        const name = `tfserving-${workspaceId.toLowerCase()}`;
+        const name = `ntcore-${workspaceId.toLowerCase()}`;
         const traefikRouterLabel = `traefik.http.routers.${workspaceId.toLowerCase()}.rule`;
         const traefikRouterValue = `Path(\`/s/${workspaceId}/predict\`)`;
         const traefikMiddlewareLabel = `traefik.http.middlewares.${workspaceId.toLowerCase()}.replacepath.path`;
@@ -177,9 +177,9 @@ export class LocalServiceConfigProvider implements IContainerGroupConfigProvider
         };
     }
 
-    private createTorchAPIConfig(type: GroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): LocalContainerService
+    private createTorchAPIConfig(type: ContainerGroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): DockerContainerGroup
     {
-        const name = `torch-${workspaceId.toLowerCase()}`;
+        const name = `ntcore-${workspaceId.toLowerCase()}`;
         const traefikRouterLabel = `traefik.http.routers.${workspaceId.toLowerCase()}.rule`;
         const traefikRouterValue = `PathPrefix(\`/s/${workspaceId}\`)`;
         const traefikMiddlewareLabel = `traefik.http.middlewares.${workspaceId.toLowerCase()}.stripprefix.prefixes`;
@@ -217,7 +217,7 @@ export class LocalServiceConfigProvider implements IContainerGroupConfigProvider
      * @param name container name.
      * @returns 
      */
-    private createMinimalConfig(name: string): LocalContainerService  
+    private createMinimalConfig(name: string): DockerContainerGroup  
     {
         return { name: name }
     }

@@ -18,4 +18,4 @@ with client.start_run(workspace_id) as exper:
     clf.fit(iris.data, iris.target_names[iris.target], experiment=exper)
 
 # Step 3: Download model to audit.
-client.download_model('model_audit.pkl', workspace_id, 1)
+client.download_model('model_audit.pkl', workspace_id)

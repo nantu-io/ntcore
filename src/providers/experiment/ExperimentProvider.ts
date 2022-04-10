@@ -1,7 +1,7 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import { Runtime } from '../../commons/Runtime';
 import { Framework } from '../../commons/Framework';
-import { LocalExperimentProvider } from "./sqlite/SQLiteExperimentProvider";
+import { SQLiteExperimentProvider } from "./sqlite/SQLiteExperimentProvider";
 import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresExperimentProvider } from "./postgres/PostgresExperimentProvider";
@@ -103,7 +103,6 @@ export class ExperimentProviderFactory
 {
     /**
      * Create a provider for local experiments.
-     * @param type Provider type, e.g., LOCAL, AWS etc.
      * @returns Experiment provider.
      */
     public createProvider(): IExperimentProvider
@@ -111,7 +110,7 @@ export class ExperimentProviderFactory
         const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
             case DatabaseType.POSTGRES: return new PostgresExperimentProvider(PostgresClientProvider.get());
-            case DatabaseType.SQLITE: return new LocalExperimentProvider(SQliteClientProvider.get());
+            case DatabaseType.SQLITE: return new SQLiteExperimentProvider(SQliteClientProvider.get());
             default: throw new Error("Invalid provider type.");
         }
     }

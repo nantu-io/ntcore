@@ -35,12 +35,7 @@ setup(
         "jwcrypto",
         "six",
         "python-jose",
-<<<<<<< HEAD
-        "requests_toolbelt",
-        "click"
-=======
         "requests_toolbelt"
->>>>>>> 3bc81d9 (Add required dependencies for python sdk)
     ],
     entry_points={
         "console_scripts": [

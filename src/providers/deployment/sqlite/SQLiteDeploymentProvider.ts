@@ -1,4 +1,4 @@
-import { Deployment, GenericDeploymentProvider, DeploymentStatus } from "../GenericDeploymentProvider";
+import { Deployment, GenericDeploymentProvider, DeploymentStatus } from "../DeploymentProvider";
 import {
     DEPLOYMENTS_INITIALIZATION,
     DEPLOYMENTS_LIST,

@@ -34,15 +34,13 @@ class DeployForm extends Component {
         };
     }
 
-    _deployModel = (workspaceId, version, runtime, framework) => {
-        const versionInt = parseInt(version);
-        const url = `/dsp/api/v1/workspace/${workspaceId}/model/${versionInt}/deploy`;
-        return postDataV1(url, { runtime, framework });
+    _deployModel = (workspaceId) => {
+      return postDataV1('/dsp/api/v1/deployments', { workspaceId });
     }
 
     _handleSubmit = () => {
-      const { workspaceId, version, runtime, framework, callback, errorHandler } = this.props;
-      this.setState({ loading: true }, () => this._deployModel(workspaceId, version, runtime, framework)
+      const { workspaceId, callback, errorHandler } = this.props;
+      this.setState({ loading: true }, () => this._deployModel(workspaceId)
         .then((res) => this.setState({ loading: false }, () => callback(res.data.info)))
         .catch((err) => this.setState({ loading: false }, () => errorHandler(err.response.data.error))));
     }

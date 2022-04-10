@@ -8,16 +8,16 @@ import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 /**
  * Defines the deployment statuses.
  */
-export const enum DeploymentStatus 
+export const enum DeploymentStatus
 {
     /**
      * Indicates the deployment is succeed.
      */
-    SUCCEED = "SUCCEED",
+    RUNNING = "RUNNING",
     /**
      * Indicates the deployment is succeed.
      */
-    RUNNING = "RUNNING",
+    STOPPED = "STOPPED",
     /**
      * Indicates the deployment is failed.
      */

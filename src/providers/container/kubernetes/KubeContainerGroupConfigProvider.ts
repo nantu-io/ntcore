@@ -1,9 +1,9 @@
-import { GroupType, IContainerGroupConfigProvider } from '../ContainerGroupProvider';
+import { ContainerGroupType, IContainerGroupConfigProvider } from '../ContainerGroupProvider';
 import { Runtime } from '../../../commons/Runtime';
 import { Framework } from '../../../commons/Framework';
-import { KubeContainerGroup, KubernetesDeploymentV1, KubernetesIngressRouteV1Alpha1, KubernetesServiceV1, KubernetesContainer, KubernetesEnvironmentVariable } from './KubeContainerGroup';
+import { KubernetesContainerGroup, KubernetesDeploymentV1, KubernetesIngressRouteV1Alpha1, KubernetesServiceV1, KubernetesContainer, KubernetesEnvironmentVariable } from './KubeContainerGroup';
 
-export class KubeServiceConfigProvider implements IContainerGroupConfigProvider 
+export class KubernetesContainerGroupConfigProvider implements IContainerGroupConfigProvider 
 {
     /**
      * Provides kubernetes service configuration.
@@ -15,11 +15,11 @@ export class KubeServiceConfigProvider implements IContainerGroupConfigProvider
      * @param packages List of packages to install when instance starts.
      * @returns Kubernetes service configuration.
      */
-    public createDevelopmentConfig(name: string, type: GroupType, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): KubeContainerGroup {
+    public createDevelopmentConfig(name: string, type: ContainerGroupType, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): KubernetesContainerGroup {
         const serviceName = name.replace(/_/g, "-");
         switch (type) {
-            case GroupType.JUPYTER: return this.createJupyterConfig(type, serviceName, runtime, cpus, memory, packages);
-            case GroupType.THEIA_PYTHON: return this.createTheiaConfig(type, serviceName, runtime, cpus, memory, packages);
+            case ContainerGroupType.JUPYTER: return this.createJupyterConfig(type, serviceName, runtime, cpus, memory, packages);
+            case ContainerGroupType.THEIA_PYTHON: return this.createTheiaConfig(type, serviceName, runtime, cpus, memory, packages);
             default: return this.createMinimalConfig('default', serviceName);
         }
     }
@@ -33,14 +33,14 @@ export class KubeServiceConfigProvider implements IContainerGroupConfigProvider
      * @param memory Requested memory in GB.
      * @returns Kubernetes service configuration.
      */
-    public createDeploymentConfig(type: GroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): KubeContainerGroup {
+    public createDeploymentConfig(type: ContainerGroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): KubernetesContainerGroup {
         switch (type) {
-            case GroupType.FLASK_SKLEARN: return this.createFlaskSklearnConfig(type, workspaceId, framework, version, runtime, cpus, memory);
+            case ContainerGroupType.FLASK_SKLEARN: return this.createFlaskSklearnConfig(type, workspaceId, framework, version, runtime, cpus, memory);
             default: throw new Error('Invalid service type');
         }
     }
 
-    private createJupyterConfig(type: GroupType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): KubeContainerGroup {
+    private createJupyterConfig(type: ContainerGroupType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): KubernetesContainerGroup {
         const namespace = "default";
         const kubernetesEnv = this.getKubernetesEnvironmentVariables(name, runtime, "/home/jovyan", packages, null, null);
         const container = this.getKubernetesContainer(name, 8888, `ntcore/datascience-notebook:${runtime}`, kubernetesEnv, cpus, memory, `/i/${name}/static/base/images/favicon.ico`, 300);
@@ -53,7 +53,7 @@ export class KubeServiceConfigProvider implements IContainerGroupConfigProvider
         }
     }
 
-    private createTheiaConfig(type: GroupType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): KubeContainerGroup {
+    private createTheiaConfig(type: ContainerGroupType, name: string, runtime: Runtime, cpus?: number, memory?: number, packages?: string[]): KubernetesContainerGroup {
         const namespace = "default";
         const kubernetesEnv = this.getKubernetesEnvironmentVariables(name, runtime, "/home/project", packages, null, null);
         const container = this.getKubernetesContainer(name, 80, `ntcore/theia-python:${runtime}`, kubernetesEnv, cpus, memory, `/i/${name}/`, 300);
@@ -66,7 +66,7 @@ export class KubeServiceConfigProvider implements IContainerGroupConfigProvider
         }
     }
 
-    private createFlaskSklearnConfig(type: GroupType, workspaceId: string, framework: Framework, version: number, runtime: Runtime, cpus?: number, memory?: number): KubeContainerGroup {
+    private createFlaskSklearnConfig(type: ContainerGroupType, workspaceId: string, framework: Framework, version: number, runtime: Runtime, cpus?: number, memory?: number): KubernetesContainerGroup {
         const namespace = "default";
         const name = `flask-${workspaceId.toLocaleLowerCase()}`;
         const kubernetesEnv = this.getKubernetesEnvironmentVariables(name, runtime, null, null, workspaceId, version);
@@ -179,7 +179,7 @@ export class KubeServiceConfigProvider implements IContainerGroupConfigProvider
      * @param name container name.
      * @returns 
      */
-     private createMinimalConfig(namespace: string, name: string): KubeContainerGroup  {
+     private createMinimalConfig(namespace: string, name: string): KubernetesContainerGroup  {
         return { 
             namespace: namespace, 
             name: name,

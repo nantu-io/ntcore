@@ -195,7 +195,7 @@ export default function BaseLayout(props) {
             <MenuIcon />
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-            NT Platform
+            NTCore
           </Typography>
           <IconButton color="inherit" onClick={_handleSettingMenuClick}>
             <Badge badgeContent={0} color="secondary">

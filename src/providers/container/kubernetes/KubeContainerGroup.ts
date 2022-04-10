@@ -3,7 +3,7 @@ import { IContainerGroup, IContainer } from "../ContainerGroupProvider";
 /**
  * Kubernetes container service.
  */
-export class KubeContainerGroup extends IContainerGroup 
+export class KubernetesContainerGroup extends IContainerGroup 
 {
     namespace?: string;
     service?: KubernetesServiceV1;

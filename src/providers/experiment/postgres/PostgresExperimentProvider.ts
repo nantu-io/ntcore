@@ -1,4 +1,4 @@
-import { Experiment, ExperimentState, IExperimentProvider } from "../GenericExperimentProvider";
+import { Experiment, ExperimentState, IExperimentProvider } from "../ExperimentProvider";
 import {
     EXPERIMENTS_INITIALIZATION,
     EXPERIMENTS_LIST,
@@ -74,7 +74,7 @@ export class PostgresExperimentProvider implements IExperimentProvider
 
     /**
      * Delete the model version.
-     * @param workspace Workspace id.
+     * @param workspaceId Workspace id.
      * @param version version number.
      */
     public async delete(workspaceId: string, version: number) 

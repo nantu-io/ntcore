@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ExperimentState } from "../providers/experiment/GenericExperimentProvider";
+import { ExperimentState } from "../providers/experiment/ExperimentProvider";
 import { workspaceProvider, experimentProvider } from "../libs/config/AppModule";
 
 export class ExperimentController 
@@ -145,12 +145,12 @@ export class ExperimentController
      * Endpoint to register an experiment.
      * @param req Request
      * @param res Response.
-     * Example: curl -X DELETE http://localhost:8180/dsp/api/v1/workspace/{workspace_id}/registry
+     * Example: curl http://localhost:8180/dsp/api/v1/workspace/{workspace_id}/registry
      */
     public async getRegistryV1(req: Request, res: Response) 
     {
         const workspaceId = req.params.workspaceId;
         const registry = await experimentProvider.getRegistry(workspaceId);
-        res.status(200).send(registry);
+        res.status(200).json(registry);
     }
 }

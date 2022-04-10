@@ -26,7 +26,7 @@ with client.start_run(workspace_id) as exper:
 client.register_experiment(workspace_id, 1)
 
 # Step 4: Deploy the registered model.
-client.deploy_model(workspace_id, 1)
+client.deploy_model(workspace_id)
 
 # Step 5: Unregister experiments.
 # client.unregister_experiment(workspace_id)

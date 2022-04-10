@@ -37,10 +37,8 @@ export const DEPLOYMENTS_LIST = `SELECT id, workspace_id, version, status, creat
 */
 export const DEPLOYMENTS_ACTIVE_LIST = `
     SELECT id, workspace_id, version, status, created_by, created_at
-    FROM (
-        SELECT id, workspace_id, version, status, created_by, created_at, RANK () OVER (PARTITION BY workspace_id, status ORDER BY created_at DESC) timeRank
-        FROM deployments) AS rank
-    WHERE status = 'SUCCEED' AND timeRank = 1
+    FROM deployments
+    WHERE status = 'RUNNING'
     ORDER BY created_at DESC;
 ;`
 /**
@@ -56,8 +54,10 @@ export const DEPLOYMENT_LOCK_CREATE = `INSERT INTO deployment_locks (workspace_i
 */
 export const DEPLOYMENT_STATUS_UPDATE = `
     UPDATE deployments
-    SET status = $3
-    WHERE workspace_id = $1 AND id = $2;`;
+    SET status = 
+        CASE WHEN id = $2 THEN $3
+        ELSE 'STOPPED' END
+    WHERE workspace_id = $1 AND (status = 'PENDING' OR status = 'RUNNING');`;
 /**
 * Query to delete the deployment lock.
 */

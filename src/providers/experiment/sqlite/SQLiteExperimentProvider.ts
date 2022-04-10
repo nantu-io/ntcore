@@ -1,4 +1,4 @@
-import { Experiment, ExperimentState, IExperimentProvider } from "../GenericExperimentProvider";
+import { Experiment, ExperimentState, IExperimentProvider } from "../ExperimentProvider";
 import {
     EXPERIMENTS_INITIALIZATION,
     EXPERIMENTS_LIST,
@@ -13,7 +13,7 @@ import {
 } from "./SQLiteExperimentQueries"; 
 import Database = require("better-sqlite3");
 
-export class LocalExperimentProvider implements IExperimentProvider 
+export class SQLiteExperimentProvider implements IExperimentProvider 
 {
     private _databaseClient: Database.Database;
     /**
@@ -72,7 +72,7 @@ export class LocalExperimentProvider implements IExperimentProvider
 
     /**
      * Delete the model version.
-     * @param workspace Workspace id.
+     * @param workspaceId Workspace id.
      * @param version version number.
      */
     public async delete(workspaceId: string, version: number) 

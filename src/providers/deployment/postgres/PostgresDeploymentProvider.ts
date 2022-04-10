@@ -1,4 +1,4 @@
-import { Deployment, GenericDeploymentProvider, DeploymentStatus } from "../GenericDeploymentProvider";
+import { Deployment, GenericDeploymentProvider, DeploymentStatus } from "../DeploymentProvider";
 import {
     DEPLOYMENTS_INITIALIZATION,
     DEPLOYMENTS_LIST,
@@ -35,7 +35,6 @@ export class PostgresDeploymentProvider implements GenericDeploymentProvider
 
     /**
      * Create a new deployment.
-     * @param experiment Deployment object.
      */
     public async create(deployment: Deployment) 
     {

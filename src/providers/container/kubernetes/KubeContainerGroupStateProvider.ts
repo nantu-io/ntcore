@@ -1,4 +1,4 @@
-import { IContainerGroupStateProvider, IContainerGroup, GroupState } from "../ContainerGroupProvider";
+import { IContainerGroupStateProvider, IContainerGroup, ContainerGroupState } from "../ContainerGroupProvider";
 import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./KubeContainerGroupStateQueries";
 import { Runtime } from "../../../commons/Runtime";
 import { Pool } from 'pg';
@@ -9,7 +9,8 @@ export class PostgresServiceStateProvider implements IContainerGroupStateProvide
     /**
      * Initialize the experiments table.
      */
-    constructor(pool: Pool) {
+    constructor(pool: Pool) 
+    {
         this._pgPool = pool;
     }
 
@@ -29,7 +30,7 @@ export class PostgresServiceStateProvider implements IContainerGroupStateProvide
      * @param state State of the service.
      * @returns Promise of the service config.
      */
-    public async record(config: IContainerGroup, username: string, state: GroupState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<IContainerGroup> 
+    public async record(config: IContainerGroup, username: string, state: ContainerGroupState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<IContainerGroup> 
     {
         await this._pgPool.query(INSTANCE_STATE_UPSERT, [
             config.name, 
@@ -57,7 +58,7 @@ export class PostgresServiceStateProvider implements IContainerGroupStateProvide
             const row = res.rows[0];
             return { name, state: row.state, runtime: row.runtime, cpus: row.cpus, memory: row.memory, packages: row.packages };
         }
-        return { name, state: GroupState.UNKNOWN };
+        return { name, state: ContainerGroupState.UNKNOWN };
     }
 
     /**

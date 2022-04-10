@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { IContainerGroup, GroupState } from "../providers/container/ContainerGroupProvider";
-import { ContainerProviderFactory, ServiceConfigProviderFactory, ServiceStateProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
-import { IContainerGroupProvider, IContainerGroupConfigProvider, GroupTypeMapping } from "../providers/container/ContainerGroupProvider";
+import { IContainerGroup, ContainerGroupState } from "../providers/container/ContainerGroupProvider";
+import { ContainerProviderFactory, ContainerGroupConfigProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
+import { IContainerGroupProvider, IContainerGroupConfigProvider, ContainerGroupTypeMapping } from "../providers/container/ContainerGroupProvider";
 import { waitUntil } from 'async-wait-until';
 import { RuntimeMapping } from '../commons/Runtime';
 import { ContainerTimeoutException } from "../commons/Errors"
@@ -15,7 +15,7 @@ export class InstanceController
     public constructor() 
     {
         this._serviceProvider = new ContainerProviderFactory().createProvider();
-        this._configProvider = new ServiceConfigProviderFactory().createProvider();
+        this._configProvider = new ContainerGroupConfigProviderFactory().createProvider();
         this.createServiceV1 = this.createServiceV1.bind(this);
         this.getServiceStateV1 = this.getServiceStateV1.bind(this);
         this.stopServiceV1 = this.stopServiceV1.bind(this);
@@ -32,7 +32,7 @@ export class InstanceController
      */
     public async createServiceV1(req: Request, res: Response) 
     {
-        const type = GroupTypeMapping[req.body.type];
+        const type = ContainerGroupTypeMapping[req.body.type];
         const runtime = RuntimeMapping[req.body.runtime];
         const cpus = req.body.cpus ? parseFloat(req.body.cpus) : 0;
         const memory = req.body.memory ? parseInt(req.body.memory) : 0;
@@ -42,12 +42,12 @@ export class InstanceController
         const config = this._configProvider.createDevelopmentConfig(name, type, runtime, cpus, memory, packages);
 
         try {
-            await serviceStateProvider.record(config, username, GroupState.PENDING, runtime, cpus, memory, packages);
-            res.status(201).send({ name: name, status: GroupState.PENDING });
+            await serviceStateProvider.record(config, username, ContainerGroupState.PENDING, runtime, cpus, memory, packages);
+            res.status(201).send({ name: name, status: ContainerGroupState.PENDING });
             await this._serviceProvider.provision(config);
             await this._serviceProvider.start(config);
-            const result = await this.waitForInstanceState(config, GroupState.RUNNING);
-            const state = result ? GroupState.RUNNING : GroupState.INACTIVE;
+            const result = await this.waitForInstanceState(config, ContainerGroupState.RUNNING);
+            const state = result ? ContainerGroupState.RUNNING : ContainerGroupState.INACTIVE;
             await serviceStateProvider.record(config, username, state);
         } catch (err) {
             await this.handleServiceProviderError(err, config, username);
@@ -69,11 +69,11 @@ export class InstanceController
 
         try {
             await this._serviceProvider.getState(config);
-            await serviceStateProvider.record(config, username, GroupState.STOPPING);
+            await serviceStateProvider.record(config, username, ContainerGroupState.STOPPING);
             res.status(201).send(config);
             await this._serviceProvider.stop(config);
-            await this.waitForInstanceState(config, GroupState.INACTIVE);
-            await serviceStateProvider.record(config, username, GroupState.STOPPED);
+            await this.waitForInstanceState(config, ContainerGroupState.INACTIVE);
+            await serviceStateProvider.record(config, username, ContainerGroupState.STOPPED);
         } catch (err) {
             await this.handleServiceProviderError(err, config, username);
         }
@@ -94,12 +94,12 @@ export class InstanceController
 
         try {
             await this._serviceProvider.getState(config);
-            await serviceStateProvider.record(config, username, GroupState.STOPPING);
+            await serviceStateProvider.record(config, username, ContainerGroupState.STOPPING);
             res.status(201).send(config);
             await this._serviceProvider.stop(config);
-            await this.waitForInstanceState(config, GroupState.INACTIVE);
+            await this.waitForInstanceState(config, ContainerGroupState.INACTIVE);
             await this._serviceProvider.delete(config);
-            await serviceStateProvider.record(config, username, GroupState.INACTIVE);
+            await serviceStateProvider.record(config, username, ContainerGroupState.INACTIVE);
         } catch (err) {
             await this.handleServiceProviderError(err, config, username);
         }
@@ -145,7 +145,7 @@ export class InstanceController
      * @param targetState target service state.
      * @returns service configuration.
      */
-    private async waitForInstanceState(config: IContainerGroup, targetState: GroupState) 
+    private async waitForInstanceState(config: IContainerGroup, targetState: ContainerGroupState) 
     {
         try {
             return await waitUntil(async () => (await this._serviceProvider.getState(config)).state === targetState, 
@@ -158,7 +158,7 @@ export class InstanceController
     private async handleServiceProviderError(err: any, service: IContainerGroup, username: string) 
     {
         if (err instanceof ContainerTimeoutException) {
-            await serviceStateProvider.record(service, username, GroupState.INACTIVE);
+            await serviceStateProvider.record(service, username, ContainerGroupState.INACTIVE);
         } else {
             await this.synchronizeServiceState(service, username);
         }
@@ -174,7 +174,7 @@ export class InstanceController
             const recordState = values[0];
             const actualState = values[1];
             if (!actualState.state) {
-                await serviceStateProvider.record(service, username, GroupState.INACTIVE);
+                await serviceStateProvider.record(service, username, ContainerGroupState.INACTIVE);
             } else if (recordState.state !== actualState.state) {
                 await serviceStateProvider.record(service, username, actualState.state);
             }

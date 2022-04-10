@@ -49,7 +49,7 @@ export class Routes
             .delete(this.experimentController.unregisterExperimentV1)
         app.route('/dsp/api/v1/workspace/:workspaceId/model/:version')
             .get(this.experimentController.downloadModelV1)
-        app.route('/dsp/api/v1/workspace/:workspaceId/model/:version/deploy')
+        app.route('/dsp/api/v1/deployments')
             .post(this.deploymentController.deployModelV1)
         app.route('/dsp/api/v1/workspace/:workspaceId/deployments')
             .get(this.deploymentController.listDeploymentsV1)

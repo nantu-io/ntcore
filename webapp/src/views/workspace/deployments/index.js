@@ -41,15 +41,7 @@ class Deployments extends Component {
     }
 
     _createRowDataWithState(rows) {
-        const lastSuccessDeploymentIndex = rows.findIndex(row => row.status === 'SUCCEED');
-        const rowData = rows.map((row, index) => {
-            const rowData = this._createRowData(row, index);
-            if (index === lastSuccessDeploymentIndex) {
-                return [...rowData, 'RUNNING'];
-            } else {
-                return [...rowData, 'INACTIVE'];
-            }
-        });
+        const rowData = rows.map((row, index) => this._createRowData(row, index));
         this.setState({ rows: rowData });
     }
 
@@ -60,7 +52,6 @@ class Deployments extends Component {
             { name: 'createdBy', label: 'Created User' },
             { name: 'createdAt', label: 'Created Date' },
             { name: 'status', label: 'Status' },
-            { name: 'state', label: 'State' },
         ];
     }
 

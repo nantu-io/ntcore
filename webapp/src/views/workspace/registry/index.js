@@ -20,7 +20,7 @@ const useStyles = (theme) => ({
     summary: {
         paddingLeft: theme.spacing(3),
         paddingTop: theme.spacing(2),
-        fontSize: '21px'
+        fontSize: '22px'
     },
     container: {
         minHeight: 200
@@ -144,7 +144,7 @@ class Registry extends React.Component {
                             <p className={clsx(classes.entry)}>{version ? version : "--"}</p>
                             <p className={clsx(classes.entry)}>{framework ? framework : "--"}</p>
                             <p className={clsx(classes.entry)}>{createdBy ? createdBy : "--"}</p>
-                            <p className={clsx(classes.code)}>{version? endpoint : "--"}</p>
+                            <p className={clsx(classes.entry)}>{version? endpoint : "--"}</p>
                         </Grid>
                         <Grid item xs={2}> 
                             <p className={clsx(classes.entry)}>Runtime</p>

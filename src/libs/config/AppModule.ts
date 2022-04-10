@@ -1,12 +1,12 @@
-import { WorkpaceProviderFactory } from "../../providers/workspace/GenericWorkspaceProvider";
-import { ExperimentProviderFactory } from "../../providers/experiment/GenericExperimentProvider";
-import { DeploymentProviderFactory } from "../../providers/deployment/GenericDeploymentProvider";
-import { ServiceStateProviderFactory } from "../../providers/container/ContainerGroupProviderFactory";
+import { WorkpaceProviderFactory } from "../../providers/workspace/WorkspaceProvider";
+import { ExperimentProviderFactory } from "../../providers/experiment/ExperimentProvider";
+import { DeploymentProviderFactory } from "../../providers/deployment/DeploymentProvider";
+import { ContainerGroupStateProviderFactory } from "../../providers/container/ContainerGroupProviderFactory";
 
 export const workspaceProvider = new WorkpaceProviderFactory().createProvider();
 export const experimentProvider = new ExperimentProviderFactory().createProvider();
 export const deploymentProvider = new DeploymentProviderFactory().createProvider();
-export const serviceStateProvider = new ServiceStateProviderFactory().createProvider();
+export const serviceStateProvider = new ContainerGroupStateProviderFactory().createProvider();
 
 export async function initialize() 
 {

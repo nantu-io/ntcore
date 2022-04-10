@@ -3,7 +3,7 @@ import { IContainerGroup, IContainer } from "../ContainerGroupProvider";
 /**
  * Local container definition.
  */
-export class LocalContainer extends IContainer 
+export class DockerContainer extends IContainer 
 {
     Image?: string;
     Env?: string[];
@@ -25,8 +25,8 @@ export class LocalContainer extends IContainer
  /**
   * Local container service.
   */
-export class LocalContainerService extends IContainerGroup 
+export class DockerContainerGroup extends IContainerGroup 
 {
     ExposedPorts?: { [key: string]: {}};
-    Containers?: LocalContainer[];
+    Containers?: DockerContainer[];
 }

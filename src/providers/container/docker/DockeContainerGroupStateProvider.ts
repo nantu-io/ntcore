@@ -1,9 +1,9 @@
-import { IContainerGroupStateProvider, IContainerGroup, GroupState } from "../ContainerGroupProvider";
+import { IContainerGroupStateProvider, IContainerGroup, ContainerGroupState  } from "../ContainerGroupProvider";
 import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./DockerContainerGroupStateQueries";
 import { Runtime } from "../../../commons/Runtime";
 import Database = require("better-sqlite3");
 
-export class LocalServiceStateProvider implements IContainerGroupStateProvider 
+export class DockerContainerGroupStateProvider implements IContainerGroupStateProvider 
 {
     private _databaseClient: Database.Database;
     /**
@@ -29,7 +29,7 @@ export class LocalServiceStateProvider implements IContainerGroupStateProvider
      * @param state State of the service.
      * @returns Promise of the service config.
      */
-    public async record(config: IContainerGroup, username: string, state: GroupState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<IContainerGroup> 
+    public async record(config: IContainerGroup, username: string, state: ContainerGroupState, runtime?: Runtime, cpus?: number, memory?: number, packages?: string[]): Promise<IContainerGroup> 
     {
         this._databaseClient.prepare(INSTANCE_STATE_UPSERT).run({
             name: config.name,
@@ -57,7 +57,7 @@ export class LocalServiceStateProvider implements IContainerGroupStateProvider
         if (res) {
             return { name, state: res.state, runtime: res.runtime, cpus: res.cpus, memory: res.memory, packages: res.packages };
         }
-        return { name, state: GroupState.UNKNOWN };
+        return { name, state: ContainerGroupState.UNKNOWN };
     }
 
     /**
