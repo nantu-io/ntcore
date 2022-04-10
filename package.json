@@ -8,6 +8,7 @@
         "url": "git://github.com:dsp-columbus/ntcore.git"
     },
     "dependencies": {
+        "@aws-sdk/client-batch": "^3.67.0",
         "@kubernetes/client-node": "^0.15.0",
         "@types/js-yaml": "^4.0.2",
         "async-wait-until": "^2.0.5",

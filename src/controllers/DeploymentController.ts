@@ -2,24 +2,26 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { waitUntil } from 'async-wait-until';
 import { ContainerProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
-import { ContainerGroupConfigProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
+import { ContainerGroupContextProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
 import { Framework, FrameworkMapping } from '../commons/Framework';
 import { DeploymentStatus } from '../providers/deployment/DeploymentProvider';
-import { IContainerGroupProvider, IContainerGroupConfigProvider, ContainerGroupState, ContainerGroupType } from '../providers/container/ContainerGroupProvider';
+import { IContainerGroup, IContainerGroupProvider, ContainerGroupState, ContainerGroupType, IContainerGroupContextProvider, ContainerGroupRequestContext } from '../providers/container/ContainerGroupProvider';
 import { experimentProvider, deploymentProvider } from "../libs/config/AppModule";
+import { Experiment } from '../providers/experiment/ExperimentProvider';
 
 export class DeploymentController
 {
+    private readonly _containerGroupContextProvider: IContainerGroupContextProvider;
     private readonly _containerGroupProvider: IContainerGroupProvider;
-    private readonly _configProvider: IContainerGroupConfigProvider;
 
     public constructor()
     {   
-        this._configProvider = new ContainerGroupConfigProviderFactory().createProvider();
+        this._containerGroupContextProvider = new ContainerGroupContextProviderFactory().createProvider();
         this._containerGroupProvider = new ContainerProviderFactory().createProvider();
         this.listDeploymentsV1 = this.listDeploymentsV1.bind(this);
         this.listActiveDeploymentsV1 = this.listActiveDeploymentsV1.bind(this);
         this.deployModelV1 = this.deployModelV1.bind(this);
+        this.terminateDeploymentV1 = this.terminateDeploymentV1.bind(this);
     }
 
     /**
@@ -33,33 +35,51 @@ export class DeploymentController
     {
         const workspaceId = req.body.workspaceId;
         const registry = await experimentProvider.getRegistry(workspaceId);
-        const framework = registry.framework
-        const type = this.getServiceType(framework);
-        const version = registry.version;
-        const runtime = registry.runtime;
-        const config = this._configProvider.createDeploymentConfig(type, workspaceId, version, runtime, framework, 1, 2);
+        const requestContext = this.getRequestContext(req, registry);
+        const context = this._containerGroupContextProvider.getContext(requestContext);
+        if (!await this.aquireDeploymentLock(workspaceId, registry.version, res)) {
+            return;
+        }
 
-        const deploymentId = await this.aquireDeploymentLock(workspaceId, version, res);
+        var deploymentId: string;
         try {
-            await this.createDeploymentEntry(workspaceId, deploymentId, version);
+            // Create containers with container group provider.
+            await this._containerGroupProvider.provision(context);
+            const response = (await this._containerGroupProvider.start(context));
+            deploymentId = response.id != null ? response.id : uuidv4();
             res.status(201).send({info: `Started Deployment ${deploymentId}`});
-            // Create containers with container service provider.
-            await this._containerGroupProvider.provision(config);
-            await this._containerGroupProvider.start(config);
-            await this.waitForServiceRunning(type, workspaceId);
+            await this.createDeploymentEntry(workspaceId, deploymentId, registry.version);
+            // Wait for container group to be running.
+            const configWithDeploymentId = { id: deploymentId, ...context };
+            await this.waitForDeploymentState(configWithDeploymentId, ContainerGroupState.RUNNING);
             await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.RUNNING);
         } catch (err) {
+            deploymentId = (deploymentId == null) ? uuidv4() : deploymentId;
             await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.FAILED);
         } finally {
             await deploymentProvider.releaseLock(workspaceId);
         }
     }
 
-    private async aquireDeploymentLock(workspaceId: string, version: number, res: Response): Promise<string>
+    private getRequestContext(req: Request, registry: Experiment): ContainerGroupRequestContext
+    {
+        return {
+            type: this.getServiceType(registry.framework),
+            framework: registry.framework,
+            version:  registry.version,
+            runtime: registry.runtime,
+            workspaceId: req.body.workspaceId,
+            command: req.body.command,
+            workflow: req.body.workflow,
+            cpus: 1, memory: 2,
+        }
+    }
+
+    private async aquireDeploymentLock(workspaceId: string, version: number, res: Response): Promise<boolean>
     {
         try {
             await deploymentProvider.aquireLock(workspaceId, version);
-            return uuidv4();
+            return true;
         } catch (err) {
             if (err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
                 res.status(400).send({error: '[Error] Deployment in progress'});
@@ -67,7 +87,7 @@ export class DeploymentController
                 await deploymentProvider.releaseLock(workspaceId);
                 res.status(500).send({error: err.toString()});
             }
-            throw err;
+            return false;
         }
     }
 
@@ -93,12 +113,33 @@ export class DeploymentController
         });
     }
 
-    private async waitForServiceRunning(type: ContainerGroupType, workspaceId: string) 
+    private async waitForDeploymentState(config: IContainerGroup, state: ContainerGroupState) 
     {
-        const config = this._configProvider.createDeploymentConfig(type, workspaceId);
-        await waitUntil(async () => (await this._containerGroupProvider.getState(config)).state === ContainerGroupState.RUNNING,
+        await waitUntil(async () => (await this._containerGroupProvider.getState(config)).state === state,
             { timeout: 900000, intervalBetweenAttempts: 10000 });
         return config;
+    }
+
+    /**
+     * Terminate a deployment with the given workspace id and deployment id.
+     * @param req Request
+     * @param res Response
+     * Example usage:
+     * curl -X DELETE http://localhost:8180/dsp/api/v1/{workspace_id}/deployment
+     */
+    public async terminateDeploymentV1(req: Request, res: Response)
+    {
+        const workspaceId = req.params.workspaceId;
+        await this.aquireDeploymentLock(workspaceId, -1, res);
+        try {
+            const deploymentId = (await deploymentProvider.getActive(workspaceId)).deploymentId;
+            await this._containerGroupProvider.delete({ id: deploymentId });
+            res.status(201).send({info: `Terminating Deployment ${deploymentId}`});
+            await this.waitForDeploymentState({ id: deploymentId }, ContainerGroupState.INACTIVE);
+            await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.STOPPED);
+        } finally {
+            await deploymentProvider.releaseLock(workspaceId);
+        }
     }
 
     /**

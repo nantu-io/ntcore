@@ -83,7 +83,7 @@ class Registry extends React.Component {
         const { classes } = this.props;
         const { version, runtime, framework } = this.state
         return (
-            <Button variant="contained" size="small" color="primary" className={clsx(classes.action)} disabled={!version} onClick={() => 
+            <Button variant="contained" size="small" color="primary" className={clsx(classes.action)}  onClick={() => 
                 this.setState({
                     isModalOpen: true, 
                     selectedVersion: version, 
@@ -95,12 +95,13 @@ class Registry extends React.Component {
     }
 
     _createActiveForm(callback, closeModel, errorHandler) {
-        const { workspaceId } = this.props;
+        const { workspaceId, workspaceType } = this.props;
         const { version, runtime, framework, mode } = this.state;
         switch(mode) {
             case MODAL_MODE.DEPLOY: return (
                 <DeployForm 
                     workspaceId={workspaceId}
+                    workspaceType={workspaceType}
                     version={version}
                     runtime={runtime}
                     framework={framework}

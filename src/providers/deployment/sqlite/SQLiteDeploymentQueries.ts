@@ -57,6 +57,15 @@ export const DEPLOYMENTS_ACTIVE_LIST = `
     ORDER BY created_at DESC;
 ;`
 /**
+ * Query to list all active deployments.
+ */
+export const DEPLOYMENT_ACTIVE_READ = `
+    SELECT id, workspace_id, version, status, created_by, created_at
+    FROM deployments
+    WHERE workspace_id = $workspaceId AND status = 'RUNNING'
+    ORDER BY created_at DESC;
+;`
+/**
  * Query to read experiment given workspace id and version.
  */
 export const DEPLOYMENT_READ = `SELECT id, workspace_id, version, status, created_by, created_at FROM deployments WHERE workspace_id=$workspace_id AND id=$id;`

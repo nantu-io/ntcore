@@ -1,5 +1,5 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
-import { LocalDeploymentProvider } from "./sqlite/SQLiteDeploymentProvider";
+import { SQLiteDeploymentProvider } from "./sqlite/SQLiteDeploymentProvider";
 import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresDeploymentProvider } from "./postgres/PostgresDeploymentProvider";
@@ -46,7 +46,7 @@ export class IllegalStateError extends Error {}
 /**
  * Interface for deployment provider.
  */
-export interface GenericDeploymentProvider 
+export interface DeploymentProvider 
 {
     /**
      * Initialize required resource.
@@ -59,11 +59,15 @@ export interface GenericDeploymentProvider
     /**
      * Retrieve a deployment.
      */
-    read: (workspaceId: string, version: string) => Promise<Deployment>;
+    read: (workspaceId: string, deploymentId: string) => Promise<Deployment>;
     /**
      * List all deployments.
      */
     list: (workspaceId: string) => Promise<Array<Deployment>>;
+    /**
+     * Get active deployment.
+     */
+    getActive: (workspaceId: string) => Promise<Deployment>;
     /**
      * List all deployments.
      */
@@ -88,12 +92,12 @@ export class DeploymentProviderFactory
      * Create a provider for local deployments.
      * @returns Deployment provider.
      */
-    public createProvider(): GenericDeploymentProvider 
+    public createProvider(): DeploymentProvider 
     {
         const providerType: DatabaseType = appConfig.database.provider;
         switch(providerType) {
             case DatabaseType.POSTGRES: return new PostgresDeploymentProvider(PostgresClientProvider.get());
-            case DatabaseType.SQLITE: return new LocalDeploymentProvider(SQliteClientProvider.get());
+            case DatabaseType.SQLITE: return new SQLiteDeploymentProvider(SQliteClientProvider.get());
             default: throw new Error("Invalide provider type.");
         }
     }

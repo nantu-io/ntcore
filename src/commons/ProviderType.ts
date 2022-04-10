@@ -10,7 +10,7 @@ export const enum ProviderType {
     /**
      * Deploy instances in AWS 
      */
-    AWS = "AWS",
+    AWSBATCH = "AWSBATCH",
     /**
      * Deploy instances in AliCloud 
      */
@@ -31,7 +31,7 @@ export const ProviderTypeMapping = {
     /**
      * AWS.
      */
-    "aws": ProviderType.AWS,
+    "awsbatch": ProviderType.AWSBATCH,
     /**
      * Ali cloud.
      */

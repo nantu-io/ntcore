@@ -80,30 +80,6 @@ export class DockerContainerGroupProvider implements IContainerGroupProvider
     }
 
     /**
-     * Execute command on the container.
-     * @param config Local service config.
-     * @returns Promise of the local container configuration.
-     */
-    public async exec(name: string, command: string): Promise<any> 
-    {
-        const container = await this.getContainerByName(name);
-        if (!container) {
-            return;
-        }
-        const execObj = await container.exec({Cmd: ['/bin/bash', '-c', command]});
-        await execObj.start({});
-    }
-
-    /**
-     * Return the list of local containers.
-     * @returns Promise of the local container configuration list.
-     */
-    public listServices(): Promise<Array<IContainerGroup>> 
-    {
-        return this.listContainers({});
-    }
-
-    /**
      * Wait for a specific state of a service.
      */
     public async getState(config: DockerContainerGroup): Promise<IContainerGroup> 

@@ -179,7 +179,7 @@ export class KubernetesContainerGroupConfigProvider implements IContainerGroupCo
      * @param name container name.
      * @returns 
      */
-     private createMinimalConfig(namespace: string, name: string): KubernetesContainerGroup  {
+    private createMinimalConfig(namespace: string, name: string): KubernetesContainerGroup  {
         return { 
             namespace: namespace, 
             name: name,

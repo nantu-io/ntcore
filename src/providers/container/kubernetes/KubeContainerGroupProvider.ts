@@ -70,25 +70,7 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
         await this.applyResource(() => this._kubernetesClient.patch(config.deployment), console.warn)
         return config;
     }
-     
-    /**
-     * Executes commands in the kubernetes service.
-     * @returns Kubernetes container service config.
-     */
-    public async exec(name: string, command: string) 
-    {
-        return;
-    }
     
-    /**
-     * Lists all kubernetes container services.
-     * @returns Kubernetes container service config.
-     */
-    public async listServices(): Promise<KubernetesContainerGroup[]> 
-    {
-        return;
-    }
-
     /**
      * Retrieve the service state from kubernetes cluster
      * @param config Kubernetes container service config.

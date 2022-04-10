@@ -1,6 +1,6 @@
-import { IContainerGroupStateProvider, IContainerGroup, ContainerGroupState } from "../ContainerGroupProvider";
-import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./KubeContainerGroupStateQueries";
-import { Runtime } from "../../../commons/Runtime";
+import { IContainerGroupStateProvider, IContainerGroup, ContainerGroupState } from "../../ContainerGroupProvider";
+import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./PostgresContainerGroupStateQueries";
+import { Runtime } from "../../../../commons/Runtime";
 import { Pool } from 'pg';
 
 export class PostgresServiceStateProvider implements IContainerGroupStateProvider 

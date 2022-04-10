@@ -1,4 +1,4 @@
-import { Deployment, GenericDeploymentProvider, DeploymentStatus } from "../DeploymentProvider";
+import { Deployment, DeploymentProvider, DeploymentStatus } from "../DeploymentProvider";
 import {
     DEPLOYMENTS_INITIALIZATION,
     DEPLOYMENTS_LIST,
@@ -8,11 +8,12 @@ import {
     DEPLOYMENT_LOCK_INITIALIZATION,
     DEPLOYMENT_LOCK_CREATE,
     DEPLOYMENT_LOCK_DELETE,
-    DEPLOYMENT_STATUS_UPDATE
+    DEPLOYMENT_STATUS_UPDATE,
+    DEPLOYMENT_ACTIVE_READ
 } from "./PostgresDeploymentQueries";
 import { Pool } from 'pg';
 
-export class PostgresDeploymentProvider implements GenericDeploymentProvider 
+export class PostgresDeploymentProvider implements DeploymentProvider 
 {
     private _pgPool: Pool;
     /**
@@ -64,11 +65,11 @@ export class PostgresDeploymentProvider implements GenericDeploymentProvider
     /**
      * Retrieve a deployment with given workspaceId and version.
      * @param workspaceId Workspace id.
-     * @param version Experiment version.
+     * @param deploymentId Deployment id.
      */
-    public async read(workspaceId: string, version: string) 
+    public async read(workspaceId: string, deploymentId: string) 
     {
-        return await this._pgPool.query(DEPLOYMENT_READ, [workspaceId, version]).then(res => res.rows.length > 0 ? res.rows[0] : null);
+        return await this._pgPool.query(DEPLOYMENT_READ, [workspaceId, deploymentId]).then(res => res.rows.length > 0 ? res.rows[0] : null);
     }
 
     /**
@@ -100,4 +101,14 @@ export class PostgresDeploymentProvider implements GenericDeploymentProvider
     {
         await this._pgPool.query(DEPLOYMENT_STATUS_UPDATE, [workspaceId, id, status]);
     }
+
+    /**
+     * Retrieve a deployment with given workspaceId and version.
+     * @param workspaceId Workspace id.
+     * @param deploymentId Deployment id.
+     */
+     public async getActive(workspaceId: string) 
+     {
+         return await this._pgPool.query(DEPLOYMENT_ACTIVE_READ, [workspaceId]).then(res => res.rows.length > 0 ? res.rows[0] : null);
+     }
 }

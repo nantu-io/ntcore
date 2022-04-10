@@ -1,9 +1,9 @@
-import { IContainerGroupStateProvider, IContainerGroup, ContainerGroupState  } from "../ContainerGroupProvider";
-import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./DockerContainerGroupStateQueries";
-import { Runtime } from "../../../commons/Runtime";
+import { IContainerGroupStateProvider, IContainerGroup, ContainerGroupState  } from "../../ContainerGroupProvider";
+import { INSTANCES_INITIALIZATION, INSTANCES_LIST, INSTANCES_READ, INSTANCE_STATE_UPSERT } from "./SQLIteContainerGroupStateQueries";
+import { Runtime } from "../../../../commons/Runtime";
 import Database = require("better-sqlite3");
 
-export class DockerContainerGroupStateProvider implements IContainerGroupStateProvider 
+export class SQLiteContainerGroupStateProvider implements IContainerGroupStateProvider 
 {
     private _databaseClient: Database.Database;
     /**

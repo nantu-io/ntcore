@@ -104,9 +104,27 @@ export abstract class IContainer
 export abstract class IContainerGroup
 {
     type?: ContainerGroupType;
+    id?: string;
     name?: string;
     state?: ContainerGroupState;
     vars?: string[]
+}
+/**
+ * Container group request context.
+ */
+export class ContainerGroupRequestContext
+{
+    name?: string;
+    type?: ContainerGroupType; 
+    workspaceId?: string;
+    version?: number;
+    runtime?: Runtime;
+    framework?: Framework;
+    cpus?: any; 
+    memory?: any;
+    packages?: string[];
+    command?: string;
+    workflow?: string;
 }
 /**
  * Interface for container provider.
@@ -133,14 +151,6 @@ export interface IContainerGroupProvider
      * Execute command on the container.
      */
     update: (config: IContainerGroup) => Promise<IContainerGroup>;
-    /**
-     * Create workspace directory in container.
-     */
-    exec: (name: string, command: string) => Promise<any>;
-    /**
-     * Lists all containers.
-     */
-    listServices: () => Promise<Array<IContainerGroup>>;
     /**
      * Returns the state of a service.
      */
@@ -182,6 +192,13 @@ export interface IContainerGroupConfigProvider
      */
     createDeploymentConfig: (type: ContainerGroupType, workspaceId: string, version?: number, runtime?: Runtime, framework?: Framework, cpus?: any, memory?: any, publishedPort?: number) => IContainerGroup
 }
+/**
+ * Interface for context provider.
+ */
+ export interface IContainerGroupContextProvider 
+ {
+    getContext: (requestContext: ContainerGroupRequestContext) => IContainerGroup
+ }
 /**
  * Provider factory.
  */

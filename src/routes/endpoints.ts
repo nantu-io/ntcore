@@ -55,5 +55,7 @@ export class Routes
             .get(this.deploymentController.listDeploymentsV1)
         app.route('/dsp/api/v1/deployments/active')
             .get(this.deploymentController.listActiveDeploymentsV1)
+        app.route('/dsp/api/v1/:workspaceId/deployment')
+            .delete(this.deploymentController.terminateDeploymentV1)
     }
 }

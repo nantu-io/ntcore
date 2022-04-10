@@ -3,6 +3,13 @@
 ##############################
 container:
   provider: 
+    type: awsbatch
+    region: cn-northwest-1
+    accessKeyId: AKIA5RDDQUFZFPU7L6UD
+    secretAccessKey: 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
+
+service:
+  provider:
     type: docker
 
 database:
