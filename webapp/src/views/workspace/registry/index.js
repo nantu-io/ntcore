@@ -83,7 +83,7 @@ class Registry extends React.Component {
         const { classes } = this.props;
         const { version, runtime, framework } = this.state
         return (
-            <Button variant="contained" size="small" color="primary" className={clsx(classes.action)}  onClick={() => 
+            <Button variant="contained" size="small" color="primary" disabled={!version} className={clsx(classes.action)}  onClick={() => 
                 this.setState({
                     isModalOpen: true, 
                     selectedVersion: version, 

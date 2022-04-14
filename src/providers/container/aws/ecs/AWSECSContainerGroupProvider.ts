@@ -71,7 +71,7 @@ export class AWSECSContainerGroupProvider implements IContainerGroupProvider
         } else {
             state = ContainerGroupState.PENDING;
         }
-        return { id: response.tasks[0].taskArn, cluster: config.cluster, state: state };
+        return { id: response.tasks[0].taskArn.split("/").pop(), cluster: config.cluster, state: state };
     } 
 
     public async getLogs(config: AWSECSContainerGroup): Promise<string>

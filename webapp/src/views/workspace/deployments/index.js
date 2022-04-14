@@ -8,7 +8,7 @@ import MUIDataTable from "mui-datatables";
 import BaseModal from '../../baseModal';
 import Button from '@material-ui/core/Button';
 import InfoForm from './info';
-import LogsForm from './logs';
+import LogsForm from './events';
 
 const useStyles = (theme) => ({
     root: {

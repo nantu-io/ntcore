@@ -28,11 +28,11 @@ const useStyles = (theme) => ({
   },
   command: {
     marginTop: theme.spacing(3),
-    minWidth: 420,
+    minWidth: 550,
   },
   workflow: {
     marginTop: theme.spacing(1),
-    minWidth: 420,
+    minWidth: 550,
   },
 })
 

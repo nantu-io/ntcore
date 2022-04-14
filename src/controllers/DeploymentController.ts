@@ -6,8 +6,9 @@ import { ContainerGroupContextProviderFactory } from '../providers/container/Con
 import { Framework, FrameworkMapping } from '../commons/Framework';
 import { DeploymentStatus } from '../providers/deployment/DeploymentProvider';
 import { IContainerGroup, IContainerGroupProvider, ContainerGroupState, ContainerGroupType, IContainerGroupContextProvider, ContainerGroupRequestContext } from '../providers/container/ContainerGroupProvider';
-import { experimentProvider, deploymentProvider } from "../libs/config/AppModule";
+import { experimentProvider, deploymentProvider, workspaceProvider } from "../libs/config/AppModule";
 import { Experiment } from '../providers/experiment/ExperimentProvider';
+import { WorkspaceType, WorkspaceTypeMapping } from '../commons/WorkspaceType';
 
 export class DeploymentController
 {
@@ -35,16 +36,17 @@ export class DeploymentController
     public async deployModelV1(req: Request, res: Response)
     {
         const workspaceId = req.body.workspaceId;
-        const registry = await experimentProvider.getRegistry(workspaceId);
-        const requestContext = this.getRequestContext(req, registry);
-        const context = this._containerGroupContextProvider.getContext(requestContext);
-        // await deploymentProvider.releaseLock(workspaceId);
-        if (!await this.aquireDeploymentLock(workspaceId, registry.version, res)) {
-            return;
-        }
-
         var deploymentId: string;
         try {
+            const workspaceType = (await workspaceProvider.read(workspaceId)).type;
+            const registry = await experimentProvider.getRegistry(workspaceId);
+            const requestContext = this.getRequestContext(req, registry);
+            const context = this._containerGroupContextProvider.getContext(requestContext);
+            // Aquire the deployment lock
+            if (!await this.aquireDeploymentLock(workspaceId, registry.version, res)) {
+                return;
+            }
+
             // Create containers with container group provider.
             await this._containerGroupProvider.provision(context);
             const response = (await this._containerGroupProvider.start(context));
@@ -53,13 +55,26 @@ export class DeploymentController
             await this.createDeploymentEntry(workspaceId, deploymentId, registry.version);
             // Wait for container group to be running.
             const configWithDeploymentId = { id: deploymentId, ...context };
-            await this.waitForDeploymentState(configWithDeploymentId, ContainerGroupState.RUNNING);
+            const desiredState = this.getDesiredState(workspaceType);
+            await this.waitForDeploymentState(configWithDeploymentId, desiredState);
             await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.RUNNING);
         } catch (err) {
             deploymentId = (deploymentId == null) ? uuidv4() : deploymentId;
             await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.FAILED);
         } finally {
             await deploymentProvider.releaseLock(workspaceId);
+        }
+    }
+
+    private getDesiredState(workspaceType: string)
+    {
+        const type: WorkspaceType = WorkspaceTypeMapping[workspaceType];
+        if (type == WorkspaceTypeMapping.Batch) {
+            return ContainerGroupState.STOPPED;
+        } else if (type == WorkspaceTypeMapping.API) {
+            return ContainerGroupState.RUNNING;
+        } else {
+            throw new Error("Invalid workspace type.");
         }
     }
 
@@ -84,7 +99,7 @@ export class DeploymentController
             return true;
         } catch (err) {
             if (err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
-                res.status(400).send({error: '[Error] Deployment in progress'});
+                res.status(400).send({error: '[Error] Last deployment is still in progress'});
             } else {
                 await deploymentProvider.releaseLock(workspaceId);
                 res.status(500).send({error: err.toString()});
@@ -161,7 +176,7 @@ export class DeploymentController
             const events = await this._containerGroupProvider.getLogs(eventName);
             res.status(201).json({events: events});
         } catch {
-            res.status(500).json({error: 'Unable to retrieve log events.'});
+            res.status(500).json({error: 'Unable to retrieve log events. Please wait and retry.'});
         }
      }
 
