@@ -6,19 +6,24 @@ import InfoIcon from '@material-ui/icons/Info';
 import IconButton from '@material-ui/core/IconButton';
 import MUIDataTable from "mui-datatables";
 import BaseModal from '../../baseModal';
+import Button from '@material-ui/core/Button';
 import InfoForm from './info';
+import LogsForm from './logs';
 
-const useStyles = () => ({
+const useStyles = (theme) => ({
     root: {
         width: '100%'
     },
     table: {
         height: 500,
         marginTop: 15,
+    },
+    log: {
+        marginLeft: theme.spacing(-1),
     }
 });
 
-const MODAL_MODE = { INFO: 'Info' };
+const MODAL_MODE = { INFO: 'Info', LOG: 'Log' };
 
 class Deployments extends Component {
     constructor(props) {
@@ -27,11 +32,13 @@ class Deployments extends Component {
             page: 0,
             rowsPerPage: 25,
             isModalOpen: false,
+            selectedDeployment: null,
             mode: MODAL_MODE.INFO,
-            // rows: [['dfsafs', 1, 'ntcore', '2021-01-01 10:30:00', 'SUCCEED', 'RUNNING']]
-            rows: []
+            rows: [['dfsafs', 1, 'ntcore', '2021-01-01 10:30:00', 'SUCCEED', 'RUNNING']]
+            //rows: []
         }
         this._closeModel = this._closeModel.bind(this);
+        this._createViewLogButton = this._createViewLogButton.bind(this);
     }
 
     componentDidMount() {
@@ -45,6 +52,20 @@ class Deployments extends Component {
         this.setState({ rows: rowData });
     }
 
+    _createViewLogButton(index) {
+        const { classes } = this.props;
+        const { rows } = this.state;
+        const deploymentId = rows[index][0];
+        return (
+            <Button color="primary" className={clsx(classes.log)}
+                onClick={() => this.setState({
+                    isModalOpen: true, 
+                    selectedDeployment: deploymentId,
+                    mode: MODAL_MODE.LOG})}>
+                View
+            </Button>)
+    }
+
     _getColumns() {
         return [
             { name: 'id', label: 'Deployment ID' },
@@ -52,6 +73,7 @@ class Deployments extends Component {
             { name: 'createdBy', label: 'Created User' },
             { name: 'createdAt', label: 'Created Date' },
             { name: 'status', label: 'Status' },
+            { name: 'logs', label: 'Logs', options: { customBodyRenderLite: this._createViewLogButton, filter: false, sort: false, viewColumns: false }},
         ];
     }
 
@@ -78,8 +100,16 @@ class Deployments extends Component {
         this.setState({isModalOpen: false});
     }
 
+    _createActiveForm() {
+        const { workspaceId } = this.props;
+        const { mode, selectedDeployment } = this.state;
+        return mode === "Info" ? 
+            <InfoForm workspaceId={workspaceId}/> :
+            <LogsForm workspaceId={workspaceId} deploymentId={selectedDeployment}/>
+    }
+
     render() {
-        const { classes, workspaceId } = this.props;
+        const { classes } = this.props;
         const { rows } = this.state;
         const columns = this._getColumns();
         const options = { 
@@ -103,7 +133,7 @@ class Deployments extends Component {
                     options={options}
                 />
                 <BaseModal open={this.state.isModalOpen} onCancel={this._closeModel}>
-                    <InfoForm workspaceId={workspaceId}/>
+                    {this._createActiveForm()}
                 </BaseModal>
             </div>
         );

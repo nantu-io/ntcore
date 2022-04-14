@@ -155,6 +155,10 @@ export interface IContainerGroupProvider
      * Returns the state of a service.
      */
     getState: (config: IContainerGroup) => Promise<IContainerGroup>
+    /**
+     * Returns the logs of a service.
+     */
+    getLogs: (config: IContainerGroup) => Promise<string>
 }
 /**
  * Interface for service state provider.

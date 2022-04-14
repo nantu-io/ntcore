@@ -2,14 +2,17 @@ import { ECSClient, RunTaskCommand, StopTaskCommand, DescribeTasksCommand } from
 import { ContainerGroupState, IContainerGroupProvider } from '../../ContainerGroupProvider';
 import { AWSECSContainerGroup } from './AWSECSContainerGroup';
 import { NotImplementedException } from "../../../../commons/Errors";
+import { CloudWatchLogsClient, GetLogEventsCommand } from "@aws-sdk/client-cloudwatch-logs";
 
 export class AWSECSContainerGroupProvider implements IContainerGroupProvider 
 {
     private readonly _awsECSClient: ECSClient;
+    private readonly _cloudWatchLogsClient: CloudWatchLogsClient;
 
-    constructor(awsECSClient: ECSClient) 
+    constructor(awsECSClient: ECSClient, cloudWatchLogsClient: CloudWatchLogsClient) 
     {
         this._awsECSClient = awsECSClient;
+        this._cloudWatchLogsClient = cloudWatchLogsClient;
     }
 
     public async provision(config: AWSECSContainerGroup): Promise<AWSECSContainerGroup> 
@@ -22,7 +25,7 @@ export class AWSECSContainerGroupProvider implements IContainerGroupProvider
         const containerOverride = {
             command: config.command.split(" "),
             environment: config.container.environment,
-            name: "default",
+            name: config.name,
         }
         const response = await this._awsECSClient.send(new RunTaskCommand({
             cluster: config.cluster,
@@ -70,4 +73,13 @@ export class AWSECSContainerGroupProvider implements IContainerGroupProvider
         }
         return { id: response.tasks[0].taskArn, cluster: config.cluster, state: state };
     } 
+
+    public async getLogs(config: AWSECSContainerGroup): Promise<string>
+    {
+        const response = await this._cloudWatchLogsClient.send(new GetLogEventsCommand({
+            logGroupName: "/aws/batch/job",
+            logStreamName: `${config.definition}/${config.name}/${config.id}`
+        }));
+        return response.events.slice(0, 100).map(e => e.message).join("\n")
+    }
 }

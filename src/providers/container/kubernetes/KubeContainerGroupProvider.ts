@@ -2,6 +2,7 @@ import { IContainerGroupProvider, ContainerGroupState } from "../ContainerGroupP
 import { KubernetesContainerGroup } from "./KubeContainerGroup";
 import { KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node';
 import { IncomingMessage } from "http";
+import { NotImplementedException } from "../../../commons/Errors";
 
 export class KubernetesContainerGroupProvider implements IContainerGroupProvider 
 {
@@ -86,6 +87,11 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
         } catch (e) {
             return { namespace: config.namespace, type: config.type, name: config.name, state: ContainerGroupState.INACTIVE };
         }
+    }
+
+    public async getLogs(config: KubernetesContainerGroup): Promise<string>
+    {
+        throw new NotImplementedException();
     }
 
     /**

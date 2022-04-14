@@ -20,7 +20,7 @@ export class AWSECSContainerGroupContextProvider implements IContainerGroupConte
     {
         return {
             type: requestContext.type,
-            name: `ntcore-${requestContext.workspaceId.toLowerCase()}`,
+            name: "default",
             cluster: "torch-inf1-unmanaged-beta_Batch_0132bdb6-945e-3eea-9a11-3f16d8e62b9e",
             definition: "torch-standard-single-node-beta",
             command: requestContext.command,

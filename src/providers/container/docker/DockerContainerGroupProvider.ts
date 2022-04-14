@@ -1,5 +1,6 @@
 import { IContainerGroupProvider,  ContainerGroupState, IContainerGroup, ContainerGroupTypeMapping } from "../ContainerGroupProvider";
 import { DockerContainerGroup } from "./DockerContainerGroup";
+import { NotImplementedException } from "../../../commons/Errors";
 import Dockerode = require("dockerode");
 
 export class DockerContainerGroupProvider implements IContainerGroupProvider 
@@ -92,6 +93,11 @@ export class DockerContainerGroupProvider implements IContainerGroupProvider
         } else {
             return { type: null, name: config.name, state: ContainerGroupState.UNKNOWN };
         }
+    }
+
+    public async getLogs(config: DockerContainerGroup): Promise<string>
+    {
+        throw new NotImplementedException();
     }
 
     private async buildLocalImage(config: DockerContainerGroup): Promise<any> 

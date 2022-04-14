@@ -82,5 +82,10 @@ export class AWSBatchContainerGroupProvider implements IContainerGroupProvider
             state = ContainerGroupState.PENDING;
         }
         return { id: job.jobId, name: job.jobName, state: state };
-    } 
+    }
+
+    public async getLogs(config: AWSBatchContainerGroup): Promise<string>
+    {
+        throw new NotImplementedException();
+    }
 }

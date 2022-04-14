@@ -22,6 +22,7 @@ export class DeploymentController
         this.listActiveDeploymentsV1 = this.listActiveDeploymentsV1.bind(this);
         this.deployModelV1 = this.deployModelV1.bind(this);
         this.terminateDeploymentV1 = this.terminateDeploymentV1.bind(this);
+        this.retrieveLogEvents = this.retrieveLogEvents.bind(this);
     }
 
     /**
@@ -142,6 +143,27 @@ export class DeploymentController
             await deploymentProvider.releaseLock(workspaceId);
         }
     }
+
+    /**
+     * Retrieve the log events for a given deployment.
+     * @param req Request
+     * @param res Response
+     * Example usage:
+     * curl http://localhost:8180/dsp/api/v1/{workspaceId}/logs/{deploymentId}
+     */
+     public async retrieveLogEvents(req: Request, res: Response)
+     {
+        const workspaceId = req.params.workspaceId;
+        const deploymentId = req.params.deploymentId;
+        try {
+            // const deploymentDetails = deploymentProvider.read(workspaceId, deploymentId);
+            const eventName = { definition: "torch-standard-single-node-beta", name: "default", id: deploymentId };
+            const events = await this._containerGroupProvider.getLogs(eventName);
+            res.status(201).json({events: events});
+        } catch {
+            res.status(500).json({error: 'Unable to retrieve log events.'});
+        }
+     }
 
     /**
      * Endpoint to list deployments based on the given workspace id.
