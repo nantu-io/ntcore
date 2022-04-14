@@ -37,6 +37,7 @@ export class DeploymentController
         const registry = await experimentProvider.getRegistry(workspaceId);
         const requestContext = this.getRequestContext(req, registry);
         const context = this._containerGroupContextProvider.getContext(requestContext);
+        // await deploymentProvider.releaseLock(workspaceId);
         if (!await this.aquireDeploymentLock(workspaceId, registry.version, res)) {
             return;
         }
@@ -116,7 +117,7 @@ export class DeploymentController
     private async waitForDeploymentState(config: IContainerGroup, state: ContainerGroupState) 
     {
         await waitUntil(async () => (await this._containerGroupProvider.getState(config)).state === state,
-            { timeout: 900000, intervalBetweenAttempts: 10000 });
+            { timeout: 86400000, intervalBetweenAttempts: 60000 });
         return config;
     }
 

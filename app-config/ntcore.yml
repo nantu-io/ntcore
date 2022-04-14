@@ -3,7 +3,7 @@
 ##############################
 container:
   provider: 
-    type: awsbatch
+    type: awsecs
     region: cn-northwest-1
     accessKeyId: AKIA5RDDQUFZFPU7L6UD
     secretAccessKey: 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
