@@ -34,8 +34,8 @@ class Deployments extends Component {
             isModalOpen: false,
             selectedDeployment: null,
             mode: MODAL_MODE.INFO,
-            rows: [['dfsafs', 1, 'ntcore', '2021-01-01 10:30:00', 'SUCCEED', 'RUNNING']]
-            //rows: []
+            // rows: [['dfsafs', 1, 'ntcore', '2021-01-01 10:30:00', 'SUCCEED', 'RUNNING']]
+            ows: []
         }
         this._closeModel = this._closeModel.bind(this);
         this._createViewLogButton = this._createViewLogButton.bind(this);
@@ -55,7 +55,7 @@ class Deployments extends Component {
     _createViewLogButton(index) {
         const { classes } = this.props;
         const { rows } = this.state;
-        const deploymentId = rows[index][0];
+        const deploymentId = rows[index] ? rows[index][0] : null;
         return (
             <Button color="primary" className={clsx(classes.log)}
                 onClick={() => this.setState({
