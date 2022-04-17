@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import clsx from 'clsx';
 import { fetchDataV1 } from '../../../global.js';
+import clsx from 'clsx';
 import InfoIcon from '@material-ui/icons/Info';
 import IconButton from '@material-ui/core/IconButton';
 import MUIDataTable from "mui-datatables";
@@ -35,7 +35,7 @@ class Deployments extends Component {
             selectedDeployment: null,
             mode: MODAL_MODE.INFO,
             // rows: [['dfsafs', 1, 'ntcore', '2021-01-01 10:30:00', 'SUCCEED', 'RUNNING']]
-            ows: []
+            rows: []
         }
         this._closeModel = this._closeModel.bind(this);
         this._createViewLogButton = this._createViewLogButton.bind(this);
@@ -57,7 +57,7 @@ class Deployments extends Component {
         const { rows } = this.state;
         const deploymentId = rows[index] ? rows[index][0] : null;
         return (
-            <Button color="primary" className={clsx(classes.log)}
+            <Button color="primary" className={clsx(classes.log)} disable={true}
                 onClick={() => this.setState({
                     isModalOpen: true, 
                     selectedDeployment: deploymentId,

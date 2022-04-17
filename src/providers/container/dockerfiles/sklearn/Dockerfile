@@ -1,0 +1,1 @@
+FROM ntcore/flask-sklearn:python-3.8

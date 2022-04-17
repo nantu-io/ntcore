@@ -7,7 +7,7 @@ import {
     EXPERIMENT_DELETE,
     EXPERIMENTS_CREATE_STATE_INDEX,
     EXPERIMENT_STATE_UPDATE,
-    EXPERIMENT_UNREGISTER,
+    EXPERIMENT_DEREGISTER,
     EXPERIMENT_REGISTRY_READ,
     EXPERIMENT_MODEL_READ
 } from "./PostgresExperimentQueries"; 
@@ -103,7 +103,10 @@ export class PostgresExperimentProvider implements IExperimentProvider
         const client = await this._pgPool.connect();
         try {
             await client.query('BEGIN');
-            await client.query(EXPERIMENT_UNREGISTER, [ workspaceId ]);
+            const registry = await this._pgPool.query(EXPERIMENT_REGISTRY_READ, [ workspaceId ]).then(res => res.rows ? res.rows[0] : null);
+            if (registry) {
+                await client.query(EXPERIMENT_DEREGISTER, [ workspaceId, registry.version ]);
+            }
             await client.query(EXPERIMENT_STATE_UPDATE, [ workspaceId, version, ExperimentState.REGISTERED ]);
             await client.query('COMMIT');
         } catch (e) {
@@ -118,9 +121,9 @@ export class PostgresExperimentProvider implements IExperimentProvider
      * Unregister an experiment version.
      * @param workspaceId Workspace id.
      */
-    public async unregister(workspaceId: string) 
+    public async deregister(workspaceId: string, version: number) 
     {
-        await this._pgPool.query(EXPERIMENT_UNREGISTER, [workspaceId]);
+        await this._pgPool.query(EXPERIMENT_DEREGISTER, [workspaceId, version]);
     }
 
     /**

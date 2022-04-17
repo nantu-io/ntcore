@@ -2,13 +2,6 @@
 ## Docker configurations
 ##############################
 container:
-  provider: 
-    type: awsecs
-    region: cn-northwest-1
-    accessKeyId:
-    secretAccessKey:
-
-service:
   provider:
     type: docker
 

@@ -8,16 +8,17 @@ import { AWSECSContainerGroupProvider } from "./aws/ecs/AWSECSContainerGroupProv
 import { AWSBatchContainerGroupContextProvider } from "./aws/batch/AWSBatchContainerGroupContextProvider";
 import { AWSECSContainerGroupContextProvider } from "./aws/ecs/AWSECSContainerGroupContextProvider";
 import { KubernetesContainerGroupConfigProvider } from "./kubernetes/KubeContainerGroupConfigProvider";
+import { DockerContainerGroupContextProvider } from "./docker/DockerContainerGroupContextProvider";
 import { appConfig } from "../../libs/config/AppConfigProvider";
+import { IContainerGroupStateProvider, IProviderFactory, IContainerGroupProvider, IContainerGroupConfigProvider, IContainerGroupContextProvider } from "./ContainerGroupProvider";
+import { PostgresServiceStateProvider } from "./state/postgres/PostgresContainerGroupStateProvider";
+import AWSCloudWatchLogsClientProvider from "../../libs/client/aws/AWSCloudWatchLogsClientProvider";
+import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import KubernetesClientProvider from "../../libs/client/KubernetesClientProvider";
 import DockerClientProvider from "../../libs/client/DockerClientProvider";
 import AWSBatchClient from "../../libs/client/aws/AWSBatchClientProvider";
 import AWSECSClientProvider from "../../libs/client/aws/AWSECSClientProvider";
-import AWSCloudWatchLogsClientProvider from "../../libs/client/aws/AWSCloudWatchLogsClientProvider";
-import { IContainerGroupStateProvider, IProviderFactory, IContainerGroupProvider, IContainerGroupConfigProvider, IContainerGroupContextProvider } from "./ContainerGroupProvider";
-import { PostgresServiceStateProvider } from "./state/postgres/PostgresContainerGroupStateProvider";
-import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 
 export class ContainerProviderFactory implements IProviderFactory<IContainerGroupProvider> 
 {
@@ -64,6 +65,7 @@ export class ContainerGroupContextProviderFactory implements IProviderFactory<IC
     {
         const providerType: ProviderType = appConfig.container.provider;
         switch(providerType) {
+            case ProviderType.DOCKER: return new DockerContainerGroupContextProvider();
             case ProviderType.AWSBATCH: return new AWSBatchContainerGroupContextProvider();
             case ProviderType.AWSECS: return new AWSECSContainerGroupContextProvider();
             default: throw new Error("Invalid provider type.");

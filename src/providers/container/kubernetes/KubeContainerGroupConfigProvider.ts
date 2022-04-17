@@ -3,6 +3,9 @@ import { Runtime } from '../../../commons/Runtime';
 import { Framework } from '../../../commons/Framework';
 import { KubernetesContainerGroup, KubernetesDeploymentV1, KubernetesIngressRouteV1Alpha1, KubernetesServiceV1, KubernetesContainer, KubernetesEnvironmentVariable } from './KubeContainerGroup';
 
+/**
+ * @deprecated The class will be deprecated
+ */
 export class KubernetesContainerGroupConfigProvider implements IContainerGroupConfigProvider 
 {
     /**
@@ -35,7 +38,7 @@ export class KubernetesContainerGroupConfigProvider implements IContainerGroupCo
      */
     public createDeploymentConfig(type: ContainerGroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number): KubernetesContainerGroup {
         switch (type) {
-            case ContainerGroupType.FLASK_SKLEARN: return this.createFlaskSklearnConfig(type, workspaceId, framework, version, runtime, cpus, memory);
+            case ContainerGroupType.SKLEARN: return this.createFlaskSklearnConfig(type, workspaceId, framework, version, runtime, cpus, memory);
             default: throw new Error('Invalid service type');
         }
     }

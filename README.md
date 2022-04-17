@@ -53,13 +53,7 @@ Join our community on [Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1
 3. Navigate to [http://localhost:8000/dsp/console/workspaces](http://localhost:8000/dsp/console/workspaces) and create your first workspace.
 4. Version an ML model. More examples can be found [here](https://github.com/nantu-io/ntcore/tree/promotion/client/examples).
     ```python
-    from sklearn import datasets
-    # Config the ntcore client
-    from ntcore import client
-    client.set_endpoint('http://localhost:8000')
-    client.autolog('{workspace_id}')
-
-    # Prepare the training dataset
+    # Load iris dataset.
     from sklearn import datasets
     iris = datasets.load_iris()
 
@@ -68,8 +62,10 @@ Join our community on [Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1
     clf = RandomForestClassifier(max_depth=2, random_state=0)
 
     # Start an experiment run
-    with client.start_run():
-        clf.fit(iris.data, iris.target_names[iris.target])
+    from ntcore import Client
+    client = Client()
+    with client.start_run('my_workspace_id') as exper:
+        clf.fit(iris.data, iris.target_names[iris.target], experiment=exper)
     ```
 5. View the model versions and register one for pre-production deployment.
     <kbd>

@@ -92,7 +92,7 @@ export interface IExperimentProvider
     /**
      * Unregister model.
      */
-    unregister: (workspaceId: string) => Promise<any>
+    deregister: (workspaceId: string, version: number) => Promise<any>
     /**
      * Get registered model.
      */

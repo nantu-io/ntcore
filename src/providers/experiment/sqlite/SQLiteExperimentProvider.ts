@@ -7,7 +7,7 @@ import {
     EXPERIMENT_DELETE,
     EXPERIMENTS_CREATE_STATE_INDEX,
     EXPERIMENT_STATE_UPDATE,
-    EXPERIMENT_UNREGISTER,
+    EXPERIMENT_DEREGISTER,
     EXPERIMENT_REGISTRY_READ,
     EXPERIMENT_MODEL_READ
 } from "./SQLiteExperimentQueries"; 
@@ -99,7 +99,10 @@ export class SQLiteExperimentProvider implements IExperimentProvider
     public async register(workspaceId: string, version: number) 
     {
         this._databaseClient.transaction((workspaceId: string, version: number) => {
-            this._databaseClient.prepare(EXPERIMENT_UNREGISTER).run({workspace_id: workspaceId});
+            const registry = this._databaseClient.prepare(EXPERIMENT_REGISTRY_READ).get({workspace_id: workspaceId});
+            if (registry) {
+                this._databaseClient.prepare(EXPERIMENT_DEREGISTER).run({workspace_id: workspaceId, version: registry.version});
+            }
             this._databaseClient.prepare(EXPERIMENT_STATE_UPDATE).run({workspace_id: workspaceId, version: version, state: ExperimentState.REGISTERED});
         })(workspaceId, version);
     }
@@ -108,9 +111,9 @@ export class SQLiteExperimentProvider implements IExperimentProvider
      * Unregister an experiment version.
      * @param workspaceId Workspace id.
      */
-    public async unregister(workspaceId: string) 
+    public async deregister(workspaceId: string, version: number) 
     {
-        this._databaseClient.prepare(EXPERIMENT_UNREGISTER).run({workspace_id: workspaceId});
+        this._databaseClient.prepare(EXPERIMENT_DEREGISTER).run({workspace_id: workspaceId, version: version});
     }
 
     /**

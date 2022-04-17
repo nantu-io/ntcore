@@ -4,7 +4,7 @@ import { workspaceProvider, experimentProvider } from "../libs/config/AppModule"
 
 export class ExperimentController 
 {
-    public constructor() 
+    public constructor()
     {
         this.createExperimentV1 = this.createExperimentV1.bind(this);
         this.listExperimentsV1 = this.listExperimentsV1.bind(this);
@@ -13,7 +13,7 @@ export class ExperimentController
         this.deleteExperimentV1 = this.deleteExperimentV1.bind(this);
         this.registerExperimentV1 = this.registerExperimentV1.bind(this);
         this.getRegistryV1 = this.getRegistryV1.bind(this);
-        this.unregisterExperimentV1 = this.unregisterExperimentV1.bind(this);
+        this.deregisterExperimentV1 = this.deregisterExperimentV1.bind(this);
     }
 
     /**
@@ -34,7 +34,7 @@ export class ExperimentController
         const model = Buffer.from(req.body.model, 'base64');
         const state = ExperimentState.UNREGISTERED;
         const version = await workspaceProvider.incrementVersion(workspaceId);
-        await experimentProvider.create({
+        const experiment = {
             workspaceId,
             version,
             runtime,
@@ -46,8 +46,13 @@ export class ExperimentController
             state,
             createdBy: 'ntcore',
             createdAt: new Date()
-        });
-        res.status(201).send({workspaceId, version});
+        }
+        try {
+            await experimentProvider.create(experiment);
+            res.status(201).send({workspaceId, version});
+        } catch (err) {
+            res.status(500).send({error: `Unable to create experiment: ${err}`});
+        }
     }
 
     /**
@@ -57,11 +62,15 @@ export class ExperimentController
      * Example usage:
      * curl http://localhost:8180/dsp/api/v1/workspace/{workspaceId}/experiments
      */
-    public async listExperimentsV1(req: Request, res: Response) 
+    public async listExperimentsV1(req: Request, res: Response)
     {
         const workspaceId = req.params.workspaceId;
-        const experiments = await experimentProvider.list(workspaceId);
-        res.status(200).send(experiments);
+        try {
+            const experiments = await experimentProvider.list(workspaceId);
+            res.status(200).send(experiments);
+        } catch (err) {
+            res.status(500).send({error: `Unable to list experiments: ${err}`});
+        }
     }
 
     /**
@@ -71,12 +80,16 @@ export class ExperimentController
      * Example usage:
      * curl http://localhost:8180/dsp/api/v1/workspace/{workspaceId}/experiment/{version}
      */
-    public async getExperimentsV1(req: Request, res: Response) 
+    public async getExperimentsV1(req: Request, res: Response)
     {
         const workspaceId = req.params.workspaceId;
-        const version = parseInt(req.params.version);
-        const experiment = await experimentProvider.read(workspaceId, version);
-        res.status(200).send(experiment);
+        try {
+            const version = parseInt(req.params.version);
+            const experiment = await experimentProvider.read(workspaceId, version);
+            res.status(200).send(experiment);
+        } catch (err) {
+            res.status(500).send({error: `Unable to get experiment: ${err}`});
+        }
     }
 
     /**
@@ -90,13 +103,14 @@ export class ExperimentController
     {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
-        const buffer = await experimentProvider.loadModel(workspaceId, version);
-        const model = Buffer.from(buffer['model'], 'binary');
-        res.writeHead(200, {
-            'Content-Type': 'application/octet-stream',
-            'Content-Length': model.length
-        });
-        res.end(model);
+        try {
+            const buffer = await experimentProvider.loadModel(workspaceId, version);
+            const model = Buffer.from(buffer['model'], 'binary');
+            res.writeHead(200, {'Content-Type': 'application/octet-stream', 'Content-Length': model.length});
+            res.end(model);
+        } catch (err) {
+            res.status(500).send({error: `Unable to download model: ${err}`});
+        }
     }
 
     /**
@@ -110,8 +124,12 @@ export class ExperimentController
     {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.params.version);
-        await experimentProvider.delete(workspaceId, version)
-        res.status(201).send({info: 'Successfully deleted experiment.'});
+        try {
+            await experimentProvider.delete(workspaceId, version)
+            res.status(201).send({info: 'Successfully deleted experiment.'});
+        } catch (err) {
+            res.status(500).send({error: `Unable to delete experiment: ${err}`});
+        }
     }
     
     /**
@@ -124,8 +142,12 @@ export class ExperimentController
     {
         const workspaceId = req.params.workspaceId;
         const version = parseInt(req.body.version);
-        await experimentProvider.register(workspaceId, version);
-        res.status(200).send({info: `Registered version ${version}`});
+        try {
+            await experimentProvider.register(workspaceId, version);
+            res.status(200).send({info: `Registered version ${version}`});
+        } catch (err) {
+            res.status(500).send({error: `Unable to register experiment: ${err}`});
+        }
     }
 
     /**
@@ -134,11 +156,16 @@ export class ExperimentController
      * @param res Response.
      * Example: curl http://localhost:8180/dsp/api/v1/workspace/{workspace_id}/registry
      */
-    public async unregisterExperimentV1(req: Request, res: Response) 
+    public async deregisterExperimentV1(req: Request, res: Response) 
     {
         const workspaceId = req.params.workspaceId;
-        await experimentProvider.unregister(workspaceId);
-        res.status(200).send({info: `Unregistered all versions in workspace ${workspaceId}`});
+        try {
+            const registry = await experimentProvider.getRegistry(workspaceId);
+            await experimentProvider.deregister(workspaceId, registry.version);
+            res.status(200).send({info: `Unregistered experimnt in workspace ${workspaceId}`});
+        } catch (err) {
+            res.status(500).send({error: `Unable to unregister experiments: ${err}`});
+        }
     }
 
     /**
@@ -150,7 +177,11 @@ export class ExperimentController
     public async getRegistryV1(req: Request, res: Response) 
     {
         const workspaceId = req.params.workspaceId;
-        const registry = await experimentProvider.getRegistry(workspaceId);
-        res.status(200).json(registry);
+        try {
+            const registry = await experimentProvider.getRegistry(workspaceId);
+            res.status(200).json(registry);
+        } catch (err) {
+            res.status(500).send({error: `Unable to get registered experiment: ${err}`});
+        }
     }
 }

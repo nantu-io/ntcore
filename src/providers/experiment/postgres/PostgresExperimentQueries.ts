@@ -49,7 +49,7 @@ export const EXPERIMENT_STATE_UPDATE = `UPDATE experiments SET state = $3 WHERE 
 /**
 * Query to unregister experiments in a workspace.
 */
-export const EXPERIMENT_UNREGISTER = `UPDATE experiments SET state = 'UNREGISTERED' WHERE workspace_id = $1 AND state = 'REGISTERED';`
+export const EXPERIMENT_DEREGISTER = `UPDATE experiments SET state = 'UNREGISTERED' WHERE workspace_id = $1 AND version = $2;`
 /**
 * Query to return the registered model in a workspace.
 */

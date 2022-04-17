@@ -37,9 +37,9 @@ export const enum ContainerGroupState
 export const enum ContainerGroupType
 {
     /**
-     * Jupyter notebook or Jupyter lab.
+     * Flask sklearn.
      */
-    JUPYTER = "JUPYTER",
+    SKLEARN = "SKLEARN",
     /**
      * RStudio.
      */
@@ -53,13 +53,13 @@ export const enum ContainerGroupType
      */
     PYTORCH = "PYTORCH",
     /**
+     * Jupyter notebook or Jupyter lab.
+     */
+    JUPYTER = "JUPYTER",
+    /**
      * Theia python ide.
      */
     THEIA_PYTHON = "THEIA_PYTHON",
-    /**
-     * Flask sklearn.
-     */
-    FLASK_SKLEARN = "FLASK_SKLEARN",
 }
 /**
  * Mapping from string to ServiceType.
@@ -88,7 +88,7 @@ export const ContainerGroupTypeMapping = {
     /**
      * Flask for sklearn.
      */
-    FLASK_SKLEARN: ContainerGroupType.FLASK_SKLEARN,
+    SKLEARN: ContainerGroupType.SKLEARN,
 }
 /**
  * Container definition.
@@ -115,14 +115,10 @@ export abstract class IContainerGroup
 export class ContainerGroupRequestContext
 {
     name?: string;
-    type?: ContainerGroupType; 
+    type?: ContainerGroupType;
     workspaceId?: string;
     version?: number;
     runtime?: Runtime;
-    framework?: Framework;
-    cpus?: any; 
-    memory?: any;
-    packages?: string[];
     command?: string;
     workflow?: string;
 }
@@ -134,31 +130,31 @@ export interface IContainerGroupProvider
     /**
      * Prepare the setup before launching any service.
      */
-    provision: (config: IContainerGroup) => Promise<IContainerGroup>;
+    provision: (context: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Starts the service and returns the container id.
      */
-    start: (config: IContainerGroup) => Promise<IContainerGroup>;
+    start: (context: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Stops the service based on given id.
      */
-    stop: (config: IContainerGroup) => Promise<IContainerGroup>;
+    stop: (context: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Deletes the service 
      */
-    delete: (config: IContainerGroup) => Promise<IContainerGroup>;
+    delete: (context: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Execute command on the container.
      */
-    update: (config: IContainerGroup) => Promise<IContainerGroup>;
+    update: (context: IContainerGroup) => Promise<IContainerGroup>;
     /**
      * Returns the state of a service.
      */
-    getState: (config: IContainerGroup) => Promise<IContainerGroup>
+    getState: (context: IContainerGroup) => Promise<IContainerGroup>
     /**
      * Returns the logs of a service.
      */
-    getLogs: (config: IContainerGroup) => Promise<string>
+    getLogs: (context: IContainerGroup) => Promise<string>
 }
 /**
  * Interface for service state provider.

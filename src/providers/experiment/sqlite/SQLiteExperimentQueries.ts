@@ -50,7 +50,7 @@ export const EXPERIMENT_STATE_UPDATE = `UPDATE experiments SET state = $state WH
 /**
  * Query to unregister experiments in a workspace.
  */
-export const EXPERIMENT_UNREGISTER = `UPDATE experiments SET state = 'UNREGISTERED' WHERE workspace_id = $workspace_id AND state = 'REGISTERED';`
+export const EXPERIMENT_DEREGISTER = `UPDATE experiments SET state = 'UNREGISTERED' WHERE workspace_id = $workspace_id AND version = $version;`
 /**
  * Query to return the registered model in a workspace.
  */

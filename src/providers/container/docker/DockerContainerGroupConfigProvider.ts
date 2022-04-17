@@ -3,6 +3,9 @@ import { DockerContainerGroup } from './DockerContainerGroup';
 import { Runtime } from '../../../commons/Runtime';
 import { Framework } from '../../../commons/Framework';
 
+/**
+ * @deprecated The class will be deprecated
+ */
 export class DockerContainerGroupConfigProvider implements IContainerGroupConfigProvider 
 {
     /**
@@ -35,7 +38,7 @@ export class DockerContainerGroupConfigProvider implements IContainerGroupConfig
     public createDeploymentConfig(type: ContainerGroupType, workspaceId: string, version: number, runtime: Runtime, framework: Framework, cpus?: number, memory?: number, publishedPort?: number): DockerContainerGroup 
     {
         switch (type) {
-            case ContainerGroupType.FLASK_SKLEARN: return this.createFlaskAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory, publishedPort);
+            case ContainerGroupType.SKLEARN: return this.createFlaskAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory, publishedPort);
             case ContainerGroupType.TENSORFLOW: return this.createTensorflowAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory);
             case ContainerGroupType.PYTORCH: return this.createTorchAPIConfig(type, workspaceId, version, runtime, framework, cpus, memory);
             default: throw new Error('Invalid service type.');

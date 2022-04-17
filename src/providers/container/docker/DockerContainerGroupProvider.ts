@@ -13,141 +13,145 @@ export class DockerContainerGroupProvider implements IContainerGroupProvider
     }
 
     /**
-     * Provision the local container.
-     * @param config Local container configuration.
-     * @returns Promise of the local container configuration.
+     * Provisions docker container.
+     * @param context docker container creation context.
+     * @returns Promise of the docker container context.
      */
-    public async provision(config: DockerContainerGroup): Promise<IContainerGroup> 
+    public async provision(context: DockerContainerGroup): Promise<IContainerGroup> 
     {
-        await this.buildLocalImage(config);
-        return config;
+        return await this.buildImage(context);
     }
 
     /**
-     * Start the local container.
-     * @param config Local container configuration.
-     * @returns Promise of the local container configuration.
+     * Starts docker container.
+     * @param context docker container creation context.
+     * @returns Promise of the docker container context.
      */
-    public async start(config: DockerContainerGroup): Promise<IContainerGroup> 
+    public async start(context: DockerContainerGroup): Promise<IContainerGroup> 
     {
-        const container = await this.getContainerByName(config.name);
+        const container = await this.getContainerByName(context.name);
         if (container) {
-            await this.stop(config);
-            await this.delete(config);
+            await this.stop(context);
+            await this.delete(context);
         }
-        await this.startLocalContainer(config);
-        return config;
+        return (await this.startContainer(context));
     }
 
     /**
-     * Stop the local container.
-     * @param config Local container configuration.
-     * @returns Promise of the local container configuration.
+     * Stops docker container.
+     * @param context docker container stopping context.
+     * @returns Promise of the docker container context.
      */
-    public async stop(config: DockerContainerGroup): Promise<IContainerGroup> 
+    public async stop(context: DockerContainerGroup): Promise<IContainerGroup> 
     {
         try {
-            const container = await this.getContainerByName(config.name);
+            const container = await this.getContainerByName(context.name);
             if (container) await container.stop()
         } catch (err) {
             // Don't do anything if container has already stopped
             if (err.statusCode !== 304) throw err;
         }
-        return config;
+        return context;
     }
 
     /**
-     * Delete the local container.
-     * @param config Local container configuration.
-     * @returns Promise of the local container configuration.
+     * Deletes docker container.
+     * @param context docker container deletion context.
+     * @returns Promise of the docker container context.
      */
-    public async delete(config: DockerContainerGroup): Promise<IContainerGroup> 
+    public async delete(context: DockerContainerGroup): Promise<IContainerGroup> 
     {
-        const container = await this.getContainerByName(config.name);
+        const container = await this.getContainerByName(context.name);
         if (container) {
             await container.remove()
         }
-        return config;
+        return context;
     }
 
     /**
-     * Execute command on the container.
-     * @param config Local service config.
-     * @returns Promise of the local container configuration.
+     * Updates docker container.
+     * @param context docker container update context.
+     * @returns Promise of the docker container context.
      */
-    public async update(config: DockerContainerGroup): Promise<IContainerGroup> 
-    {
-        return config;
-    }
-
-    /**
-     * Wait for a specific state of a service.
-     */
-    public async getState(config: DockerContainerGroup): Promise<IContainerGroup> 
-    {
-        const options = {"limit": 1, "filters": `{"name": ["/${config.name}"]}`};
-        const containers = await this.listContainers(options);
-        if (containers && containers.length > 0) {
-            const container = containers[0];
-            return { type: container.type, name: container.name, state: container.state };
-        } else {
-            return { type: null, name: config.name, state: ContainerGroupState.UNKNOWN };
-        }
-    }
-
-    public async getLogs(config: DockerContainerGroup): Promise<string>
+    public async update(context: DockerContainerGroup): Promise<IContainerGroup> 
     {
         throw new NotImplementedException();
     }
 
-    private async buildLocalImage(config: DockerContainerGroup): Promise<any> 
+    /**
+     * Gets current docker container state.
+     * @param context docker container state retrieval context.  
+     * @returns Promise of the docker container context with state.
+     */
+    public async getState(context: DockerContainerGroup): Promise<IContainerGroup> 
+    {
+        const options = {"limit": 1, "filters": `{"name": ["/${context.name}"]}`};
+        const containers = await this.listContainers(options);
+        if (containers && containers.length > 0) {
+            return { type: containers[0].type, name: containers[0].name, state: containers[0].state };
+        } else {
+            return { type: null, name: context.name, state: ContainerGroupState.UNKNOWN };
+        }
+    }
+
+    /**
+     * Gets log events from docker container.
+     * @param context docker container logs retrieval context.  
+     */
+    public async getLogs(context: DockerContainerGroup): Promise<string>
+    {
+        throw new NotImplementedException();
+    }
+
+    private async buildImage(context: DockerContainerGroup): Promise<IContainerGroup> 
     {
         const stream = await this._dockerClient.buildImage(
-            { context: `${__dirname}/../dockerfiles/${config.type.toLowerCase()}`, src: ["Dockerfile"] }, 
-            { t: config.Containers[0].Image }
+            { context: `${__dirname}/../dockerfiles/${context.type.toLowerCase()}`, src: ["Dockerfile"] }, 
+            { t: context.Containers[0].Image }
         );
         await new Promise((resolve, reject) => {
             this._dockerClient.modem.followProgress(stream, (err: any, res: any) => err ? reject(err) : resolve(res));
         });
+        return context;
     }
 
-    private async startLocalContainer(config: DockerContainerGroup) 
+    private async startContainer(context: DockerContainerGroup): Promise<IContainerGroup>
     {
-        const containerConfig = config.Containers[0];
-        const localContainerContext: Dockerode.ContainerCreateOptions = {
-            name: config.name,
-            ExposedPorts: config.ExposedPorts,
-            Image: containerConfig.Image,
-            HostConfig: containerConfig.HostConfig,
-            Env: containerConfig.Env,
-            Labels: containerConfig.Labels
-        }
-        return (await this._dockerClient.createContainer(localContainerContext)).start();
+        (await this._dockerClient.createContainer({
+            name: context.name,
+            ExposedPorts: context.ExposedPorts,
+            Image: context.Containers[0].Image,
+            HostConfig: context.Containers[0].HostConfig,
+            Env: context.Containers[0].Env,
+            Labels: context.Containers[0].Labels
+        })).start();
+        return context;
     }
 
     private async listContainers(options: {}): Promise<DockerContainerGroup[]> 
     {
-        const containers = await this._dockerClient.listContainers(options);
-        return containers.map((container: Dockerode.ContainerInfo) => ({
+        return (await this._dockerClient.listContainers(options)).map(res => this.containerInfoToContainerGroupContext(res));
+    }
+
+    private containerInfoToContainerGroupContext(container: Dockerode.ContainerInfo): DockerContainerGroup
+    {
+        return {
             type: ContainerGroupTypeMapping[container.Labels['type']],
-            state: this.mapServiceState(container),
+            state: this.containerInfoToContainerGroupState(container),
             name: container.Names[0].substring(1),
-            Containers: 
-            [{
+            Containers: [{
                 name: container.Names[0].substring(1),
                 Image: container.Image,
                 Labels: container.Labels,
             }]
-        }));
+        }
     }
 
-    private mapServiceState(container: Dockerode.ContainerInfo): ContainerGroupState 
+    private containerInfoToContainerGroupState(container: Dockerode.ContainerInfo): ContainerGroupState 
     {
-        const state = container.State;
-        const status = container.Status;
-        if (status.includes('(healthy)')) {
+        if (container.Status.includes('(healthy)')) {
             return ContainerGroupState.RUNNING;
-        } else if (state === 'running') {
+        } else if (container.State === 'running') {
             return ContainerGroupState.PENDING;
         } else {
             return ContainerGroupState.INACTIVE;

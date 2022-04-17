@@ -1,13 +1,11 @@
 import { Request, Response } from 'express';
 import { workspaceProvider } from "../libs/config/AppModule";
-import short = require('short-uuid');
 import { WorkspaceTypeMapping } from '../commons/WorkspaceType';
-
-const NAMESPACE = '0a285782-a757-44ed-ad94-094509b1494e';
+import short = require('short-uuid');
 
 export class WorkspaceController 
 {
-    public constructor() 
+    public constructor()
     {
         this.createWorkspaceV1 = this.createWorkspaceV1.bind(this);
         this.getWorkspaceV1 = this.getWorkspaceV1.bind(this);
@@ -36,14 +34,14 @@ export class WorkspaceController
             await workspaceProvider.create(workspace);
             res.status(201).send(workspace);
         } catch (err) {
-            res.status(400).send({error: err});
+            res.status(500).send({error: `Unable to create workspace: ${err}`});
         }
     }
 
     private createWorkspaceId(name: string) 
     {
         const uuidv5 = require('uuid/v5');
-        const uuid = uuidv5(name, NAMESPACE);
+        const uuid = uuidv5(name, '0a285782-a757-44ed-ad94-094509b1494e');
         const translator = short('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
         return `C${translator.fromUUID(uuid)}`;
     }
@@ -57,8 +55,12 @@ export class WorkspaceController
      */
     public async getWorkspaceV1(req: Request, res: Response) 
     {
-        const workspace = await workspaceProvider.read(req.params.id);
-        res.status(200).send(workspace);
+        try {
+            const workspace = await workspaceProvider.read(req.params.id);
+            res.status(200).send(workspace);
+        } catch (err) {
+            res.status(500).send({error: `Unable to retrieve workspace: ${err}`});
+        }
     }
 
     /**
@@ -70,8 +72,12 @@ export class WorkspaceController
      */
     public async listWorkspacesV1(req: Request, res: Response) 
     {
-        const workspaces = await workspaceProvider.list();
-        res.status(200).send(workspaces);
+        try {
+            const workspaces = await workspaceProvider.list();
+            res.status(200).send(workspaces);
+        } catch (err) {
+            res.status(500).send({error: `Unable to list workspaces: ${err}`});
+        }
     }
 
     /**
@@ -83,7 +89,11 @@ export class WorkspaceController
      */
     public async deleteWorkspaceV1(req: Request, res: Response) 
     {
-        const workspaces = await workspaceProvider.delete(req.params.id);
-        res.status(201).send(workspaces);
+        try {
+            const workspaces = await workspaceProvider.delete(req.params.id);
+            res.status(201).send(workspaces);
+        } catch (err) {
+            res.status(500).send({error: `Unable to delete workspace: ${err}`});
+        }
     }
 }

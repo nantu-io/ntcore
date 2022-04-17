@@ -4,7 +4,6 @@ import clsx from 'clsx';
 import { Paper } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import Divider from '@material-ui/core/Divider';
 import dateFormat from "dateformat";
 import BaseModal from '../../baseModal';
 import DeployForm from './deploy';
@@ -133,7 +132,6 @@ class Registry extends React.Component {
             <div className={clsx(classes.root, classes.content)}>
                 <Paper elevation={4}>
                     <p className={clsx(classes.summary)}>Summary</p>
-                    <Divider className={classes.divider} />
                     <Grid container className={clsx(classes.container)}>
                         <Grid item xs={2}> 
                             <p className={clsx(classes.entry)}>Version</p>

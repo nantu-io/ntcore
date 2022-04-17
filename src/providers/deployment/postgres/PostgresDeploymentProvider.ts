@@ -105,7 +105,6 @@ export class PostgresDeploymentProvider implements DeploymentProvider
     /**
      * Retrieve a deployment with given workspaceId and version.
      * @param workspaceId Workspace id.
-     * @param deploymentId Deployment id.
      */
      public async getActive(workspaceId: string) 
      {

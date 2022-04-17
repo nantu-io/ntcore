@@ -11,13 +11,16 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import IconButton from '@material-ui/core/IconButton';
 import Link from '@material-ui/core/Link';
 import Loader from '../loading';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 import { fetchDataV1 } from '../../global.js';
 
+const SEVERITY = { INFO: 'info', ERROR: 'error', SUCCESS: 'success', WARNING: 'warning'}
+const MODAL_MODE = { CREATE: 'Create', DELETE: 'Delete' };
 const useStyles = () => ({
     root: { width: '100%' },
     table: { height: 500, marginTop: 20, marginBottom: 20 }
 });
-const MODAL_MODE = { CREATE: 'Create', DELETE: 'Delete' };
 
 class Workspaces extends Component {
     constructor(props) {
@@ -26,6 +29,9 @@ class Workspaces extends Component {
           isModalOpen: false,
           mode: null,
           loading: false,
+          snackBarOpen: false, 
+          snackBarSeverity: null, 
+          snackBarContent: null,
           rowsSelected: [],
           // rows: [['test', 'C123', 'test', 'ntcore', '2021-01-01 10:30:00']],
           rows: []
@@ -35,6 +41,7 @@ class Workspaces extends Component {
         this._fetchWorkspacesData = this._fetchWorkspacesData.bind(this);
         this._createHyperLink = this._createHyperLink.bind(this);
         this._deleteWorkspacesCallback = this._deleteWorkspacesCallback.bind(this);
+        this._closeSnackBar = this._closeSnackBar.bind(this);
     }
     
     componentDidMount() {
@@ -56,6 +63,25 @@ class Workspaces extends Component {
         const createdBy = rowInfo["created_by"];
         const createdAt = (new Date(parseInt(rowInfo["created_at"]) * 1000)).toLocaleString();
         return [ name, id, type, createdBy, createdAt ]
+    }
+
+    _openSnackBar(severity, message) {
+        const snackBarContent = message ? message.toString() : '';
+        this.setState({ snackBarOpen: true, snackBarSeverity: severity, snackBarContent: snackBarContent });
+    };
+    
+    _closeSnackBar() {
+        this.setState({ snackBarOpen: false });
+    };
+
+    _createSnackBar() {
+        const { snackBarOpen, snackBarSeverity, snackBarContent } = this.state;
+        return (
+          <Snackbar open={snackBarOpen} anchorOrigin={{ vertical: 'top', horizontal: 'center'}} autoHideDuration={6000} onClose={this._closeSnackBar}>
+            <MuiAlert elevation={6} variant="filled" onClose={this._closeSnackBar} severity={snackBarSeverity}>
+              {snackBarContent}
+            </MuiAlert>
+          </Snackbar>);
     }
 
     _getColumns() {
@@ -97,8 +123,8 @@ class Workspaces extends Component {
         const { rowsSelected, mode } = this.state;
         const selectWorkspaces = rowsSelected.map(i => this.state.rows[i][1])
         switch(mode) {
-          case MODAL_MODE.CREATE: return <CreationForm callback={this._fetchWorkspacesData} onCancel={this._closeModal}/>;
-          case MODAL_MODE.DELETE: return <DeletionForm selected={selectWorkspaces} callback={this._deleteWorkspacesCallback}/>;
+          case MODAL_MODE.CREATE: return <CreationForm callback={this._fetchWorkspacesData} onCancel={this._closeModal} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}/>;
+          case MODAL_MODE.DELETE: return <DeletionForm selected={selectWorkspaces} callback={this._deleteWorkspacesCallback} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}/>;
           default: return null;
         }
     }
@@ -132,7 +158,8 @@ class Workspaces extends Component {
 
         return (
             <BaseLayout index={0}>
-                <Loader loading={loading}/> 
+                <Loader loading={loading}/>
+                {this._createSnackBar()}
                 <div className={clsx(classes.root, classes.table)}>
                     <MUIDataTable
                         title={"Workspaces"}
