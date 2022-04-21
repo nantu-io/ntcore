@@ -4,20 +4,23 @@ import { ExperimentController } from "../controllers/ExperimentController";
 import { InstanceController } from "../controllers/InstanceController";
 import { WorkspaceController } from "../controllers/WorkspaceController";
 
-export class Routes {
+export class Routes 
+{
     private workspaceController: WorkspaceController;
     private instanceController: InstanceController;
     private experimentController: ExperimentController;
     private deploymentController: DeploymentController;
 
-    constructor() {
+    constructor() 
+    {
         this.workspaceController = new WorkspaceController();
         this.instanceController = new InstanceController();
         this.experimentController = new ExperimentController();
         this.deploymentController = new DeploymentController();
     }
 
-    public routes(app: express.Application): void {
+    public routes(app: express.Application): void 
+    {
         app.route('/dsp/api/v1/service/:name')
             .get(this.instanceController.getServiceStateV1)
             .put(this.instanceController.stopServiceV1)
@@ -43,14 +46,18 @@ export class Routes {
         app.route('/dsp/api/v1/workspace/:workspaceId/registry')
             .post(this.experimentController.registerExperimentV1)
             .get(this.experimentController.getRegistryV1)
-            .delete(this.experimentController.unregisterExperimentV1)
+            .delete(this.experimentController.deregisterExperimentV1)
         app.route('/dsp/api/v1/workspace/:workspaceId/model/:version')
             .get(this.experimentController.downloadModelV1)
-        app.route('/dsp/api/v1/workspace/:workspaceId/model/:version/deploy')
-            .post(this.experimentController.deployModelV1)
+        app.route('/dsp/api/v1/deployments')
+            .post(this.deploymentController.deployModelV1)
         app.route('/dsp/api/v1/workspace/:workspaceId/deployments')
             .get(this.deploymentController.listDeploymentsV1)
         app.route('/dsp/api/v1/deployments/active')
             .get(this.deploymentController.listActiveDeploymentsV1)
+        app.route('/dsp/api/v1/:workspaceId/deployment')
+            .delete(this.deploymentController.terminateDeploymentV1)
+        app.route('/dsp/api/v1/:workspaceId/logs/:deploymentId')
+            .get(this.deploymentController.retrieveLogEvents)
     }
 }

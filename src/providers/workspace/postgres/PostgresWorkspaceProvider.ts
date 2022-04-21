@@ -1,7 +1,7 @@
 import { 
-    GenericWorkspaceProvider,
+    IWorkspaceProvider,
     Workspace
-} from '../GenericWorkspaceProvider';
+} from '../WorkspaceProvider';
 import {
     WORKPACE_INITIALIZATION,
     WORKSPACE_CREATE,
@@ -13,18 +13,20 @@ import {
 } from './PostgresWorkspaceQueries';
 import { Pool } from 'pg';
 
-export class PostgresWorkspaceProvider implements GenericWorkspaceProvider {
-
+export class PostgresWorkspaceProvider implements IWorkspaceProvider 
+{
     private _pgPool: Pool;
     
-    constructor(pool: Pool) {
+    constructor(pool: Pool) 
+    {
         this._pgPool = pool;
     }
 
     /**
      * Initialize the workspaces table.
      */
-    public async initialize() {
+    public async initialize() 
+    {
         await this._pgPool.query(WORKPACE_INITIALIZATION);
         console.log('Initialized workspaces table.');
     }
@@ -32,7 +34,8 @@ export class PostgresWorkspaceProvider implements GenericWorkspaceProvider {
     /**
      * Create a new workspace.
      */
-    public async create(workspace: Workspace) {
+    public async create(workspace: Workspace) 
+    {
         const { id, name, type, createdBy, createdAt, maxVersion } = workspace;
         await this._pgPool.query(WORKSPACE_CREATE, [id, name, type, createdBy, Math.floor(createdAt.getTime()/1000), maxVersion]);
         return id;
@@ -41,7 +44,8 @@ export class PostgresWorkspaceProvider implements GenericWorkspaceProvider {
     /**
      * Update an existing workspace.
      */
-    public async update(workspace: Workspace) {
+    public async update(workspace: Workspace) 
+    {
         const { id, name, type, createdBy, createdAt } = workspace;
         await this._pgPool.query(WORKSPACE_UPDATE, [name, type, createdBy, Math.floor(createdAt.getTime()/1000), id]);
         return workspace.id;
@@ -50,21 +54,24 @@ export class PostgresWorkspaceProvider implements GenericWorkspaceProvider {
     /**
      * Retrieve workspace based on the given id.
      */
-    public async read(id: string) {
+    public async read(id: string) 
+    {
         return await this._pgPool.query(WORKSPACE_READ, [id]).then(res => res.rows ? res.rows[0] : []);
     }
 
     /**
      * Retrieve a list of workspaces based on the given id.
      */
-    public async list() {
+    public async list() 
+    {
         return await this._pgPool.query(WORKSPACE_LIST).then(res => res.rows);
     }
 
     /**
      * Delete a workspace based on a given id.
      */
-    public async delete(id: string) {
+    public async delete(id: string) 
+    {
         await this._pgPool.query(WORKSPACE_DELETE, [id]);
         return id;
     }
@@ -72,7 +79,8 @@ export class PostgresWorkspaceProvider implements GenericWorkspaceProvider {
     /**
      * Increment the max revision of experiments in a given workspace.
      */
-    public async incrementVersion(id: string) {
+    public async incrementVersion(id: string) 
+    {
         return await this._pgPool.query(MAX_VERSION_INCREMENT, [id]).then(res => res?.rows[0]?.max_version ?? 0);
     }
 }

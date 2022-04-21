@@ -5,12 +5,11 @@
 # Author: Jinxiong Tan
 # Date: 2020-08-21
 
-FROM node:14-alpine as BUILD_IMAGE
+FROM node:14 as BUILD_IMAGE
 
 # Install python runtime
-RUN apk update && \
-    apk add python make g++ && \
-    rm -rf /var/cache/apk/*
+RUN apt update && \
+    apt install python3 make g++
 
 # Create app directory
 WORKDIR /usr/src/app

@@ -38,8 +38,8 @@ class Experiments extends Component {
             selectedFramework: null,
             rowsSelected: [],
             model: null,
-            rows: [{id: 1, version: '1', createdBy: 'ntcore', createdAt: '2021-01-01 10:30:00', runtime: 'python-3.8', framework: 'sklearn', metrics: {"auc":0.9}, parameters: {"penalty": "l1"}, description: 'Logistic Regression'}]
-            // rows: []
+            // rows: [{id: 1, version: '1', createdBy: 'ntcore', createdAt: '2021-01-01 10:30:00', runtime: 'python-3.8', framework: 'sklearn', metrics: {"auc":0.9}, parameters: {"penalty": "l1"}, description: 'Logistic Regression'}]
+            rows: []
         }
         this._createRegisterButton = this._createRegisterButton.bind(this);
         this._fetchExperiments = this._fetchExperiments.bind(this);

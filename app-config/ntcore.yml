@@ -2,7 +2,7 @@
 ## Docker configurations
 ##############################
 container:
-  provider: 
+  provider:
     type: docker
 
 database:

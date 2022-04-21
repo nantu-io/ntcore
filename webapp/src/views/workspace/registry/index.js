@@ -4,7 +4,6 @@ import clsx from 'clsx';
 import { Paper } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import Divider from '@material-ui/core/Divider';
 import dateFormat from "dateformat";
 import BaseModal from '../../baseModal';
 import DeployForm from './deploy';
@@ -20,7 +19,7 @@ const useStyles = (theme) => ({
     summary: {
         paddingLeft: theme.spacing(3),
         paddingTop: theme.spacing(2),
-        fontSize: '21px'
+        fontSize: '22px'
     },
     container: {
         minHeight: 200
@@ -83,7 +82,7 @@ class Registry extends React.Component {
         const { classes } = this.props;
         const { version, runtime, framework } = this.state
         return (
-            <Button variant="contained" size="small" color="primary" className={clsx(classes.action)} disabled={!version} onClick={() => 
+            <Button variant="contained" size="small" color="primary" disabled={!version} className={clsx(classes.action)}  onClick={() => 
                 this.setState({
                     isModalOpen: true, 
                     selectedVersion: version, 
@@ -95,12 +94,13 @@ class Registry extends React.Component {
     }
 
     _createActiveForm(callback, closeModel, errorHandler) {
-        const { workspaceId } = this.props;
+        const { workspaceId, workspaceType } = this.props;
         const { version, runtime, framework, mode } = this.state;
         switch(mode) {
             case MODAL_MODE.DEPLOY: return (
                 <DeployForm 
                     workspaceId={workspaceId}
+                    workspaceType={workspaceType}
                     version={version}
                     runtime={runtime}
                     framework={framework}
@@ -112,7 +112,7 @@ class Registry extends React.Component {
     }
 
     render() {
-        const { classes, onSuccess, onError, workspaceId } = this.props;
+        const { classes, onSuccess, onError } = this.props;
         const { version, framework, createdBy, createdAt, runtime, description } = this.state;
 
         const closeModel = () => {
@@ -132,7 +132,6 @@ class Registry extends React.Component {
             <div className={clsx(classes.root, classes.content)}>
                 <Paper elevation={4}>
                     <p className={clsx(classes.summary)}>Summary</p>
-                    <Divider className={classes.divider} />
                     <Grid container className={clsx(classes.container)}>
                         <Grid item xs={2}> 
                             <p className={clsx(classes.entry)}>Version</p>
@@ -144,7 +143,7 @@ class Registry extends React.Component {
                             <p className={clsx(classes.entry)}>{version ? version : "--"}</p>
                             <p className={clsx(classes.entry)}>{framework ? framework : "--"}</p>
                             <p className={clsx(classes.entry)}>{createdBy ? createdBy : "--"}</p>
-                            <p className={clsx(classes.code)}>{version? endpoint : "--"}</p>
+                            <p className={clsx(classes.entry)}>{version? endpoint : "--"}</p>
                         </Grid>
                         <Grid item xs={2}> 
                             <p className={clsx(classes.entry)}>Runtime</p>

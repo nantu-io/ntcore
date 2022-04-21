@@ -37,16 +37,23 @@ export const DEPLOYMENTS_LIST = `SELECT id, workspace_id, version, status, creat
 */
 export const DEPLOYMENTS_ACTIVE_LIST = `
     SELECT id, workspace_id, version, status, created_by, created_at
-    FROM (
-        SELECT id, workspace_id, version, status, created_by, created_at, RANK () OVER (PARTITION BY workspace_id, status ORDER BY created_at DESC) timeRank
-        FROM deployments) AS rank
-    WHERE status = 'SUCCEED' AND timeRank = 1
+    FROM deployments
+    WHERE status = 'RUNNING'
+    ORDER BY created_at DESC;
+;`
+/**
+* Query to retrieve the active deployment for a given workspace.
+*/
+export const DEPLOYMENT_ACTIVE_READ = `
+    SELECT id, workspace_id, version, status, created_by, created_at
+    FROM deployments
+    WHERE workspace_id = $1 AND status = 'RUNNING'
     ORDER BY created_at DESC;
 ;`
 /**
 * Query to read experiment given workspace id and version.
 */
-export const DEPLOYMENT_READ = `SELECT id, workspace_id, version, status, created_by, created_at FROM deployments WHERE workspace_id=$1 AND version=$2;`
+export const DEPLOYMENT_READ = `SELECT id, workspace_id, version, status, created_by, created_at FROM deployments WHERE workspace_id=$1 AND id=$2;`
 /**
 * Query to insert the entry to deployment_locks table;
 */
@@ -56,8 +63,10 @@ export const DEPLOYMENT_LOCK_CREATE = `INSERT INTO deployment_locks (workspace_i
 */
 export const DEPLOYMENT_STATUS_UPDATE = `
     UPDATE deployments
-    SET status = $3
-    WHERE workspace_id = $1 AND id = $2;`;
+    SET status = 
+        CASE WHEN id = $2 THEN $3
+        ELSE 'STOPPED' END
+    WHERE workspace_id = $1 AND (status = 'PENDING' OR status = 'RUNNING');`;
 /**
 * Query to delete the deployment lock.
 */

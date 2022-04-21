@@ -9,6 +9,9 @@ class AppConfigContainer
 {
     provider: ProviderType;
     namespace?: string;
+    region?: string;
+    accessKeyId?: string;
+    secretAccessKey?: string;
 }
 /**
  * Database setup in AppConfig.
@@ -35,19 +38,23 @@ class AppConfig {
 
 function getContainerProviderConfig(config: any): AppConfigContainer 
 {
-    const provider = ProviderTypeMapping[config['container'].provider.type];
+    const providerConfig = config['container'].provider;
+    const provider = ProviderTypeMapping[providerConfig.type];
     switch(provider) {
-        case ProviderType.KUBERNETES: return { provider: provider, namespace: config['container'].provider.namespace };
+        case ProviderType.KUBERNETES: return { provider: provider, namespace: providerConfig.namespace };
         case ProviderType.DOCKER: return { provider: provider };
+        case ProviderType.AWSBATCH: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey };
+        case ProviderType.AWSECS: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey };
         default: throw new Error("Invalid container provider");
     }
 }
 
 function getDatabtaseProviderConfig(config: any): AppConfigDatabase 
 {
-    const provider = DatabaseTypeMapping[config['database'].provider.type];
+    const providerConfig = config['database'].provider;
+    const provider = DatabaseTypeMapping[providerConfig.type];
     switch(provider) {
-        case DatabaseType.SQLITE: return { provider: provider, path: config['database'].provider.path };
+        case DatabaseType.SQLITE: return { provider: provider, path: providerConfig.path };
         case DatabaseType.POSTGRES: return getPostgresProviderConfig(provider, config);
         default: throw new Error("Invalid databse provider");
     }

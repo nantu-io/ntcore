@@ -87,7 +87,7 @@ class Workspace extends Component {
     switch(activeStep) {
       // Add key to trigger update on child when workspaceType is changed.
       case 0: return <Experiments key={`exp-${workspaceType}`} workspaceId={params.id} onSuccess={(msg) => this._openSnackBar(SEVERITY.SUCCESS, msg)} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}></Experiments>;
-      case 1: return <Registry key={`reg-${workspaceType}`} workspaceId={params.id} onSuccess={(msg) => this._openSnackBar(SEVERITY.SUCCESS, msg)} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}></Registry>;
+      case 1: return <Registry key={`reg-${workspaceType}`} workspaceId={params.id} workspaceType={workspaceType} onSuccess={(msg) => this._openSnackBar(SEVERITY.SUCCESS, msg)} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}></Registry>;
       case 2: return <Deployments key={`dep-${workspaceType}`} workspaceId={params.id} onError={(err) => this._openSnackBar(SEVERITY.ERROR, err)}></Deployments>;
       default: return null;
     }
