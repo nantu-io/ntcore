@@ -54,7 +54,7 @@ NTCore可帮助数据科学家和机器学习工程师轻松地对AI/ML模型进
     pip install ntcore
     ```
 3. 到[http://localhost:8000/dsp/console/workspaces](http://localhost:8000/dsp/console/workspaces) 并创建您的第一个工作区。  
-4. 模型版本控制。可以从[这里](https://github.com/nantu-io/ntcore/tree/promotion/client/examples)了解更多。
+4. 模型版本控制。可以从[这里](https://github.com/nantu-io/ntcore/tree/main/sdk/examples)了解更多。
     ```python
     # Load iris dataset.
     from sklearn import datasets
