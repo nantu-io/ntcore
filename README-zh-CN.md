@@ -56,13 +56,7 @@ NTCore可帮助数据科学家和机器学习工程师轻松地对AI/ML模型进
 3. 到[http://localhost:8000/dsp/console/workspaces](http://localhost:8000/dsp/console/workspaces) 并创建您的第一个工作区。  
 4. 模型版本控制。可以从[这里](https://github.com/nantu-io/ntcore/tree/promotion/client/examples)了解更多。
     ```python
-    from sklearn import datasets
-    # Config the ntcore client
-    from ntcore import client
-    client.set_endpoint('http://localhost:8000')
-    client.autolog('{workspace_id}')
-
-    # Prepare the training dataset
+    # Load iris dataset.
     from sklearn import datasets
     iris = datasets.load_iris()
 
@@ -71,8 +65,10 @@ NTCore可帮助数据科学家和机器学习工程师轻松地对AI/ML模型进
     clf = RandomForestClassifier(max_depth=2, random_state=0)
 
     # Start an experiment run
-    with client.start_run():
-        clf.fit(iris.data, iris.target_names[iris.target])
+    from ntcore import Client
+    client = Client()
+    with client.start_run('my_workspace_id') as exper:
+        clf.fit(iris.data, iris.target_names[iris.target], experiment=exper)
     ```
 5. 查看模型版本并注册一个用于预生产部署。 
     <kbd>
