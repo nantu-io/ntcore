@@ -86,7 +86,7 @@ NTCore 文档: https://nantu-io.github.io/ntcore-doc.
 
 - [快速开始](https://nantu-io.github.io/ntcore-doc/#/quick_start)
 - [模型部署](https://nantu-io.github.io/ntcore-doc/#/production)
-- [例子](https://github.com/nantu-io/ntcore/tree/promotion/client/examples)
+- [例子](https://github.com/nantu-io/ntcore/tree/main/sdk/examples)
 
 ## 为什么选择NTCore
 假设您是一名数据科学家，为 10 个不同的场景优化 AI/ML 模型，每个场景都需要 100 次迭代。您如何保留这 1000 个实验的输入/输出，比较它们以找到最佳模型并重现它们？这并不容易。但这并不是你噩梦的结束。如果要将“最佳”模型部署为预测端点，则必须重构代码以创建 API，然后 DevOps 团队才能部署。这个过程通常需要几天时间。更重要的是，当这个过程每小时、每天甚至每月重复一次时，疼痛会变得更糟。
