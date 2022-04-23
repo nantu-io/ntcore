@@ -51,7 +51,7 @@ Join our community on [Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1
     pip install ntcore
     ```
 3. Navigate to [http://localhost:8000/dsp/console/workspaces](http://localhost:8000/dsp/console/workspaces) and create your first workspace.
-4. Version an ML model. More examples can be found [here](https://github.com/nantu-io/ntcore/tree/promotion/client/examples).
+4. Version an ML model. More examples can be found [here](https://github.com/nantu-io/ntcore/tree/main/sdk/examples).
     ```python
     # Load iris dataset.
     from sklearn import datasets
