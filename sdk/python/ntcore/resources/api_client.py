@@ -4,8 +4,8 @@ import requests
 import uuid
 
 from .encryption import Encryption
-from ..exceptions.exceptions import NTCoreAPIException
-from ..__about__ import __version__
+from exceptions.exceptions import NTCoreAPIException
+from __about__ import __version__
 from requests_toolbelt.adapters.ssl import SSLAdapter
 try:
     from urllib.parse import urljoin

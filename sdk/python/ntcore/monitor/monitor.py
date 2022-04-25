@@ -1,4 +1,4 @@
-from ..resources.api_client import ApiClient
+from resources.api_client import ApiClient
 from .utils import build_url
 import json,os
 
@@ -41,10 +41,10 @@ class Monitor(object):
         value: float
         '''
         
-        url = build_url("monitoring", "metrics")
-        data = dict({"workspace_id": workspace_id, "name":name, "value":value})
+        partial_url = build_url("monitoring", "metrics")
+        data = dict(workspaceId = workspace_id, name = name, value = value)
         
-        return self._api_client.doPost(url, data)
+        return self._api_client.doPost(partial_url, data)
         
     def monitor_performance(self, workspace_id, input_data, ground_truth, value, timestamp):
         '''
@@ -61,7 +61,7 @@ class Monitor(object):
         
         url = build_url("monitoring","performances")
         input_data_json_string = json.dumps(input_data)
-        data = dict({"workspace_id": workspace_id, "inputData":input_data_json_string, "groundTruth": ground_truth, "value": value, "timestamp": timestamp})
+        data = dict({"workspaceId": workspace_id, "inputData":input_data_json_string, "groundTruth": ground_truth, "value": value, "timestamp": timestamp})
 
         return self._api_client.doPost(url, data)
 

@@ -1,10 +1,8 @@
-from http import HTTPStatus
-from ..monitor.monitor import Monitor
+from monitor.monitor import Monitor
 from datetime import datetime
+from exceptions.exceptions import NTCoreAPIException
 import unittest
 from unittest.mock import patch
-import pytest
-import json
 
 monitor = Monitor()
 
@@ -19,28 +17,37 @@ class PythonSDKMonitorTest(unittest.TestCase):
         '''
         test post metrics method
         '''
+        
         example_workspace_id = "CE4BCNZRSHGU5EQ7GO2U365ZQL"
         name = "test monitor metrics"
-        value = 1
-        mock_response.return_value = HTTPStatus.OK
+        value = 0.0018
+        mock_response.return_value = dict(workspaceId=example_workspace_id, name=name, value=str(value),timestamp=str(datetime.now()))
+        res = monitor.monitor_metric(example_workspace_id, name, value)
         
-        assert monitor.monitor_metric(example_workspace_id, name, value) == HTTPStatus.OK \
+        assert isinstance(res,dict)
+        assert "workspaceId" in res
+        assert "name" in res
+        assert "value" in res
     
-    def test_post_metrics_error(self):
+    @patch("requests.post")
+    def test_post_metrics_error(self, mock_response):
         '''
         test post metrics with wrong inputs
         the expected will be error
         '''
+        
         example_workspace_id_wrong = 1
         name = "test monitor metrics error"
-        value = 0
-        with patch("requests.post",side_effect=ConnectionError):
-            with pytest.raises(ConnectionError):
-                try:
-                    monitor.monitor_metric(example_workspace_id_wrong, name, value)
-                except Exception as e:
-                    assert isinstance(e, ConnectionError)
-                    raise 
+        value = "4"
+        mock_response = NTCoreAPIException()
+        
+        with patch("requests.post"):
+            try:
+                monitor.monitor_metric(example_workspace_id_wrong, name, value)
+            except Exception as e:
+                assert "errror" in e
+                assert type(e) == type(mock_response)
+                raise 
 
 
     @patch("requests.post")
@@ -49,15 +56,16 @@ class PythonSDKMonitorTest(unittest.TestCase):
         test post performances method
         '''
         workspace_id = "CE4BCNZRSHGU5EQ7GO2U365ZQL"
-        input_data = {}
+        input_data = {"a":1.0,"b":2.0,"c":3.0}
         ground_truth = 0
         value = 0
         timestamp = datetime.now()
         
         
-        assert monitor.monitor_performance(workspace_id, input_data, ground_truth, value, timestamp) == HTTPStatus.OK
+        assert isinstance(monitor.monitor_performance(workspace_id, input_data, ground_truth, value, timestamp),dict)
     
-    def test_post_performances_error(self):
+    @patch("requests.post")
+    def test_post_performances_error(self, mock_response):
         '''
         test post performances with wrong inputs
         the error will be expected
@@ -67,12 +75,12 @@ class PythonSDKMonitorTest(unittest.TestCase):
         ground_truth = 0
         value = 0
         timestamp = datetime.now()
+        mock_response = NTCoreAPIException()
 
-        with patch("requests.post", side_effect=ConnectionError):
-            with pytest.raises(ConnectionError):
-                try:
-                    monitor.monitor_performance(workspace_id_wrong, input_data, ground_truth, value, timestamp)
-                except Exception as e:
-                    assert isinstance(e, ConnectionError)
-                    raise
-    
+        with patch("requests.post"):
+            try:
+                monitor.monitor_performance(workspace_id_wrong, input_data, ground_truth, value, timestamp)
+            except Exception as e:
+                assert "error" in e
+                assert type(e) == type(mock_response)
+                raise
