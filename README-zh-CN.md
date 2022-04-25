@@ -1,4 +1,4 @@
-# NTCore：让AI/ML模型周期管理变得简单
+# NTCore：自主多云的AI/ML模型部署与监控平台
 
 ![workflows-intro](https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg)
 
@@ -32,9 +32,6 @@ NTCore可帮助数据科学家和机器学习工程师轻松地对AI/ML模型进
 * UI仪表板实时监控 ML 模型版本、部署和性能指标（持续开发中）。
 * API与工作流管理器（例如 Apache Airflow）无缝连接，自动化ML工作流（持续开发中）。
 
-
-加入我们的[Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4)社区.
-
 ----
 ## 目录
 - [快速开始](#quickstart)
@@ -54,15 +51,9 @@ NTCore可帮助数据科学家和机器学习工程师轻松地对AI/ML模型进
     pip install ntcore
     ```
 3. 到[http://localhost:8000/dsp/console/workspaces](http://localhost:8000/dsp/console/workspaces) 并创建您的第一个工作区。  
-4. 模型版本控制。可以从[这里](https://github.com/nantu-io/ntcore/tree/promotion/client/examples)了解更多。
+4. 模型版本控制。可以从[这里](https://github.com/nantu-io/ntcore/tree/main/sdk/examples)了解更多。
     ```python
-    from sklearn import datasets
-    # Config the ntcore client
-    from ntcore import client
-    client.set_endpoint('http://localhost:8000')
-    client.autolog('{workspace_id}')
-
-    # Prepare the training dataset
+    # Load iris dataset.
     from sklearn import datasets
     iris = datasets.load_iris()
 
@@ -71,8 +62,10 @@ NTCore可帮助数据科学家和机器学习工程师轻松地对AI/ML模型进
     clf = RandomForestClassifier(max_depth=2, random_state=0)
 
     # Start an experiment run
-    with client.start_run():
-        clf.fit(iris.data, iris.target_names[iris.target])
+    from ntcore import Client
+    client = Client()
+    with client.start_run('my_workspace_id') as exper:
+        clf.fit(iris.data, iris.target_names[iris.target], experiment=exper)
     ```
 5. 查看模型版本并注册一个用于预生产部署。 
     <kbd>
@@ -90,7 +83,7 @@ NTCore 文档: https://nantu-io.github.io/ntcore-doc.
 
 - [快速开始](https://nantu-io.github.io/ntcore-doc/#/quick_start)
 - [模型部署](https://nantu-io.github.io/ntcore-doc/#/production)
-- [例子](https://github.com/nantu-io/ntcore/tree/promotion/client/examples)
+- [例子](https://github.com/nantu-io/ntcore/tree/main/sdk/examples)
 
 ## 为什么选择NTCore
 假设您是一名数据科学家，为 10 个不同的场景优化 AI/ML 模型，每个场景都需要 100 次迭代。您如何保留这 1000 个实验的输入/输出，比较它们以找到最佳模型并重现它们？这并不容易。但这并不是你噩梦的结束。如果要将“最佳”模型部署为预测端点，则必须重构代码以创建 API，然后 DevOps 团队才能部署。这个过程通常需要几天时间。更重要的是，当这个过程每小时、每天甚至每月重复一次时，疼痛会变得更糟。
