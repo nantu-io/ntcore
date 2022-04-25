@@ -32,9 +32,6 @@ NTCore可帮助数据科学家和机器学习工程师轻松地对AI/ML模型进
 * UI仪表板实时监控 ML 模型版本、部署和性能指标（持续开发中）。
 * API与工作流管理器（例如 Apache Airflow）无缝连接，自动化ML工作流（持续开发中）。
 
-
-加入我们的[Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4)社区.
-
 ----
 ## 目录
 - [快速开始](#quickstart)
