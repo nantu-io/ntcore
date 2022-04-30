@@ -30,8 +30,8 @@ function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <Link color="inherit" href="https://www.nantutech.com">
-        NantuTech
+      <Link color="inherit" href="https://nantu.io/">
+        nantu.io
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -130,6 +130,11 @@ const useStyles = makeStyles((theme) => ({
   fixedHeight: {
     height: 240,
   },
+  copyRight: {
+    position: 'fixed',
+    bottom: 30,
+    left: 25,
+  }
 }));
 
 
@@ -240,7 +245,7 @@ export default function BaseLayout(props) {
 
         </List>
         {mainListItems}
-        <Box pt={85}>
+        <Box className={classes.copyRight} pt={85}>
           <Copyright />
         </Box>
       </Drawer>

@@ -21,7 +21,7 @@ class App extends Component {
               <Route exact path="/dsp/console/workspaces" name="Workspaces" render={props => <Workspaces {...props}/>} />
               <Route exact path="/dsp/console/deployments" name='Deployments' render={props => <Applications {...props} />} />
               <Route exact path="/dsp/console/monitoring" name='Monitoring' render={props => <Monitoring {...props} />} />
-              {/* <Route exact path="/dsp/console/instances" name='Instances' render={props => <Instances {...props} />} /> */}
+              {/* <Route exact path=/instances" name='Instances' render={props => <Instances {...props} />} /> */}
             </Switch>
           </React.Suspense>
       </BrowserRouter>

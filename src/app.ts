@@ -28,15 +28,16 @@ export class App
         useTempFiles : true,
         tempFileDir : '/tmp/'
       }));
-      // config static assets
-      this.app.use(express.static(path.join(__dirname, '/../webapp/build')));
+      // config js/css route
+      this.app.use('/dsp/public', express.static(path.join(__dirname, '/../webapp/build')));
+      // config html route
       this.app.get('/dsp/console/*', (req, res, next) => {
         res.sendFile(path.join(__dirname, '/../webapp/build/index.html'));
       });
       // Listen to port
       const PORT = 8180;
       initialize().then(() => {
-        this.app.listen(PORT, () => console.log(`Server is running with ${appConfig.container.provider} provider`));
+        this.app.listen(PORT, () => console.log(`NTCore is running with ${appConfig.container.provider} provider`));
       });
     }
 }
