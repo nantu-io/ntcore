@@ -44,7 +44,7 @@ class ApiClient(object):
             'x-sdk-version': __version__,
             'x-sdk-contextId': str(uuid.uuid4()),
             'Accept': 'application/jose+json' if self.encrypted else 'application/json',
-            # 'Content-Type': 'application/jose+json' if self.encrypted else 'application/json'
+            'Content-Type': 'application/jose+json' if self.encrypted else 'application/json'
         }
 
         self.username = username
@@ -178,7 +178,7 @@ class ApiClient(object):
         return self._makeRequest(
             method='POST',
             url=partialUrl,
-            data=data,
+            data=json.dumps(data).encode('utf-8'),
             headers=headers
         )
 

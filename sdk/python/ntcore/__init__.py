@@ -1,16 +1,8 @@
 from ntcore.client import Client
+from importlib import import_module
 
-try:
-    from ntcore.integrations import sklearn
-except Exception as e:
-    pass
-
-try:
-    from ntcore.integrations import tensorflow
-except Exception as e:
-    pass
-
-try:
-    from ntcore.integrations.torch import TorchModelRecorder
-except Exception as e:
-    pass
+for module in ["ntcore.integrations.sklearn", "ntcore.integrations.tensorflow", "ntcore.integrations.torch"]:
+    try:
+        import_module(module)
+    except Exception as e:
+        pass
