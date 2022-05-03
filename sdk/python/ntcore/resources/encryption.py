@@ -11,7 +11,7 @@ from jwcrypto.common import json_encode, json_decode
 from jwcrypto.common import base64url_decode, base64url_encode
 from jose import jws
 
-from exceptions.exceptions import NTCoreAPIException
+from ..exceptions.exceptions import NTCoreAPIException
 from six.moves.urllib.parse import urlparse
 
 
