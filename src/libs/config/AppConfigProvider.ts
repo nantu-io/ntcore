@@ -1,4 +1,4 @@
-import { ProviderType, ProviderTypeMapping, DatabaseType, DatabaseTypeMapping } from '../../commons/ProviderType';
+import { ProviderType, ProviderTypeMapping, DatabaseType, DatabaseTypeMapping, StorageEngineTypeMapping, StorageEngineType } from '../../commons/ProviderType';
 import yaml = require('js-yaml');
 import fs = require('fs');
 
@@ -29,11 +29,36 @@ class AppConfigDatabase
     }
 }
 /**
+ * Storage config in AppConfig.
+ */
+class AppConfigStorage
+{
+    provider: StorageEngineType;
+    config: AppConfigDiskStorage | AppConfigS3Storage
+}
+/**
+ * 
+ */
+class AppConfigDiskStorage
+{
+    root: string;
+}
+/**
+ * 
+ */
+class AppConfigS3Storage 
+{
+    bucket: string;
+    root: string;
+}
+/**
  * Application configuration.
  */
-class AppConfig {
+class AppConfig 
+{
     container: AppConfigContainer;
     database: AppConfigDatabase;
+    storage: AppConfigStorage;
 }
 
 function getContainerProviderConfig(config: any): AppConfigContainer 
@@ -75,12 +100,24 @@ function getPostgresProviderConfig(provider: DatabaseType, config: any): AppConf
     };
 }
 
+function getStorageEngineProviderConfig(config: any): AppConfigStorage
+{
+    const providerConfig = config['storage'].provider;
+    const provider = StorageEngineTypeMapping[providerConfig.type];
+    switch(provider) {
+        case StorageEngineType.S3: return { provider: provider, config: { bucket: providerConfig.config.bucket, root: providerConfig.config.root } };
+        case StorageEngineType.VOLUME: return { provider: provider, config: { root: providerConfig.config.root } };
+        default: throw new Error("Invalid storage engine provider");
+    }
+}
+
 function getAppConfig(): AppConfig 
 {
     const config = yaml.load(fs.readFileSync('app-config/ntcore.yml', 'utf8'));
     return { 
         container: getContainerProviderConfig(config),
-        database: getDatabtaseProviderConfig(config)
+        database: getDatabtaseProviderConfig(config),
+        storage: getStorageEngineProviderConfig(config)
     };
 }
 

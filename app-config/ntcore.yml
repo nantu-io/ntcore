@@ -1,5 +1,5 @@
 ##############################
-## Docker configurations
+## Local configurations
 ##############################
 container:
   provider:
@@ -9,3 +9,9 @@ database:
   provider:
     type: sqlite
     path: data/db/ntcore.db
+
+storage:
+  provider:
+    type: volume
+    config:
+      root: data/binary

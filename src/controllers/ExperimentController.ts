@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { ExperimentState } from "../providers/experiment/ExperimentProvider";
+import { Experiment, ExperimentState } from "../providers/experiment/ExperimentProvider";
 import { workspaceProvider, experimentProvider } from "../libs/config/AppModule";
+import { storageProvider } from "../libs/config/AppModule";
 
 export class ExperimentController 
 {
@@ -31,10 +32,9 @@ export class ExperimentController
         const framework = req.body.framework;
         const parameters = JSON.parse(req.body.parameters);
         const metrics = JSON.parse(req.body.metrics);
-        const model = Buffer.from(req.body.model, 'base64');
         const state = ExperimentState.UNREGISTERED;
         const version = await workspaceProvider.incrementVersion(workspaceId);
-        const experiment = {
+        const experiment: Experiment = {
             workspaceId,
             version,
             runtime,
@@ -42,10 +42,14 @@ export class ExperimentController
             parameters,
             metrics,
             description,
-            model,
             state,
             createdBy: 'ntcore',
             createdAt: new Date()
+        }
+        if (req.body.model) {
+            experiment.model = Buffer.from(req.body.model, 'base64');
+        } else {
+            await storageProvider.putObject(workspaceId, version);
         }
         try {
             await experimentProvider.create(experiment);

@@ -1,8 +1,10 @@
 import * as express from "express";
+import * as multer from 'multer';
 import { DeploymentController } from "../controllers/DeploymentController";
 import { ExperimentController } from "../controllers/ExperimentController";
 import { InstanceController } from "../controllers/InstanceController";
 import { WorkspaceController } from "../controllers/WorkspaceController";
+import { storageProvider } from "../libs/config/AppModule";
 
 export class Routes 
 {
@@ -55,9 +57,16 @@ export class Routes
             .get(this.deploymentController.listDeploymentsV1)
         app.route('/dsp/api/v1/deployments/active')
             .get(this.deploymentController.listActiveDeploymentsV1)
+
+         // TODO: follow the below url format to modify the above.
         app.route('/dsp/api/v1/:workspaceId/deployment')
             .delete(this.deploymentController.terminateDeploymentV1)
         app.route('/dsp/api/v1/:workspaceId/logs/:deploymentId')
             .get(this.deploymentController.retrieveLogEvents)
+        app.post('/dsp/api/v1/:workspaceId/experiment', 
+            multer({ storage: storageProvider.getStorageEngine() }).single('model'), 
+            this.experimentController.createExperimentV1);
+        app.get('/dsp/api/v1/:workspaceId/models/:version',
+            storageProvider.getObjectProxy())
     }
 }

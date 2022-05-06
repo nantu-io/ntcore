@@ -53,7 +53,7 @@ export class Experiment
     description: string;
     parameters: string;
     metrics: string;
-    model: Buffer;
+    model?: Buffer;
     state: ExperimentState
 }
 /**

@@ -99,12 +99,16 @@ class Client(object):
         except Exception:
             _workspace_id = workspace_id
         if _workspace_id is None:
-            raise ValueError('Unable to find workspace_id')
+            raise ValueError('Unable to find workspace_id.')
 
-        if version is None:
-            version = self.get_registered_experiment(_workspace_id)['version']
+        try:
+            _version = self.get_registered_experiment(_workspace_id)['version']
+        except Exception:
+            _version = version
+        if _version is None:
+            raise ValueError('Unable to find model version.')
         
-        serialized = self._api_client.doGet(self.__build_url('workspace', _workspace_id, 'model', str(version)))
+        serialized = self._api_client.doGet(self.__build_url(_workspace_id, 'models', str(_version)))
         with open(path, 'wb') as f:
             f.write(serialized)
 
@@ -137,11 +141,10 @@ class Client(object):
             runtime = get_runtime_version(),
             framework = "" if framework is None else framework,
             parameters = json.dumps(experiment.pretraining_metadata).encode('utf-8'),
-            metrics = json.dumps(experiment.posttraining_metadata).encode('utf-8'),
-            model = base64.b64encode(serialized_model))
-        
-        self._api_client.doPost(self.__build_url('workspace', workspace_id, 'experiment'), payload)
+            metrics = json.dumps(experiment.posttraining_metadata).encode('utf-8'))
+        files = dict(model = serialized_model)
 
+        self._api_client.doPost(self.__build_url(workspace_id, 'experiment'), payload, files=files)
         if model_file is not None:
             model_file.close()
         self._active_experiments.discard(experiment)

@@ -5,7 +5,7 @@ import { IContainerGroupProvider, IContainerGroupConfigProvider, ContainerGroupT
 import { waitUntil } from 'async-wait-until';
 import { RuntimeMapping } from '../commons/Runtime';
 import { ContainerTimeoutException } from "../commons/Errors"
-import { serviceStateProvider } from "../libs/config/AppModule";
+import { containerGroupStateProvider } from "../libs/config/AppModule";
 
 export class InstanceController 
 {
@@ -42,13 +42,13 @@ export class InstanceController
         const config = this._configProvider.createDevelopmentConfig(name, type, runtime, cpus, memory, packages);
 
         try {
-            await serviceStateProvider.record(config, username, ContainerGroupState.PENDING, runtime, cpus, memory, packages);
+            await containerGroupStateProvider.record(config, username, ContainerGroupState.PENDING, runtime, cpus, memory, packages);
             res.status(201).send({ name: name, status: ContainerGroupState.PENDING });
             await this._serviceProvider.provision(config);
             await this._serviceProvider.start(config);
             const result = await this.waitForInstanceState(config, ContainerGroupState.RUNNING);
             const state = result ? ContainerGroupState.RUNNING : ContainerGroupState.INACTIVE;
-            await serviceStateProvider.record(config, username, state);
+            await containerGroupStateProvider.record(config, username, state);
         } catch (err) {
             await this.handleServiceProviderError(err, config, username);
         }
@@ -69,11 +69,11 @@ export class InstanceController
 
         try {
             await this._serviceProvider.getState(config);
-            await serviceStateProvider.record(config, username, ContainerGroupState.STOPPING);
+            await containerGroupStateProvider.record(config, username, ContainerGroupState.STOPPING);
             res.status(201).send(config);
             await this._serviceProvider.stop(config);
             await this.waitForInstanceState(config, ContainerGroupState.INACTIVE);
-            await serviceStateProvider.record(config, username, ContainerGroupState.STOPPED);
+            await containerGroupStateProvider.record(config, username, ContainerGroupState.STOPPED);
         } catch (err) {
             await this.handleServiceProviderError(err, config, username);
         }
@@ -94,12 +94,12 @@ export class InstanceController
 
         try {
             await this._serviceProvider.getState(config);
-            await serviceStateProvider.record(config, username, ContainerGroupState.STOPPING);
+            await containerGroupStateProvider.record(config, username, ContainerGroupState.STOPPING);
             res.status(201).send(config);
             await this._serviceProvider.stop(config);
             await this.waitForInstanceState(config, ContainerGroupState.INACTIVE);
             await this._serviceProvider.delete(config);
-            await serviceStateProvider.record(config, username, ContainerGroupState.INACTIVE);
+            await containerGroupStateProvider.record(config, username, ContainerGroupState.INACTIVE);
         } catch (err) {
             await this.handleServiceProviderError(err, config, username);
         }
@@ -115,7 +115,7 @@ export class InstanceController
     public async listServicesV1(req: Request, res: Response) 
     {
         try {
-            const services = await serviceStateProvider.list('ntcore');
+            const services = await containerGroupStateProvider.list('ntcore');
             res.status(200).send(services);
         } catch (err) {
             res.status(500).send({ error: `Failed to list local containers: ${err}` });
@@ -132,7 +132,7 @@ export class InstanceController
     public async getServiceStateV1(req: Request, res: Response) 
     {
         try {
-            const state = await serviceStateProvider.get(req.params.name, 'ntcore');
+            const state = await containerGroupStateProvider.get(req.params.name, 'ntcore');
             res.status(200).send(state);
         } catch (err) {
             res.status(500).send({ error: `Failed to get instance state: ${err}` });
@@ -158,7 +158,7 @@ export class InstanceController
     private async handleServiceProviderError(err: any, service: IContainerGroup, username: string) 
     {
         if (err instanceof ContainerTimeoutException) {
-            await serviceStateProvider.record(service, username, ContainerGroupState.INACTIVE);
+            await containerGroupStateProvider.record(service, username, ContainerGroupState.INACTIVE);
         } else {
             await this.synchronizeServiceState(service, username);
         }
@@ -167,16 +167,16 @@ export class InstanceController
 
     private async synchronizeServiceState(service: IContainerGroup, username: string) 
     {
-        const recordStatePromise = serviceStateProvider.get(service.name, username);
+        const recordStatePromise = containerGroupStateProvider.get(service.name, username);
         const actualStatePromise = this._serviceProvider.getState(service);
         // Wait until both promises are finished.
         Promise.all([recordStatePromise, actualStatePromise]).then(async (values) => {
             const recordState = values[0];
             const actualState = values[1];
             if (!actualState.state) {
-                await serviceStateProvider.record(service, username, ContainerGroupState.INACTIVE);
+                await containerGroupStateProvider.record(service, username, ContainerGroupState.INACTIVE);
             } else if (recordState.state !== actualState.state) {
-                await serviceStateProvider.record(service, username, actualState.state);
+                await containerGroupStateProvider.record(service, username, actualState.state);
             }
         })
     }

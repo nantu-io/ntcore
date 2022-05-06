@@ -44,7 +44,6 @@ class ApiClient(object):
             'x-sdk-version': __version__,
             'x-sdk-contextId': str(uuid.uuid4()),
             'Accept': 'application/jose+json' if self.encrypted else 'application/json',
-            'Content-Type': 'application/jose+json' if self.encrypted else 'application/json'
         }
 
         self.username = username
@@ -161,7 +160,7 @@ class ApiClient(object):
             params=params
         )
 
-    def doPost(self, partialUrl, data, headers={}):
+    def doPost(self, partialUrl, data, files=None, headers={}):
         '''
         Submit a POST to the API.
 
@@ -174,11 +173,14 @@ class ApiClient(object):
         :returns:
             The API response.
         '''
+        if files is None:
+            headers['Content-Type'] = 'application/jose+json' if self.encrypted else 'application/json'
 
         return self._makeRequest(
             method='POST',
             url=partialUrl,
-            data=json.dumps(data).encode('utf-8'),
+            files=files,
+            data=data,
             headers=headers
         )
 

@@ -3,7 +3,6 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import * as path from "path";
 import { appConfig } from './libs/config/AppConfigProvider';
-import fileUpload = require('express-fileupload');
 import { initialize } from "./libs/config/AppModule";
 
 export class App 
@@ -23,11 +22,6 @@ export class App
       this.app.use(bodyParser.json({limit: '500mb'}));
       // support application/x-www-form-urlencoded post data
       this.app.use(bodyParser.urlencoded({ limit: '500mb', extended: false }));
-      // support file upload from client
-      this.app.use(fileUpload({
-        useTempFiles : true,
-        tempFileDir : '/tmp/'
-      }));
       // config js/css route
       this.app.use('/dsp/public', express.static(path.join(__dirname, '/../webapp/build')));
       // config html route

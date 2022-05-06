@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { workspaceProvider } from "../libs/config/AppModule";
+import { storageProvider } from "../libs/config/AppModule";
 import { WorkspaceTypeMapping } from '../commons/WorkspaceType';
 import short = require('short-uuid');
 
@@ -22,8 +23,9 @@ export class WorkspaceController
      */
     public async createWorkspaceV1(req: Request, res: Response) 
     {
+        const id = this.createWorkspaceId(req.body.name);
         const workspace = {
-            id: this.createWorkspaceId(req.body.name),
+            id: id,
             type: WorkspaceTypeMapping[req.body.type],
             name: req.body.name,
             createdBy: 'ntcore',
@@ -32,6 +34,7 @@ export class WorkspaceController
         }
         try {
             await workspaceProvider.create(workspace);
+            await storageProvider.createWorkspace(id);
             res.status(201).send(workspace);
         } catch (err) {
             res.status(500).send({error: `Unable to create workspace: ${err}`});
@@ -91,6 +94,7 @@ export class WorkspaceController
     {
         try {
             const workspaces = await workspaceProvider.delete(req.params.id);
+            await storageProvider.deleteWorkspace(req.params.id);
             res.status(201).send(workspaces);
         } catch (err) {
             res.status(500).send({error: `Unable to delete workspace: ${err}`});

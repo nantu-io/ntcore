@@ -48,7 +48,8 @@ export const ProviderTypeMapping = {
 /**
  * Database types.
  */
-export const enum DatabaseType {
+export const enum DatabaseType 
+{
     /**
      * Local database type.
      */
@@ -61,7 +62,7 @@ export const enum DatabaseType {
 /**
  * Database types mapping.
  */
- export const DatabaseTypeMapping = {
+export const DatabaseTypeMapping = {
     /**
      * Docker.
      */
@@ -70,4 +71,23 @@ export const enum DatabaseType {
       * Kubernetes.
       */
      "postgres": DatabaseType.POSTGRES,
+}
+/**
+ * 
+ */
+export const enum StorageEngineType
+{
+    /**
+     * Local storage type.
+     */
+    VOLUME = "VOLUME",
+    /**
+     * AWS S3.
+     */
+    S3 = "S3",
+}
+
+export const StorageEngineTypeMapping = {
+    "volume": StorageEngineType.VOLUME,
+    "s3": StorageEngineType.S3,
 }
