@@ -1,5 +1,5 @@
 from abc import ABC
-from ..resources.api_client import ApiClient
+from ..resources.api_async_client import ApiAsyncClient
 import json, os
 
 class Monitor(ABC):
@@ -28,7 +28,7 @@ class Monitor(ABC):
         except Exception:
             self._server = server
 
-        self._api_client = ApiClient(self._username, self._password, self._server, encryption_data)
+        self._api_client = ApiAsyncClient(self._username, self._password, self._server, encryption_data)
 
     def add_metric(self, workspace_id, name, value):
         '''

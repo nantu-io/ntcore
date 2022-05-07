@@ -35,7 +35,8 @@ setup(
         "jwcrypto",
         "six",
         "python-jose",
-        "requests_toolbelt"
+        "requests_toolbelt",
+        "requests-futures"
     ],
     entry_points={
         "console_scripts": [

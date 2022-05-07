@@ -2,7 +2,7 @@
 import json
 import requests
 import uuid
-
+from abc import ABC
 from .encryption import Encryption
 from ..exceptions.exceptions import NTCoreAPIException
 from ..__about__ import __version__
@@ -13,7 +13,7 @@ except ImportError:
     from urlparse import urljoin  # Python 2
 
 
-class ApiClient(object):
+class ApiClient(ABC):
     '''
     The NTCore API Client.
 
@@ -44,6 +44,7 @@ class ApiClient(object):
             'x-sdk-version': __version__,
             'x-sdk-contextId': str(uuid.uuid4()),
             'Accept': 'application/jose+json' if self.encrypted else 'application/json',
+            # 'Content-Type': 'application/jose+json' if self.encrypted else 'application/json'
         }
 
         self.username = username
@@ -96,7 +97,7 @@ class ApiClient(object):
             response = self.session.request(
                 method=method,
                 url=urljoin(self.baseUrl, url),
-                data=self.__getRequestData(data),
+                data=self._getRequestData(data),
                 headers=headers,
                 params=params,
                 files=files
@@ -173,8 +174,6 @@ class ApiClient(object):
         :returns:
             The API response.
         '''
-        if files is None:
-            headers['Content-Type'] = 'application/jose+json' if self.encrypted else 'application/json'
 
         return self._makeRequest(
             method='POST',
@@ -229,7 +228,7 @@ class ApiClient(object):
         expectedContentType = 'application/jose+json' if self.encrypted else 'application/json'
         return response.status_code != 204 and contentType is not None and expectedContentType in contentType
 
-    def __getRequestData(self, data):
+    def _getRequestData(self, data):
         '''
         If encryption is enabled try to encrypt request data, otherwise no action required.
 

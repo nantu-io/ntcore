@@ -2,10 +2,10 @@
 # App Dockerfile
 # Version: 0.0.1
 #
-# Author: Jinxiong Tan
+# Author: NTCore
 # Date: 2020-08-21
 
-FROM node:14 as BUILD_IMAGE
+FROM node:16 as BUILD_IMAGE
 
 # Install python runtime
 RUN apt update && \
@@ -31,7 +31,7 @@ RUN npm run build
 RUN npm prune --production
 
 # Stage build
-FROM node:14-alpine
+FROM node:16-slim
 
 # Create app directory
 WORKDIR /usr/src/app
