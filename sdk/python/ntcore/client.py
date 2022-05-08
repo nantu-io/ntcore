@@ -1,7 +1,8 @@
+from math import floor
 from .models.experiment import Experiment
 from .resources.api_client import ApiClient
 from .integrations.utils import get_runtime_version
-import json, base64, pickle, tarfile, tempfile, os
+import json, pickle, tarfile, tempfile, os
 
 class Client(object):
     '''
@@ -108,7 +109,7 @@ class Client(object):
         if _version is None:
             raise ValueError('Unable to find model version.')
         
-        serialized = self._api_client.doGet(self.__build_url(_workspace_id, 'models', str(_version)))
+        serialized = self._api_client.doGet(self.__build_url(_workspace_id, 'models', str(floor(float(_version)))))
         with open(path, 'wb') as f:
             f.write(serialized)
 
