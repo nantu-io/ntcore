@@ -35,6 +35,7 @@ services:
 
 networks:
   gateway:
+    name: ntcore_gateway
     driver: bridge
 
 volumes:
