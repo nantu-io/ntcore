@@ -19,9 +19,9 @@ export class App
 
     private config(): void {
       // support application/json type post data
-      this.app.use(bodyParser.json({limit: '500mb'}));
+      this.app.use(bodyParser.json({limit: '50mb'}));
       // support application/x-www-form-urlencoded post data
-      this.app.use(bodyParser.urlencoded({ limit: '500mb', extended: false }));
+      this.app.use(bodyParser.urlencoded({ limit: '50mb', extended: false }));
       // config js/css route
       this.app.use('/dsp/public', express.static(path.join(__dirname, '/../webapp/build')));
       // config html route

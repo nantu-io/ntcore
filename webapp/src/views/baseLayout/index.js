@@ -134,6 +134,7 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     bottom: 30,
     left: 25,
+    paddingTop: 0,
   }
 }));
 
