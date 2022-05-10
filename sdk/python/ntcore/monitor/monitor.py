@@ -43,7 +43,7 @@ class Monitor(ABC):
         data = dict(workspaceId = workspace_id, name = name, value = value)
         return self._api_client.doPost(self.__build_url("monitoring", "metrics"), data)
         
-    def evaluate_model(self, workspace_id, input_data, ground_truth, timestamp=None):
+    def upload_ground_truth(self, workspace_id, input_data, ground_truth, timestamp=None):
         '''
         monitor performances through the 
         

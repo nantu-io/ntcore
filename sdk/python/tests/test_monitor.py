@@ -33,7 +33,7 @@ class MonitorModuleTest(unittest.TestCase):
         assert res["value"] == value
 
     @patch("requests.sessions.Session.request")
-    def test_post_metrics_error(self, mock_post):
+    def test_add_metric_error(self, mock_post):
         '''
         test post metrics with connection errors
         expects NTCoreAPIException
@@ -45,7 +45,7 @@ class MonitorModuleTest(unittest.TestCase):
             assert type(e) == NTCoreAPIException
 
     @patch("requests.sessions.Session.request")
-    def test_post_performances(self, mock_post):
+    def test_upload_ground_truth(self, mock_post):
         '''
         test post evaluate_model method
         '''
@@ -67,7 +67,7 @@ class MonitorModuleTest(unittest.TestCase):
         assert res["ground_truth"] == ground_truth
 
     @patch("requests.sessions.Session.request")
-    def test_post_performances_error(self, mock_post):
+    def test_upload_ground_truth_error(self, mock_post):
         '''
         test post performances with wrong inputs
         the error will be expected
