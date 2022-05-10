@@ -22,12 +22,7 @@ class Monitor(ABC):
         self._username = username
         self._password = password
         self._program_token = program_token
-
-        try:
-            self._server = "http://" + os.environ["DSP_API_ENDPOINT"]
-        except Exception:
-            self._server = server
-
+        self._server = server
         self._api_client = ApiAsyncClient(self._username, self._password, self._server, encryption_data)
 
     def add_metric(self, workspace_id, name, value):

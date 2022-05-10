@@ -35,12 +35,7 @@ class Client(object):
         self._password = password
         self._program_token = program_token
         self._active_experiments = set()
-
-        try:
-            self._server = 'http://' + os.environ['DSP_API_ENDPOINT']
-        except Exception:
-            self._server = server
-            
+        self._server = server
         self._api_client = ApiClient(self._username, self._password, self._server, encryption_data)
 
     def create_workspace(self, name):
