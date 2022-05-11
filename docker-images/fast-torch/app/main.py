@@ -13,7 +13,7 @@ model_dir = tempfile.TemporaryDirectory()
 
 # Initialize NTCore client.
 client = Client(server="http://" + os.environ["DSP_API_ENDPOINT"])
-monitor = Monitor(server="http://" + os.environ["DSP_API_ENDPOINT"])
+monitor = Monitor(server="http://" + os.environ["DSP_MONITORING_ENDPOINT"])
 
 # Download serialized model
 client.download_model(os.path.join(model_dir.name, "model.pt"), workspace_id)

@@ -79,6 +79,7 @@ export class DockerContainerGroupContextProvider implements IContainerGroupConte
             },
             Env: [
                 'DSP_API_ENDPOINT=ntcore:8180',
+                'DSP_MONITORING_ENDPOINT=ntcore-monitoring:8180',
                 `DSP_WORKSPACE_ID=${requestContext.workspaceId}`,
                 `DSP_MODEL_VERSION=${requestContext.version}`,
             ],
