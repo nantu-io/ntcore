@@ -5,6 +5,7 @@ from ts.context import Context
 from util import build_context, get_torch_handler
 from ntcore import Client
 from ntcore.monitor import Monitor
+from system_metrics import SystemMetricsPublisherDaemon
 import time
 
 # Config the enviroment
@@ -27,6 +28,10 @@ torch_handlers = dict()
 # Initialize Fast API server.
 app = FastAPI()
 
+# Start the system metrics daemon
+system_metrics_daemon = SystemMetricsPublisherDaemon(monitor, workspace_id)
+system_metrics_daemon.start()
+
 
 @app.post('/predict')
 async def predict(request: Request):
@@ -44,6 +49,7 @@ async def predict(request: Request):
         start_time = round(time.time() * 1000)
         prediction = torch_handler.handle(request.data, context)
         monitor.add_metric(workspace_id, "Latency", round(time.time() * 1000) - start_time)
+        monitor.add_metric(workspace_id, "Success", 1.0)
         return prediction
     except Exception as e:
         monitor.add_metric(workspace_id, "Error", 1.0)
