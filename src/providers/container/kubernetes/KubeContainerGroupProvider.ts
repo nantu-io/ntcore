@@ -15,81 +15,82 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
 
     /**
      * Provisions the kubernetes service.
-     * @param config Kubernetes container service config.
+     * @param context Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async provision(config: KubernetesContainerGroup): Promise<KubernetesContainerGroup> 
+    public async provision(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup> 
     {
-        return config;
+        return context;
     }
 
     /**
      * Starts the kubernetes service by applying service, ingressRoute and deployment configs.
-     * @param config Kubernetes container service config.
+     * @param context Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async start(config: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
+    public async start(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
     {
-        const servicePromise = this.applyResource(() => this._kubernetesClient.create(config.service), console.warn);
-        const ingressPromise = this.applyResource(() => this._kubernetesClient.create(config.ingress), console.warn);
-        const deploymentPromise = this.applyResource(() => this._kubernetesClient.create(config.deployment), console.warn);
+        const servicePromise = this.applyResource(() => this._kubernetesClient.create(context.service), console.warn);
+        const ingressPromise = this.applyResource(() => this._kubernetesClient.create(context.ingress), console.warn);
+        const deploymentPromise = this.applyResource(() => this._kubernetesClient.create(context.deployment), console.warn);
         await Promise.all([servicePromise, ingressPromise, deploymentPromise])
-        return config;
+        return context;
     }
 
     /**
      * Stops the kubernetes service by deleting service, ingressRoute and deployment configs.
-     * @param config Kubernetes container service config.
+     * @param context Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async stop(config: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
+    public async stop(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
     {
-        const deploymentPromise = this.applyResource(() => this._kubernetesClient.delete(config.deployment), console.warn);
-        const servicePromise = this.applyResource(() => this._kubernetesClient.delete(config.ingress), console.warn);
-        const ingressPromise = this.applyResource(() => this._kubernetesClient.delete(config.service), console.warn);
+        const deploymentPromise = this.applyResource(() => this._kubernetesClient.delete(context.deployment), console.warn);
+        const servicePromise = this.applyResource(() => this._kubernetesClient.delete(context.ingress), console.warn);
+        const ingressPromise = this.applyResource(() => this._kubernetesClient.delete(context.service), console.warn);
         await Promise.all([servicePromise, ingressPromise, deploymentPromise])
-        return config;
+        return context;
     }
     
     /**
      * Deletes the kubernetes service.
-     * @param config Kubernetes container service config.
+     * @param context Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async delete(config: KubernetesContainerGroup) 
+    public async delete(context: KubernetesContainerGroup) 
     {
-        return config;
+        return (await this.stop(context));
     }
     
     /**
      * Updates the kubernetes service.
-     * @param config Kubernetes container service config.
+     * @param context Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async update(config: KubernetesContainerGroup) 
+    public async update(context: KubernetesContainerGroup) 
     {
-        await this.applyResource(() => this._kubernetesClient.patch(config.deployment), console.warn)
-        return config;
+        await this.applyResource(() => this._kubernetesClient.patch(context.deployment), console.warn)
+        return context;
     }
     
     /**
      * Retrieve the service state from kubernetes cluster
-     * @param config Kubernetes container service config.
+     * @param context Kubernetes container service config.
      * @returns Kubernetes service states.
      */
-    public async getState(config: KubernetesContainerGroup): Promise<KubernetesContainerGroup> 
+    public async getState(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup> 
     {
         try {
-            const conditions = (await this._kubernetesClient.read(config.deployment)).body['status'].conditions;
-            const isAvailable = conditions.some((c: { type: string; status: string; }) => c.type === "Available" && c.status === "True");
+            const status = (await this._kubernetesClient.read(context.deployment))?.body['status'];
+            const conditions = status?.conditions;
+            const isAvailable = conditions && conditions.some((c: { type: string; status: string; }) => c.type === "Available" && c.status === "True");
             const serviceState = isAvailable ? ContainerGroupState.RUNNING : ContainerGroupState.PENDING;
-            return { namespace: config.namespace, type: config.type, name: config.name, state: serviceState };
+            return { namespace: context.namespace, type: context.type, name: context.name, state: serviceState };
         } catch (e) {
-            return { namespace: config.namespace, type: config.type, name: config.name, state: ContainerGroupState.INACTIVE };
+            return { namespace: context.namespace, type: context.type, name: context.name, state: ContainerGroupState.INACTIVE };
         }
     }
 
-    public async getLogs(config: KubernetesContainerGroup): Promise<string>
+    public async getLogs(context: KubernetesContainerGroup): Promise<string>
     {
         throw new NotImplementedException();
     }
@@ -108,6 +109,7 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
             return (await executor()).body;
         } catch (e) {
             errorHandler(e.body);
+            throw e;
         }
     }
 }

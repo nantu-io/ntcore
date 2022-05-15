@@ -4,7 +4,29 @@ import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresDeploymentProvider } from "./postgres/PostgresDeploymentProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
+import { ContainerGroupState } from "../container/ContainerGroupProvider";
 
+/**
+ * Container group state to deployment status mapping
+ */
+export const ContainerGroupStateToDeploymentStatusMapping = {
+    /**
+     * Pending.
+     */
+    [ContainerGroupState.PENDING] : DeploymentStatus.PENDING,
+    /**
+     * Running.
+     */
+    [ContainerGroupState.RUNNING] : DeploymentStatus.RUNNING,
+    /**
+     * Stopped.
+     */
+    [ContainerGroupState.STOPPED] : DeploymentStatus.STOPPED,
+    /**
+     * Inactive.
+     */
+    [ContainerGroupState.INACTIVE] : DeploymentStatus.STOPPED,
+}
 /**
  * Defines the deployment statuses.
  */
@@ -26,6 +48,10 @@ export const enum DeploymentStatus
      * Indicate the deployment is ongoing.
      */
     PENDING = "PENDING",
+    /**
+     * Indicate deployment retrieval is failed.
+     */
+    UNKNOWN = "UNKNOWN"
 }
 /**
  * Defines the deployment object.
@@ -35,7 +61,7 @@ export class Deployment
     workspaceId: string;
     deploymentId: string;
     version: number;
-    status: string;
+    status: DeploymentStatus;
     createdBy: string;
     createdAt: Date;
 }
@@ -68,6 +94,10 @@ export interface DeploymentProvider
      * Get active deployment.
      */
     getActive: (workspaceId: string) => Promise<Deployment>;
+    /**
+     * Get the latest deployment.
+     */
+    getLatest: (workspaceId: string) => Promise<Deployment>;
     /**
      * List all deployments.
      */

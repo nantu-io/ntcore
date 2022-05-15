@@ -73,7 +73,7 @@ export const DatabaseTypeMapping = {
      "postgres": DatabaseType.POSTGRES,
 }
 /**
- * 
+ * Storage engine type.
  */
 export const enum StorageEngineType
 {
@@ -86,8 +86,16 @@ export const enum StorageEngineType
      */
     S3 = "S3",
 }
-
+/**
+ * Storage engine type mapping.
+ */
 export const StorageEngineTypeMapping = {
+    /**
+     * Disk volume
+     */
     "volume": StorageEngineType.VOLUME,
+    /**
+     * AWS S3.
+     */
     "s3": StorageEngineType.S3,
 }

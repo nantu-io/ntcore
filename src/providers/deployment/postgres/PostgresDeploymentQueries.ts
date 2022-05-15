@@ -51,6 +51,16 @@ export const DEPLOYMENT_ACTIVE_READ = `
     ORDER BY created_at DESC;
 ;`
 /**
+ * Query to retrieve the active deployment for a given workspace.
+ */
+export const DEPLOYMENT_LATEST_READ = `
+    SELECT id, workspace_id, version, status, created_by, created_at
+    FROM deployments
+    WHERE workspace_id = $1
+    ORDER BY created_at DESC
+    LIMIT 1;
+;`
+/**
 * Query to read experiment given workspace id and version.
 */
 export const DEPLOYMENT_READ = `SELECT id, workspace_id, version, status, created_by, created_at FROM deployments WHERE workspace_id=$1 AND id=$2;`

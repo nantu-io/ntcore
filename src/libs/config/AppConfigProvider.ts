@@ -37,14 +37,14 @@ class AppConfigStorage
     config: AppConfigDiskStorage | AppConfigS3Storage
 }
 /**
- * 
+ * Disk storage config in AppConfig.
  */
 class AppConfigDiskStorage
 {
     root: string;
 }
 /**
- * 
+ * S3 storage config in AppConfig.
  */
 class AppConfigS3Storage 
 {
@@ -66,7 +66,7 @@ function getContainerProviderConfig(config: any): AppConfigContainer
     const providerConfig = config['container'].provider;
     const provider = ProviderTypeMapping[providerConfig.type];
     switch(provider) {
-        case ProviderType.KUBERNETES: return { provider: provider, namespace: providerConfig.namespace };
+        case ProviderType.KUBERNETES: return { provider: provider, namespace: providerConfig.config.namespace };
         case ProviderType.DOCKER: return { provider: provider };
         case ProviderType.AWSBATCH: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey };
         case ProviderType.AWSECS: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey };

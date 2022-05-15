@@ -151,7 +151,7 @@ export class DockerContainerGroupProvider implements IContainerGroupProvider
     {
         if (container.Status.includes('(healthy)')) {
             return ContainerGroupState.RUNNING;
-        } else if (container.State === 'running') {
+        } else if (container.State === 'running' || container.State === 'created') {
             return ContainerGroupState.PENDING;
         } else {
             return ContainerGroupState.INACTIVE;

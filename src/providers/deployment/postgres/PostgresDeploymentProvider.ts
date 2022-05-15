@@ -9,7 +9,8 @@ import {
     DEPLOYMENT_LOCK_CREATE,
     DEPLOYMENT_LOCK_DELETE,
     DEPLOYMENT_STATUS_UPDATE,
-    DEPLOYMENT_ACTIVE_READ
+    DEPLOYMENT_ACTIVE_READ,
+    DEPLOYMENT_LATEST_READ
 } from "./PostgresDeploymentQueries";
 import { Pool } from 'pg';
 
@@ -31,7 +32,6 @@ export class PostgresDeploymentProvider implements DeploymentProvider
     {
         await this._pgPool.query(DEPLOYMENTS_INITIALIZATION);
         await this._pgPool.query(DEPLOYMENT_LOCK_INITIALIZATION);
-        console.log('Initialized deployments table.');
     }
 
     /**
@@ -106,8 +106,17 @@ export class PostgresDeploymentProvider implements DeploymentProvider
      * Retrieve a deployment with given workspaceId and version.
      * @param workspaceId Workspace id.
      */
-     public async getActive(workspaceId: string) 
-     {
-         return await this._pgPool.query(DEPLOYMENT_ACTIVE_READ, [workspaceId]).then(res => res.rows.length > 0 ? res.rows[0] : null);
-     }
+    public async getActive(workspaceId: string) 
+    {
+        return await this._pgPool.query(DEPLOYMENT_ACTIVE_READ, [workspaceId]).then(res => res.rows.length > 0 ? res.rows[0] : null);
+    }
+
+    /**
+     * Get the latest deployment id.
+     * @param workspaceId workspace id.
+     */
+    public async getLatest(workspaceId: string)
+    {
+        return await this._pgPool.query(DEPLOYMENT_LATEST_READ, [workspaceId]).then(res => res.rows.length > 0 ? res.rows[0] : null);
+    }
 }

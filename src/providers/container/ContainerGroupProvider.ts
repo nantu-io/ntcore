@@ -195,10 +195,10 @@ export interface IContainerGroupConfigProvider
 /**
  * Interface for context provider.
  */
- export interface IContainerGroupContextProvider 
- {
+export interface IContainerGroupContextProvider 
+{
     getContext: (requestContext: ContainerGroupRequestContext) => IContainerGroup
- }
+}
 /**
  * Provider factory.
  */

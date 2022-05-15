@@ -1,3 +1,5 @@
+import { ContainerGroupType } from "../providers/container/ContainerGroupProvider"
+
 /**
  * Runtimes.
  */
@@ -31,4 +33,21 @@
      * Pytorch.
      */
     "pytorch": Framework.PYTORCH,
+}
+/**
+ * Framework to container group type mapping.
+ */
+export const FrameworkToContainerGroupTypeMapping = {
+    /**
+     * Sklearn.
+     */
+    [Framework.SKLEARN] : ContainerGroupType.SKLEARN,
+    /**
+     * Tensorflow.
+     */
+    [Framework.TENSORFLOW] : ContainerGroupType.TENSORFLOW,
+    /**
+     * Pytorch.
+     */
+    [Framework.PYTORCH] : ContainerGroupType.PYTORCH,
 }

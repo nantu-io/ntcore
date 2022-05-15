@@ -1,5 +1,6 @@
 import { ProviderType, DatabaseType } from "../../commons/ProviderType";
 import { DockerContainerGroupProvider } from "./docker/DockerContainerGroupProvider";
+import { KubernetesContainerGroupContextProvider } from "./kubernetes/KubeContainerGroupContextProvider";
 import { SQLiteContainerGroupStateProvider } from "./state/sqlite/SQLiteContainerGroupStateProvider";
 import { DockerContainerGroupConfigProvider } from "./docker/DockerContainerGroupConfigProvider";
 import { KubernetesContainerGroupProvider } from "./kubernetes/KubeContainerGroupProvider";
@@ -34,7 +35,7 @@ export class ContainerProviderFactory implements IProviderFactory<IContainerGrou
             case ProviderType.DOCKER: return new DockerContainerGroupProvider(DockerClientProvider.get());
             case ProviderType.AWSBATCH: return new AWSBatchContainerGroupProvider(AWSBatchClient.get());
             case ProviderType.AWSECS: return new AWSECSContainerGroupProvider(AWSECSClientProvider.get(), AWSCloudWatchLogsClientProvider.get());
-            default: throw new Error("Invalid provider type.");
+            default: throw new Error(`Invalid provider type ${providerType}.`);
         }
     }
 }
@@ -66,9 +67,10 @@ export class ContainerGroupContextProviderFactory implements IProviderFactory<IC
         const providerType: ProviderType = appConfig.container.provider;
         switch(providerType) {
             case ProviderType.DOCKER: return new DockerContainerGroupContextProvider();
+            case ProviderType.KUBERNETES: return new KubernetesContainerGroupContextProvider();
             case ProviderType.AWSBATCH: return new AWSBatchContainerGroupContextProvider();
             case ProviderType.AWSECS: return new AWSECSContainerGroupContextProvider();
-            default: throw new Error("Invalid provider type.");
+            default: throw new Error(`Invalid provider type ${providerType}`);
         }
     }
 }
@@ -85,7 +87,7 @@ export class ContainerGroupStateProviderFactory implements IProviderFactory<ICon
         switch(providerType) {
             case DatabaseType.POSTGRES: return new PostgresServiceStateProvider(PostgresClientProvider.get());
             case DatabaseType.SQLITE: return new SQLiteContainerGroupStateProvider(SQliteClientProvider.get());
-            default: throw new Error("Invalid provider type.");
+            default: throw new Error(`Invalid provider type. ${providerType}`);
         }
     }
 }

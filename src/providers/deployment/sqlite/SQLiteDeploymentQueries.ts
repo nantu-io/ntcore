@@ -66,6 +66,16 @@ export const DEPLOYMENT_ACTIVE_READ = `
     ORDER BY created_at DESC;
 ;`
 /**
+ * Query to list all active deployments.
+ */
+export const DEPLOYMENT_LATEST_READ = `
+    SELECT id, workspace_id, version, status, created_by, created_at
+    FROM deployments
+    WHERE workspace_id = $workspaceId
+    ORDER BY created_at DESC
+    LIMIT 1;
+;`
+/**
  * Query to read experiment given workspace id and version.
  */
 export const DEPLOYMENT_READ = `SELECT id, workspace_id, version, status, created_by, created_at FROM deployments WHERE workspace_id=$workspace_id AND id=$id;`
@@ -92,7 +102,22 @@ export const DEPLOYMENT_STATUS_UPDATE = `
     SET status = CASE
         WHEN id=$id THEN $status
         ELSE 'STOPPED' END
-    WHERE workspace_id = $workspaceId AND (status = 'PENDING' OR status = 'RUNNING');`;
+    WHERE workspace_id = $workspaceId AND (status = 'PENDING' OR status = 'RUNNING');
+`;
+/**
+ * Query to upsert the status of a deployment;
+ */
+export const DEPLOYMENT_STATUS_UPSERT = `
+INSERT OR REPLACE INTO deployments (id, workspace_id, version, status, created_by, created_at) 
+VALUES (
+    $id, 
+    $workspaceId,
+    (SELECT version FROM deployments WHERE workspace_id=$workspaceId AND id=$id), 
+    $status,
+    (SELECT created_by FROM deployments WHERE workspace_id=$workspaceId AND id=$id), 
+    (SELECT created_at FROM deployments WHERE workspace_id=$workspaceId AND id=$id)
+);
+`;
 /**
  * Query to delete the deployment lock.
  */
