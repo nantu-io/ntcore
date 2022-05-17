@@ -1,5 +1,5 @@
 import { ContainerGroupType, ContainerGroupRequestContext, IContainerGroupContextProvider } from '../ContainerGroupProvider';
-import { KubernetesContainerGroup, KubernetesDeploymentV1, KubernetesIngressRouteV1Alpha1, KubernetesServiceV1, KubernetesContainer } from './KubeContainerGroup';
+import { KubernetesContainerGroup, KubernetesDeploymentV1, KubernetesIngressRouteV1Alpha1, KubernetesServiceV1, KubernetesContainer, KubernetesIngressMiddlewareV1Alpha1 } from './KubeContainerGroup';
 import { appConfig } from '../../../libs/config/AppConfigProvider';
 
 export class KubernetesContainerGroupContextProvider implements IContainerGroupContextProvider 
@@ -31,7 +31,7 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
             namespace: namespace,
             service: this.getKubernetesService(namespace, name, 8000),
             deployment: this.getKubernetesDeployment(namespace, name, [ container ]),
-            ingress: this.getKubernetesIngressRoute(namespace, name, 8000, `/s/${workspaceId}`)
+            ingress: this.getKubernetesIngressRoute(namespace, name, 8000, `/s/${workspaceId}`, [])
         }
     }
 
@@ -47,7 +47,7 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
             namespace: namespace,
             service: this.getKubernetesService(namespace, name, 8501),
             deployment: this.getKubernetesDeployment(namespace, name, [ container ]),
-            ingress: this.getKubernetesIngressRoute(namespace, name, 8501, `/s/${workspaceId}`)
+            ingress: this.getKubernetesIngressRoute(namespace, name, 8501, `/s/${workspaceId}`, [])
         }
     }
 
@@ -56,14 +56,16 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         const namespace = appConfig.container.namespace;
         const workspaceId = requestContext.workspaceId;
         const name = `ntcore-${workspaceId.toLocaleLowerCase()}`;
-        const container = this.getKubernetesContainer(workspaceId, `ntcore/fast-torch`, name, 80, `/s/${workspaceId}/health`, 300);
+        const container = this.getKubernetesContainer(workspaceId, `ntcore/fast-torch`, name, 80, `/health`, 120);
+        const stripPrefixesMiddleware = this.getKubernetesIngressMiddleware(namespace, name, [ `/s/${workspaceId}` ]);
         return {
             name, 
             type: requestContext.type,
             namespace: namespace,
             service: this.getKubernetesService(namespace, name, 80),
             deployment: this.getKubernetesDeployment(namespace, name, [ container ]),
-            ingress: this.getKubernetesIngressRoute(namespace, name, 80, `/s/${workspaceId}`)
+            ingress: this.getKubernetesIngressRoute(namespace, name, 80, `/s/${workspaceId}`, [ name ]),
+            middlewares: [ stripPrefixesMiddleware ]
         }
     }
 
@@ -83,7 +85,7 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         };
     }
 
-    private getKubernetesIngressRoute(namespace: string, name: string, port: number, pathPrefix: string): KubernetesIngressRouteV1Alpha1 
+    private getKubernetesIngressRoute(namespace: string, name: string, port: number, pathPrefix: string, middlewares: string[]): KubernetesIngressRouteV1Alpha1 
     {
         return {
             apiVersion: "traefik.containo.us/v1alpha1",
@@ -97,10 +99,8 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
                 routes: [{
                     match: `PathPrefix(\`${pathPrefix}\`)`,
                     kind: "Rule",
-                    services: [{
-                        name: name,
-                        port: port
-                    }]
+                    services: [{ name: name, port: port }],
+                    middlewares: middlewares.map(name => { return { name: name, namespace: namespace }}),
                 }]
             }
         }
@@ -129,6 +129,23 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         }
     }
 
+    private getKubernetesIngressMiddleware(namespace: string, name: string, stripPrefixes?: string[]): KubernetesIngressMiddlewareV1Alpha1
+    {
+        return {
+            apiVersion: "traefik.containo.us/v1alpha1",
+            kind: "Middleware",
+            metadata: {
+                name: `${name}`,
+                namespace: namespace,
+            },
+            spec: {
+                stripPrefix: {
+                    prefixes: stripPrefixes
+                }
+            }
+        }   
+    }
+
     private getKubernetesContainer(workspaceId: string, image: string, name: string, port: number, healthCheckPath: string, initialDelaySeconds: number): KubernetesContainer 
     {
         return {
@@ -141,19 +158,13 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
                 { name: "DSP_WORKSPACE_ID", value: workspaceId }
             ],
             readinessProbe: {
-                httpGet: { 
-                    path: healthCheckPath,
-                    port: port
-                },
+                httpGet: { path: healthCheckPath, port: port },
                 initialDelaySeconds: initialDelaySeconds,
                 periodSeconds: 10,
             },
             resources: {
                 requests: {
-                    /*
-                    memory: `${memory}Gi`,
-                    cpu: `${cpus}`
-                    */
+                    /* memory: `${memory}Gi`, cpu: `${cpus}` */
                 }
             }
         }

@@ -30,10 +30,11 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
      */
     public async start(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
     {
-        const servicePromise = this.applyResource(() => this._kubernetesClient.create(context.service), console.warn);
-        const ingressPromise = this.applyResource(() => this._kubernetesClient.create(context.ingress), console.warn);
-        const deploymentPromise = this.applyResource(() => this._kubernetesClient.create(context.deployment), console.warn);
-        await Promise.all([servicePromise, ingressPromise, deploymentPromise])
+        const servicePromise = this.apply(() => this._kubernetesClient.create(context.service), console.warn);
+        const deploymentPromise = this.apply(() => this._kubernetesClient.create(context.deployment), console.warn);
+        const middlewarePromises = context.middlewares.map(o => this.apply(() => this._kubernetesClient.create(o), console.warn))
+        const ingressPromise = Promise.all(middlewarePromises).then(() => this.apply(() => this._kubernetesClient.create(context.ingress), console.warn));
+        await Promise.all([servicePromise, deploymentPromise, ingressPromise]);
         return context;
     }
 
@@ -44,10 +45,11 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
      */
     public async stop(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
     {
-        const deploymentPromise = this.applyResource(() => this._kubernetesClient.delete(context.deployment), console.warn);
-        const servicePromise = this.applyResource(() => this._kubernetesClient.delete(context.ingress), console.warn);
-        const ingressPromise = this.applyResource(() => this._kubernetesClient.delete(context.service), console.warn);
-        await Promise.all([servicePromise, ingressPromise, deploymentPromise])
+        const deploymentPromise = this.apply(() => this._kubernetesClient.delete(context.deployment), console.warn);
+        const servicePromise = this.apply(() => this._kubernetesClient.delete(context.ingress), console.warn);
+        const ingressPromise = this.apply(() => this._kubernetesClient.delete(context.service), console.warn);
+        const middlewarePromises = ingressPromise.then(() => Promise.all(context.middlewares.map(o => this.apply(() => this._kubernetesClient.delete(o), console.warn))));
+        await Promise.all([servicePromise, middlewarePromises, deploymentPromise])
         return context;
     }
     
@@ -68,7 +70,7 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
      */
     public async update(context: KubernetesContainerGroup) 
     {
-        await this.applyResource(() => this._kubernetesClient.patch(context.deployment), console.warn)
+        await this.apply(() => this._kubernetesClient.patch(context.deployment), console.warn)
         return context;
     }
     
@@ -101,7 +103,7 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
      * @param errorHandler Function to handle the kubernetes client errors.
      * @returns Promise of kubernetes container service.
      */
-    private async applyResource(
+    private async apply(
         executor: () => Promise<{body: KubernetesObject, response: IncomingMessage}>, 
         errorHandler: (error: IncomingMessage) => any
     ): Promise<KubernetesObject> {
@@ -109,7 +111,6 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
             return (await executor()).body;
         } catch (e) {
             errorHandler(e.body);
-            throw e;
         }
     }
 }

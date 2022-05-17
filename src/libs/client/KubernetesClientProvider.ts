@@ -16,6 +16,7 @@ export default class ContainerClientProvider
     private static createKubernetesClient() 
     {
         const kubernetesConfig = new k8s.KubeConfig();
+        /* kubernetesConfig.loadFromDefault(); */
         kubernetesConfig.loadFromCluster();
         return k8s.KubernetesObjectApi.makeApiClient(kubernetesConfig);
     }

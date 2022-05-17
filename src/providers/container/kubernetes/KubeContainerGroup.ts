@@ -9,6 +9,7 @@ export class KubernetesContainerGroup extends IContainerGroup
     service?: KubernetesServiceV1;
     deployment?: KubernetesDeploymentV1;
     ingress?: KubernetesIngressRouteV1Alpha1;
+    middlewares?: KubernetesIngressMiddlewareV1Alpha1[];
 }
 /**
  * Kubernetes container.
@@ -111,8 +112,26 @@ export class KubernetesServiceV1
             services: {
                 name: string;
                 port: number;
+            }[],
+            middlewares?: {
+                name: string;
+                namespace: string;
             }[]
         }[];
+    }
+}
+/**
+ * Kubernetes ingress middleware.
+ */
+export class KubernetesIngressMiddlewareV1Alpha1
+{
+    kind: string;
+    apiVersion: string;
+    metadata: KubernetesResourceMetadata;
+    spec?: {
+        stripPrefix?: {
+            prefixes: string[];
+        }
     }
 }
 /**
@@ -143,8 +162,8 @@ class KubernetesIngressV1
 /**
  * Kubernetes ingress v1beta1.
  */
- class KubernetesIngressV1Beta1 
- {
+class KubernetesIngressV1Beta1 
+{
     apiVersion: string;
     kind: string;
     metadata: KubernetesResourceMetadata;
