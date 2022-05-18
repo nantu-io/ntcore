@@ -24,7 +24,8 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         const namespace = appConfig.container.namespace;
         const workspaceId = requestContext.workspaceId;
         const name = `ntcore-${workspaceId.toLocaleLowerCase()}`;
-        const container = this.getKubernetesContainer(workspaceId, `ntcore/flask-sklearn`, name, 8000, `/s/${workspaceId}/healthcheck`, 120);
+        const image = appConfig.container.images['sklearn'];
+        const container = this.getKubernetesContainer(workspaceId, image, name, 8000, `/s/${workspaceId}/healthcheck`, 120);
         return {
             name, 
             type: requestContext.type,
@@ -40,7 +41,8 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         const namespace = appConfig.container.namespace;
         const workspaceId = requestContext.workspaceId;
         const name = `ntcore-${workspaceId.toLocaleLowerCase()}`;
-        const container = this.getKubernetesContainer(workspaceId, `ntcore/tensorflow-serving`, name, 8501, `/s/${workspaceId}/healthcheck`, 300);
+        const image = appConfig.container.images['tensorflow'];
+        const container = this.getKubernetesContainer(workspaceId, image, name, 8501, `/s/${workspaceId}/healthcheck`, 300);
         return {
             name, 
             type: requestContext.type,
@@ -56,7 +58,8 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         const namespace = appConfig.container.namespace;
         const workspaceId = requestContext.workspaceId;
         const name = `ntcore-${workspaceId.toLocaleLowerCase()}`;
-        const container = this.getKubernetesContainer(workspaceId, `ntcore/fast-torch`, name, 80, `/health`, 120);
+        const image = appConfig.container.images['pytorch'];
+        const container = this.getKubernetesContainer(workspaceId, image, name, 80, `/health`, 120);
         const stripPrefixesMiddleware = this.getKubernetesIngressMiddleware(namespace, name, [ `/s/${workspaceId}` ]);
         return {
             name, 

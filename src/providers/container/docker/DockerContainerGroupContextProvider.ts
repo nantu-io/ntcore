@@ -1,5 +1,6 @@
 import { ContainerGroupType, ContainerGroupRequestContext, IContainerGroupContextProvider } from '../ContainerGroupProvider';
 import { DockerContainer, DockerContainerGroup } from './DockerContainerGroup';
+import { appConfig } from '../../../libs/config/AppConfigProvider';
 
 export class DockerContainerGroupContextProvider implements IContainerGroupContextProvider 
 {
@@ -29,7 +30,7 @@ export class DockerContainerGroupContextProvider implements IContainerGroupConte
             name: `ntcore-${workspaceId.toLowerCase()}`,
             type: requestContext.type,
             ExposedPorts: { "8000/tcp": {} },
-            Containers: [this.getContainer(requestContext, `ntcore/flask-sklearn:${requestContext.runtime}`, labels)],
+            Containers: [this.getContainer(requestContext, appConfig.container.images['sklearn'], labels)],
         };
     }
 
@@ -47,7 +48,7 @@ export class DockerContainerGroupContextProvider implements IContainerGroupConte
             name: `ntcore-${workspaceId.toLowerCase()}`,
             type: requestContext.type,
             ExposedPorts: { "8501/tcp": {} },
-            Containers: [this.getContainer(requestContext, 'ntcore/tensorflow-serving', labels)],
+            Containers: [this.getContainer(requestContext, appConfig.container.images['tensorflow'], labels)],
         };
     }
 
@@ -64,7 +65,7 @@ export class DockerContainerGroupContextProvider implements IContainerGroupConte
             name: `ntcore-${workspaceId.toLowerCase()}`,
             type: requestContext.type,
             ExposedPorts: { "80/tcp": {} },
-            Containers: [this.getContainer(requestContext, 'ntcore/fast-torch', labels)],
+            Containers: [this.getContainer(requestContext, appConfig.container.images['pytorch'], labels)],
         };
     }
 

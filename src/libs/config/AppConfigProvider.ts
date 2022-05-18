@@ -12,6 +12,7 @@ class AppConfigContainer
     region?: string;
     accessKeyId?: string;
     secretAccessKey?: string;
+    images: {[key: string]: string}
 }
 /**
  * Database setup in AppConfig.
@@ -64,12 +65,13 @@ class AppConfig
 function getContainerProviderConfig(config: any): AppConfigContainer 
 {
     const providerConfig = config['container'].provider;
+    const images = config['container'].images;
     const provider = ProviderTypeMapping[providerConfig.type];
     switch(provider) {
-        case ProviderType.KUBERNETES: return { provider: provider, namespace: providerConfig.config.namespace };
-        case ProviderType.DOCKER: return { provider: provider };
-        case ProviderType.AWSBATCH: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey };
-        case ProviderType.AWSECS: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey };
+        case ProviderType.KUBERNETES: return { provider: provider, namespace: providerConfig.config.namespace, images };
+        case ProviderType.DOCKER: return { provider: provider, images: {} };
+        case ProviderType.AWSBATCH: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey, images };
+        case ProviderType.AWSECS: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey, images };
         default: throw new Error("Invalid container provider");
     }
 }

@@ -10,6 +10,10 @@ data:
         type: kubernetes
         config:
           namespace: default
+      images:
+        sklearn: ntcore/fast-sklearn
+        tensorflow: ntcore/tensorflow-serving
+        pytorch: ntcore/fast-torch
     database:
       provider:
         type: sqlite
