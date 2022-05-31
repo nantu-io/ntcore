@@ -1,6 +1,12 @@
-from ntcore.monitor import Monitor
+from ntcore.monitor import Monitor, service_metrics
+import time
 
-monitor = Monitor(server="http://localhost:8180")
-future = monitor.add_metric('CAHCEWM6X6PN2HADX7TR138XB8', 'test', 1.0)
-# Wait for the request.
-print(future.result())
+monitor = Monitor("CAHCEWM6X6PN2HADX7TR138XB8")
+
+@service_metrics(monitor)
+def predict():
+    monitor.log('This is a test.')
+    time.sleep(2)
+    return 1
+
+predict()

@@ -66,7 +66,7 @@ class ApiAsyncClient(ApiClient):
             return self.session.request(
                 method=method,
                 url=urljoin(self.baseUrl, url),
-                data=self._getRequestData(data),
+                json=self._getRequestData(data),
                 headers=headers,
                 params=params,
                 files=files

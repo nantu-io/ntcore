@@ -1,4 +1,4 @@
-__version__ = "0.0.10"
+__version__ = "0.0.11"
 __description__ = "Python client for interfacing with NTCore"
 __license__ = "Apache 2.0"
 __maintainer__ = "NTCore"

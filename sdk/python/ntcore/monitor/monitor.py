@@ -1,6 +1,6 @@
 from abc import ABC
 from ..resources.api_async_client import ApiAsyncClient
-import json, os
+import json, time
 
 class Monitor(ABC):
     """
@@ -9,6 +9,7 @@ class Monitor(ABC):
     """
 
     def __init__(self, 
+                workspace_id,
                 username=None,
                 password=None,
                 program_token=None, 
@@ -16,18 +17,27 @@ class Monitor(ABC):
                 encryption_data=None):
         '''
         Generate Monitor class
-        This is the general Python interface that user can monitor the progress
+        This is the general Python interface that user can monitor the ML/AL models.
+
+        PARAMETERS
+        ----
+        workspace_id: str
+        username: str
+        password: str
+        program_token: str 
+        server: str
+        encryption_data: str
         '''
-        
+        self._workspace_id = workspace_id
         self._username = username
         self._password = password
         self._program_token = program_token
         self._server = server
         self._api_client = ApiAsyncClient(self._username, self._password, self._server, encryption_data)
 
-    def add_metric(self, workspace_id, name, value):
+    def add_metric(self, name, value):
         '''
-        monitor metrics through the python sdk
+        Emits the metric line to ntcore monitoring service.
         
         PARAMETERS
         ----
@@ -35,12 +45,12 @@ class Monitor(ABC):
         name: str
         value: float
         '''
-        data = dict(workspaceId = workspace_id, name = name, value = value)
+        data = dict(workspaceId = self._workspace_id, name = name, value = value)
         return self._api_client.doPost(self.__build_url("monitoring", "metrics"), data)
         
-    def upload_ground_truth(self, workspace_id, input_data, ground_truth, timestamp=None):
+    def upload_ground_truth(self, input_data, ground_truth, timestamp=None):
         '''
-        monitor performances through the 
+        Upload ground truth data to ntcore monitoring service.
         
         PARAMETERS
         ----
@@ -51,11 +61,22 @@ class Monitor(ABC):
         timestamp: long
         '''
         input_data_json_string = json.dumps(input_data)
-        data = dict(workspaceId = workspace_id, inputData = input_data_json_string, groundTruth = ground_truth)
+        data = dict(workspaceId = self._workspace_id, inputData = input_data_json_string, groundTruth = ground_truth)
         if timestamp:
             data['timestamp'] = timestamp
             
         return self._api_client.doPost(self.__build_url("monitoring", "performances"), data)
+
+    def log(self, message):
+        '''
+        Emits the log event to ntcore monitoring service.
+
+        PARAMETERS
+        ----
+        message: str
+        '''
+        data = dict(event = dict(message = message, time = int(time.time() * 1000)))
+        return self._api_client.doPost(self.__build_url("monitoring", self._workspace_id, "events"), data)
 
     def __build_url(self, *paths):
         '''
