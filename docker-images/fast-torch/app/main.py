@@ -1,11 +1,10 @@
-import os, logging, tempfile
+import os, tempfile
 from fastapi import FastAPI
 from models import Request
 from ts.context import Context
 from util import build_context, get_torch_handler
 from ntcore import Client
-from ntcore.monitor import Monitor
-from system_metrics import SystemMetricsPublisherDaemon
+from ntcore.monitor import Monitor, SystemMetricsPublisherDaemon
 import time
 
 # Config the enviroment
@@ -14,7 +13,7 @@ model_dir = tempfile.TemporaryDirectory()
 
 # Initialize NTCore client.
 client = Client(server="http://" + os.environ["DSP_API_ENDPOINT"])
-monitor = Monitor(server="http://" + os.environ["DSP_MONITORING_ENDPOINT"])
+monitor = Monitor(workspace_id, server="http://" + os.environ["DSP_MONITORING_ENDPOINT"])
 
 # Download serialized model
 client.download_model(os.path.join(model_dir.name, "model.pt"), workspace_id)
@@ -45,17 +44,18 @@ async def predict(request: Request):
     else:
         torch_handler = torch_handlers[request.handler]
 
+    start_time = round(time.time() * 1000)
     try:
-        start_time = round(time.time() * 1000)
         prediction = torch_handler.handle(request.data, context)
-        monitor.add_metric(workspace_id, "Latency", round(time.time() * 1000) - start_time)
-        monitor.add_metric(workspace_id, "Success", 1.0)
-        return prediction
+        monitor.log("[INFO] Successfully generated prediction.")
+        monitor.add_metric("Success", 1.0)
     except Exception as e:
-        monitor.add_metric(workspace_id, "Error", 1.0)
-        logging.error('Unable to get prediction: {0}'.format(str(e)))
-        return {"error": str(e)}
+        monitor.log("[Error] Unable to generate prediction: {0}".format(str(e)))
+        monitor.add_metric("Error", 1.0)
+    finally:
+        monitor.add_metric("Latency", round(time.time() * 1000) - start_time)
 
+    return prediction
 
 @app.get("/health")
 async def healthcheck():
