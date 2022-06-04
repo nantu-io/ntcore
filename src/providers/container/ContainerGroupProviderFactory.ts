@@ -4,22 +4,15 @@ import { KubernetesContainerGroupContextProvider } from "./kubernetes/KubeContai
 import { SQLiteContainerGroupStateProvider } from "./state/sqlite/SQLiteContainerGroupStateProvider";
 import { DockerContainerGroupConfigProvider } from "./docker/DockerContainerGroupConfigProvider";
 import { KubernetesContainerGroupProvider } from "./kubernetes/KubeContainerGroupProvider";
-import { AWSBatchContainerGroupProvider } from "./aws/batch/AWSBatchContainerGroupProvider";
-import { AWSECSContainerGroupProvider } from "./aws/ecs/AWSECSContainerGroupProvider";
-import { AWSBatchContainerGroupContextProvider } from "./aws/batch/AWSBatchContainerGroupContextProvider";
-import { AWSECSContainerGroupContextProvider } from "./aws/ecs/AWSECSContainerGroupContextProvider";
 import { KubernetesContainerGroupConfigProvider } from "./kubernetes/KubeContainerGroupConfigProvider";
 import { DockerContainerGroupContextProvider } from "./docker/DockerContainerGroupContextProvider";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { IContainerGroupStateProvider, IProviderFactory, IContainerGroupProvider, IContainerGroupConfigProvider, IContainerGroupContextProvider } from "./ContainerGroupProvider";
 import { PostgresServiceStateProvider } from "./state/postgres/PostgresContainerGroupStateProvider";
-import AWSCloudWatchLogsClientProvider from "../../libs/client/aws/AWSCloudWatchLogsClientProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import KubernetesClientProvider from "../../libs/client/KubernetesClientProvider";
 import DockerClientProvider from "../../libs/client/DockerClientProvider";
-import AWSBatchClient from "../../libs/client/aws/AWSBatchClientProvider";
-import AWSECSClientProvider from "../../libs/client/aws/AWSECSClientProvider";
 
 export class ContainerProviderFactory implements IProviderFactory<IContainerGroupProvider> 
 {
@@ -33,8 +26,6 @@ export class ContainerProviderFactory implements IProviderFactory<IContainerGrou
         switch(providerType) {
             case ProviderType.KUBERNETES: return new KubernetesContainerGroupProvider(KubernetesClientProvider.get());
             case ProviderType.DOCKER: return new DockerContainerGroupProvider(DockerClientProvider.get());
-            case ProviderType.AWSBATCH: return new AWSBatchContainerGroupProvider(AWSBatchClient.get());
-            case ProviderType.AWSECS: return new AWSECSContainerGroupProvider(AWSECSClientProvider.get(), AWSCloudWatchLogsClientProvider.get());
             default: throw new Error(`Invalid provider type ${providerType}.`);
         }
     }
@@ -68,8 +59,6 @@ export class ContainerGroupContextProviderFactory implements IProviderFactory<IC
         switch(providerType) {
             case ProviderType.DOCKER: return new DockerContainerGroupContextProvider();
             case ProviderType.KUBERNETES: return new KubernetesContainerGroupContextProvider();
-            case ProviderType.AWSBATCH: return new AWSBatchContainerGroupContextProvider();
-            case ProviderType.AWSECS: return new AWSECSContainerGroupContextProvider();
             default: throw new Error(`Invalid provider type ${providerType}`);
         }
     }

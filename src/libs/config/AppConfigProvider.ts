@@ -70,8 +70,6 @@ function getContainerProviderConfig(config: any): AppConfigContainer
     switch(provider) {
         case ProviderType.KUBERNETES: return { provider: provider, namespace: providerConfig.config.namespace, images };
         case ProviderType.DOCKER: return { provider: provider, images: {} };
-        case ProviderType.AWSBATCH: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey, images };
-        case ProviderType.AWSECS: return { provider: provider, region: providerConfig.region, accessKeyId: providerConfig.accessKeyId, secretAccessKey: providerConfig.secretAccessKey, images };
         default: throw new Error("Invalid container provider");
     }
 }

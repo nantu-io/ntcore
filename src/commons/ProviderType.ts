@@ -8,14 +8,6 @@ export const enum ProviderType {
      */
     KUBERNETES = "KUBERNETES",
     /**
-     * Deploy instances in AWS 
-     */
-    AWSBATCH = "AWSBATCH",
-    /**
-     * Deploy instances in AWS 
-     */
-    AWSECS = "AWSECS",
-    /**
      * Deploy instances in AliCloud 
      */
     ALICLOUD = "ALICLOUD",
@@ -32,14 +24,6 @@ export const ProviderTypeMapping = {
      * Kubernetes.
      */
     "kubernetes": ProviderType.KUBERNETES,
-    /**
-     * AWS Batch.
-     */
-    "awsbatch": ProviderType.AWSBATCH,
-    /**
-     * AWS ECS.
-     */
-     "awsecs": ProviderType.AWSECS,
     /**
      * Ali cloud.
      */
