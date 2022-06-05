@@ -5,9 +5,9 @@ class SystemMetricsPublisher:
     '''
     System metrics publisher.
     '''
-    def __init__(self, monitor: Monitor, workpace_id: str):
+    def __init__(self, monitor: Monitor):
         self._monitor = monitor
-        self._workspace_id = workpace_id
+        self._workspace_id = monitor.get_workspace_id()
         self._last_bytes_sent = psutil.net_io_counters().bytes_sent
         self._last_bytes_recv = psutil.net_io_counters().bytes_recv
 
@@ -23,22 +23,22 @@ class SystemMetricsPublisher:
         '''
         Emits cpu metrics.
         '''
-        self._monitor.add_metric(self._workspace_id, "Cpu", psutil.cpu_percent())
+        self._monitor.add_metric("Cpu", psutil.cpu_percent())
 
     def _emit_memory_metrics(self):
         '''
         Emits memory metrics.
         '''
         memory_metrics = psutil.virtual_memory()
-        self._monitor.add_metric(self._workspace_id, "MemoryUsed", memory_metrics.percent)
+        self._monitor.add_metric("MemoryUsed", memory_metrics.percent)
 
     def _emit_network_metrics(self):
         '''
         Emits network metrics.
         '''
         io = psutil.net_io_counters()
-        self._monitor.add_metric(self._workspace_id, "BytesSent", io.bytes_sent - self._last_bytes_sent)
-        self._monitor.add_metric(self._workspace_id, "BytesRecv", io.bytes_recv - self._last_bytes_recv)
+        self._monitor.add_metric("BytesSent", io.bytes_sent - self._last_bytes_sent)
+        self._monitor.add_metric("BytesRecv", io.bytes_recv - self._last_bytes_recv)
         self._last_bytes_sent = io.bytes_sent
         self._last_bytes_recv = io.bytes_recv
 
@@ -47,11 +47,11 @@ class SystemMetricsPublisherDaemon:
     '''
     Daemon thread to publish system metrics.
     '''
-    def __init__(self, monitor: Monitor, workspace_id: str):
+    def __init__(self, monitor: Monitor):
         '''
         Initialize the system metrics publisher.
         '''
-        self._system_metrics_publisher = SystemMetricsPublisher(monitor, workspace_id)
+        self._system_metrics_publisher = SystemMetricsPublisher(monitor)
 
     def run(self):
         '''

@@ -28,7 +28,7 @@ torch_handlers = dict()
 app = FastAPI()
 
 # Start the system metrics daemon
-system_metrics_daemon = SystemMetricsPublisherDaemon(monitor, workspace_id)
+system_metrics_daemon = SystemMetricsPublisherDaemon(monitor)
 system_metrics_daemon.start()
 
 
@@ -47,7 +47,6 @@ async def predict(request: Request):
     start_time = round(time.time() * 1000)
     try:
         prediction = torch_handler.handle(request.data, context)
-        monitor.log("[INFO] Successfully generated prediction.")
         monitor.add_metric("Success", 1.0)
     except Exception as e:
         monitor.log("[Error] Unable to generate prediction: {0}".format(str(e)))

@@ -83,3 +83,9 @@ class Monitor(ABC):
         Returns the NTCore endpoint for sending experiment data.
         '''
         return '/'.join(s.strip('/') for s in paths)
+
+    def get_workspace_id(self):
+        '''
+        Returns the workspace id for this monitor.
+        '''
+        return self._workspace_id
