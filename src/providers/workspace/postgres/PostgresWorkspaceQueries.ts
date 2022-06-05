@@ -17,7 +17,7 @@ export const WORKSPACE_READ = `SELECT id, name, type, created_by, created_at, ma
  /**
   * Query to retrieve workspace with the given id.
   */
-export const WORKSPACE_LIST = `SELECT id, name, type, created_by, created_at, max_version FROM workspaces`
+export const WORKSPACE_LIST = `SELECT id, name, type, created_by, created_at, max_version FROM workspaces WHERE id=$1`
  /**
   * Query to delete workspace with the given id.
   */

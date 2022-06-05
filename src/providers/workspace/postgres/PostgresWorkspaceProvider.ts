@@ -34,52 +34,68 @@ export class PostgresWorkspaceProvider implements IWorkspaceProvider
     /**
      * Create a new workspace.
      */
-    public async create(workspace: Workspace) 
+    public async create(workspace: Workspace): Promise<string>
     {
         const { id, name, type, createdBy, createdAt, maxVersion } = workspace;
-        await this._pgPool.query(WORKSPACE_CREATE, [id, name, type, createdBy, Math.floor(createdAt.getTime()/1000), maxVersion]);
-        return id;
+        await this._pgPool.query(WORKSPACE_CREATE, [id, name, type, createdBy, createdAt, maxVersion]);
+        return workspace.id;
     }
 
     /**
      * Update an existing workspace.
      */
-    public async update(workspace: Workspace) 
+    public async update(workspace: Workspace): Promise<string>
     {
         const { id, name, type, createdBy, createdAt } = workspace;
-        await this._pgPool.query(WORKSPACE_UPDATE, [name, type, createdBy, Math.floor(createdAt.getTime()/1000), id]);
+        await this._pgPool.query(WORKSPACE_UPDATE, [name, type, createdBy, createdAt, id]);
         return workspace.id;
     }
 
     /**
      * Retrieve workspace based on the given id.
      */
-    public async read(id: string) 
+    public async read(id: string): Promise<Workspace>
     {
-        return await this._pgPool.query(WORKSPACE_READ, [id]).then(res => res.rows ? res.rows[0] : []);
+        const workspaces = (await this._pgPool.query(WORKSPACE_READ, [id])).rows.map(row => 
+        ({
+            id: row.id,
+            name: row.name, 
+            type: row.type,
+            createdBy: row.created_by,
+            createdAt: row.created_at, 
+            maxVersion: row.max_version
+        }));
+        return (workspaces && workspaces.length > 0) ? workspaces[0] : null;
     }
 
     /**
      * Retrieve a list of workspaces based on the given id.
      */
-    public async list() 
+    public async list(username: string): Promise<Workspace[]>
     {
-        return await this._pgPool.query(WORKSPACE_LIST).then(res => res.rows);
+        return (await this._pgPool.query(WORKSPACE_LIST, [username])).rows.map(row => 
+        ({
+            id: row.id,
+            name: row.name, 
+            type: row.type,
+            createdBy: row.created_by,
+            createdAt: row.created_at, 
+            maxVersion: row.max_version
+        }));
     }
 
     /**
      * Delete a workspace based on a given id.
      */
-    public async delete(id: string) 
+    public async delete(id: string): Promise<void>
     {
         await this._pgPool.query(WORKSPACE_DELETE, [id]);
-        return id;
     }
 
     /**
      * Increment the max revision of experiments in a given workspace.
      */
-    public async incrementVersion(id: string) 
+    public async incrementVersion(id: string): Promise<number>
     {
         return await this._pgPool.query(MAX_VERSION_INCREMENT, [id]).then(res => res?.rows[0]?.max_version ?? 0);
     }

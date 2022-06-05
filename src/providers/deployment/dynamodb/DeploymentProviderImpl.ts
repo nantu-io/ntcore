@@ -1,26 +1,13 @@
 import { Deployment, IDeploymentProvider, DeploymentStatus } from "../DeploymentProvider";
-import {
-    DEPLOYMENTS_INITIALIZATION,
-    DEPLOYMENTS_LIST,
-    DEPLOYMENTS_ACTIVE_LIST,
-    DEPLOYMENT_CREATE,
-    DEPLOYMENT_READ,
-    DEPLOYMENT_LOCK_INITIALIZATION,
-    DEPLOYMENT_LOCK_CREATE,
-    DEPLOYMENT_LOCK_DELETE,
-    DEPLOYMENT_STATUS_UPDATE,
-    DEPLOYMENT_ACTIVE_READ,
-    DEPLOYMENT_LATEST_READ
-} from "./SQLiteDeploymentQueries";
-import Database = require("better-sqlite3");
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
-export class SQLiteDeploymentProvider implements IDeploymentProvider 
+export default class DynamoDeploymentProvider implements IDeploymentProvider 
 {
-    private _databaseClient: Database.Database;
+    private _databaseClient: DynamoDBClient;
     /**
      * Initialize the experiments table.
      */
-    constructor(databaseClient: Database.Database) 
+    constructor(databaseClient: DynamoDBClient) 
     {
         this._databaseClient = databaseClient;
     }
@@ -30,8 +17,7 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async initialize() 
     {
-        this._databaseClient.exec(DEPLOYMENTS_INITIALIZATION);
-        this._databaseClient.exec(DEPLOYMENT_LOCK_INITIALIZATION);
+        
     }
 
     /**
@@ -40,14 +26,6 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async create(deployment: Deployment) 
     {
-        this._databaseClient.prepare(DEPLOYMENT_CREATE).run({
-            id: deployment.deploymentId,
-            workspace_id: deployment.workspaceId,
-            version: deployment.version,
-            status: deployment.status,
-            created_by: deployment.createdBy,
-            created_at: Math.floor(deployment.createdAt.getTime()/1000)
-        });
         return deployment.deploymentId;
     }
 
@@ -57,7 +35,7 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async list(workspaceId: string) 
     {
-        return this._databaseClient.prepare(DEPLOYMENTS_LIST).all({workspace_id: workspaceId});;
+        return [];
     }
 
     /**
@@ -65,7 +43,7 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async listActive() 
     {
-        return this._databaseClient.prepare(DEPLOYMENTS_ACTIVE_LIST).all();
+        return [];
     }
 
     /**
@@ -75,7 +53,7 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async read(workspaceId: string, deploymentId: string) 
     {
-        return this._databaseClient.prepare(DEPLOYMENT_READ).get({workspace_id: workspaceId, id: deploymentId});
+        return null;
     }
 
     /**
@@ -85,12 +63,7 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async aquireLock(workspaceId: string, version: number) 
     {
-        return this._databaseClient.prepare(DEPLOYMENT_LOCK_CREATE).run({
-            workspace_id: workspaceId,
-            version: version,
-            created_by: 'ntcore',
-            created_at: Math.floor(new Date().getTime()/1000)
-        });
+        
     }
 
     /**
@@ -99,7 +72,7 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async releaseLock(workspaceId: string) 
     {
-        return this._databaseClient.prepare(DEPLOYMENT_LOCK_DELETE).run({workspaceId: workspaceId});
+        
     }
 
     /**
@@ -110,7 +83,7 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async updateStatus(workspaceId: string, id: string, status: DeploymentStatus) 
     {
-        return this._databaseClient.prepare(DEPLOYMENT_STATUS_UPDATE).run({workspaceId: workspaceId, id: id, status: status})
+        
     }
 
     /**
@@ -119,7 +92,7 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async getActive(workspaceId: string)
     {
-        return this._databaseClient.prepare(DEPLOYMENT_ACTIVE_READ).get({workspaceId: workspaceId})
+        return null;
     }
 
     /**
@@ -128,6 +101,6 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      */
     public async getLatest(workspaceId: string)
     {
-        return this._databaseClient.prepare(DEPLOYMENT_LATEST_READ).get({workspaceId: workspaceId})
+        return null;
     }
 }

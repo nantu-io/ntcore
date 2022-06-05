@@ -1,4 +1,5 @@
-import { ProviderType, ProviderTypeMapping, DatabaseType, DatabaseTypeMapping, StorageEngineTypeMapping, StorageEngineType } from '../../commons/ProviderType';
+import { ProviderType, ProviderTypeMapping, StorageEngineTypeMapping, StorageEngineType } from '../../commons/ProviderType';
+import { AppConfigDatabase } from "./AppConfigDatabase";
 import yaml = require('js-yaml');
 import fs = require('fs');
 
@@ -13,21 +14,6 @@ class AppConfigContainer
     accessKeyId?: string;
     secretAccessKey?: string;
     images: {[key: string]: string}
-}
-/**
- * Database setup in AppConfig.
- */
-class AppConfigDatabase 
-{
-    provider: DatabaseType;
-    path?: string;
-    config?: {
-        host: string;
-        port: number;
-        user: string;
-        database: string;
-        password: string;
-    }
 }
 /**
  * Storage config in AppConfig.
@@ -60,6 +46,8 @@ class AppConfig
     container: AppConfigContainer;
     database: AppConfigDatabase;
     storage: AppConfigStorage;
+    // Deprecate this field in favor of user authentication.
+    account: { username: string };
 }
 
 function getContainerProviderConfig(config: any): AppConfigContainer 
@@ -72,32 +60,6 @@ function getContainerProviderConfig(config: any): AppConfigContainer
         case ProviderType.DOCKER: return { provider: provider, images: {} };
         default: throw new Error("Invalid container provider");
     }
-}
-
-function getDatabtaseProviderConfig(config: any): AppConfigDatabase 
-{
-    const providerConfig = config['database'].provider;
-    const provider = DatabaseTypeMapping[providerConfig.type];
-    switch(provider) {
-        case DatabaseType.SQLITE: return { provider: provider, path: providerConfig.path };
-        case DatabaseType.POSTGRES: return getPostgresProviderConfig(provider, config);
-        default: throw new Error("Invalid databse provider");
-    }
-}
-
-function getPostgresProviderConfig(provider: DatabaseType, config: any): AppConfigDatabase 
-{
-    const providerConfig = config['database'].provider.config;
-    return { 
-        provider: provider, 
-        config: {
-            host: providerConfig.host,
-            port: providerConfig.port,
-            user: providerConfig.user,
-            database: providerConfig.database,
-            password: providerConfig.password,
-        }
-    };
 }
 
 function getStorageEngineProviderConfig(config: any): AppConfigStorage
@@ -116,8 +78,9 @@ function getAppConfig(): AppConfig
     const config = yaml.load(fs.readFileSync('app-config/ntcore.yml', 'utf8'));
     return { 
         container: getContainerProviderConfig(config),
-        database: getDatabtaseProviderConfig(config),
-        storage: getStorageEngineProviderConfig(config)
+        database: config['database'].provider,
+        storage: getStorageEngineProviderConfig(config),
+        account: config['account']
     };
 }
 

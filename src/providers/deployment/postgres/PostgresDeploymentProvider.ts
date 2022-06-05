@@ -1,4 +1,4 @@
-import { Deployment, DeploymentProvider, DeploymentStatus } from "../DeploymentProvider";
+import { Deployment, IDeploymentProvider, DeploymentStatus } from "../DeploymentProvider";
 import {
     DEPLOYMENTS_INITIALIZATION,
     DEPLOYMENTS_LIST,
@@ -14,7 +14,7 @@ import {
 } from "./PostgresDeploymentQueries";
 import { Pool } from 'pg';
 
-export class PostgresDeploymentProvider implements DeploymentProvider 
+export class PostgresDeploymentProvider implements IDeploymentProvider 
 {
     private _pgPool: Pool;
     /**

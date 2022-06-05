@@ -1,10 +1,11 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import { SQLiteDeploymentProvider } from "./sqlite/SQLiteDeploymentProvider";
-import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresDeploymentProvider } from "./postgres/PostgresDeploymentProvider";
+import DynamoDBClientProvider from "../../libs/client/aws/DynamoDBClientProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 import { ContainerGroupState } from "../container/ContainerGroupProvider";
+import DynamoDBDeploymetnProvider from "../deployment/dynamodb/DeploymentProviderImpl";
 
 /**
  * Container group state to deployment status mapping
@@ -72,7 +73,7 @@ export class IllegalStateError extends Error {}
 /**
  * Interface for deployment provider.
  */
-export interface DeploymentProvider 
+export interface IDeploymentProvider 
 {
     /**
      * Initialize required resource.
@@ -122,13 +123,13 @@ export class DeploymentProviderFactory
      * Create a provider for local deployments.
      * @returns Deployment provider.
      */
-    public createProvider(): DeploymentProvider 
+    public createProvider(): IDeploymentProvider 
     {
-        const providerType: DatabaseType = appConfig.database.provider;
-        switch(providerType) {
-            case DatabaseType.POSTGRES: return new PostgresDeploymentProvider(PostgresClientProvider.get());
-            case DatabaseType.SQLITE: return new SQLiteDeploymentProvider(SQliteClientProvider.get());
-            default: throw new Error("Invalide provider type.");
+        switch(appConfig.database.type) {
+            case "postgres": return new PostgresDeploymentProvider(PostgresClientProvider.get());
+            case "sqlite": return new SQLiteDeploymentProvider(SQliteClientProvider.get());
+            case "dynamodb": return new DynamoDBDeploymetnProvider(DynamoDBClientProvider.get());
+            default: throw new Error("Invalid provider type.");
         }
     }
 }

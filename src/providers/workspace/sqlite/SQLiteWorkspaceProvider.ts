@@ -21,7 +21,7 @@ export class SQLiteWorkspaceProvider implements IWorkspaceProvider
         this._databaseClient = databaseClient;
     }
 
-    public async initialize() 
+    public async initialize()
     {
         this._databaseClient.exec(WORKPACE_INITIALIZATION);
     }
@@ -29,14 +29,14 @@ export class SQLiteWorkspaceProvider implements IWorkspaceProvider
      * Create a new workspace.
      * @param workspace Workspace object.
      */
-    public async create(workspace: Workspace) 
+    public async create(workspace: Workspace): Promise<string>
     {
         this._databaseClient.prepare(WORKSPACE_CREATE).run({
             id: workspace.id,
             name: workspace.name,
             type: workspace.type,
             created_by: workspace.createdBy,
-            created_at: Math.floor(workspace.createdAt.getTime()/1000),
+            created_at: workspace.createdAt,
             max_version: workspace.maxVersion
         });
         return workspace.id;
@@ -45,14 +45,14 @@ export class SQLiteWorkspaceProvider implements IWorkspaceProvider
      * Update the workspace
      * @param workspace Workspace object.
      */
-    public async update(workspace: Workspace) 
+    public async update(workspace: Workspace): Promise<string>
     {
         this._databaseClient.prepare(WORKSPACE_UPDATE).run({
             id: workspace.id,
             name: workspace.name,
             type: workspace.type,
             created_by: workspace.createdBy,
-            created_at: Math.floor(workspace.createdAt.getTime()/1000)
+            created_at: workspace.createdAt
         });
         return workspace.id;
     }
@@ -60,31 +60,47 @@ export class SQLiteWorkspaceProvider implements IWorkspaceProvider
      * Retrieve the workspace.
      * @param id workspace id.
      */
-    public async read(id: string) 
+    public async read(id: string): Promise<Workspace> 
     {
-        return this._databaseClient.prepare(WORKSPACE_READ).get({ workspaceId: id });
+        const row = this._databaseClient.prepare(WORKSPACE_READ).get({ workspaceId: id });
+        return {
+            id: row.id, 
+            name: row.name, 
+            type: row.type, 
+            createdBy: row.created_by, 
+            createdAt: row.created_at, 
+            maxVersion: row.max_version
+        };
     }
     /**
      * Lists all workspaces.
      */
-    public async list() 
+    public async list(username: string): Promise<Workspace[]>
     {
-        return this._databaseClient.prepare(WORKSPACE_LIST).all();
+        return this._databaseClient.prepare(WORKSPACE_LIST).all({ createdBy: username }).map(row => 
+        ({
+            id: row.id,
+            name: row.name, 
+            type: row.type,
+            createdBy: row.created_by,
+            createdAt: row.created_at, 
+            maxVersion: row.max_version
+        }));
     }
     /**
      * Delete the workspace.
-     * @param workspace Workspace id.
+     * @param id Workspace id.
      */
-    public async delete(id: string) 
+    public async delete(id: string): Promise<void>
     {
-        return this._databaseClient.prepare(WORKSPACE_DELETE).run({id: id});
+        this._databaseClient.prepare(WORKSPACE_DELETE).run({id: id});
     }
 
     /**
      * Increment and return the max version of experiment for a given workspace.
-     * @param workspace Workspace id.
+     * @param id Workspace id.
      */
-    public async incrementVersion(id: string) 
+    public async incrementVersion(id: string): Promise<number>
     {
         return this._databaseClient.transaction((workspaceId: string) => {
             this._databaseClient.prepare(MAX_VERSION_INCREMENT).run({workspaceId: workspaceId});

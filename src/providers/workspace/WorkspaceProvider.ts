@@ -1,11 +1,15 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 import { SQLiteWorkspaceProvider } from "./sqlite/SQLiteWorkspaceProvider";
-import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresWorkspaceProvider } from "./postgres/PostgresWorkspaceProvider";
-import { WorkspaceType } from '../../commons/WorkspaceType';
+import DynamoDBClientProvider from "../../libs/client/aws/DynamoDBClientProvider";
+import DynamoDBWorkspaceProvider from "./dynamodb/WorkspaceProviderImpl";
 
+/**
+ * Workspace types.
+ */
+export type WorkspaceType = "API" | "Batch";
 /**
  * Workspace class.
  */
@@ -15,7 +19,7 @@ export class Workspace
     name: string;
     type: WorkspaceType;
     createdBy: string;
-    createdAt: Date;
+    createdAt: number;
     maxVersion: number;
 }
 /**
@@ -42,7 +46,7 @@ export interface IWorkspaceProvider
     /**
      * List all workspaces.
      */
-    list: () => Promise<Array<Workspace>>;
+    list: (username: string) => Promise<Workspace[]>;
     /**
      * Create a new workpace.
      */
@@ -59,12 +63,13 @@ export class WorkpaceProviderFactory
      * Create a provider for local workspaces.
      * @returns Workspace provider.
      */
-    public createProvider(): IWorkspaceProvider {
-        const providerType: DatabaseType = appConfig.database.provider;
-        switch(providerType) {
-            case DatabaseType.POSTGRES: return new PostgresWorkspaceProvider(PostgresClientProvider.get());
-            case DatabaseType.SQLITE: return new SQLiteWorkspaceProvider(SQliteClientProvider.get());
-            default: throw new Error("Invalide provider type.");
+    public createProvider(): IWorkspaceProvider 
+    {
+        switch(appConfig.database.type) {
+            case "postgres": return new PostgresWorkspaceProvider(PostgresClientProvider.get());
+            case "sqlite": return new SQLiteWorkspaceProvider(SQliteClientProvider.get());
+            case "dynamodb": return new DynamoDBWorkspaceProvider(DynamoDBClientProvider.get());
+            default: throw new Error("Invalid provider type.");
         }
     }
 }

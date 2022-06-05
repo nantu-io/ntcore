@@ -1,4 +1,4 @@
-import { ProviderType, DatabaseType } from "../../commons/ProviderType";
+import { ProviderType } from "../../commons/ProviderType";
 import { DockerContainerGroupProvider } from "./docker/DockerContainerGroupProvider";
 import { KubernetesContainerGroupContextProvider } from "./kubernetes/KubeContainerGroupContextProvider";
 import { SQLiteContainerGroupStateProvider } from "./state/sqlite/SQLiteContainerGroupStateProvider";
@@ -72,11 +72,11 @@ export class ContainerGroupStateProviderFactory implements IProviderFactory<ICon
      */
     public createProvider(): IContainerGroupStateProvider 
     {
-        const providerType: DatabaseType = appConfig.database.provider;
-        switch(providerType) {
-            case DatabaseType.POSTGRES: return new PostgresServiceStateProvider(PostgresClientProvider.get());
-            case DatabaseType.SQLITE: return new SQLiteContainerGroupStateProvider(SQliteClientProvider.get());
-            default: throw new Error(`Invalid provider type. ${providerType}`);
+        switch(appConfig.database.type) {
+            case "postgres": return new PostgresServiceStateProvider(PostgresClientProvider.get());
+            case "sqlite": return new SQLiteContainerGroupStateProvider(SQliteClientProvider.get());
+            case "dynamodb": return new SQLiteContainerGroupStateProvider(SQliteClientProvider.get());
+            default: throw new Error(`Invalid provider type. ${appConfig.database.type}`);
         }
     }
 }

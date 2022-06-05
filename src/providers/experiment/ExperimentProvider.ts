@@ -2,10 +2,11 @@ import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import { Runtime } from '../../commons/Runtime';
 import { Framework } from '../../commons/Framework';
 import { SQLiteExperimentProvider } from "./sqlite/SQLiteExperimentProvider";
-import { DatabaseType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { PostgresExperimentProvider } from "./postgres/PostgresExperimentProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
+import DynamoDBExperimentProvider from "./dynamodb/ExperimentProviderImpl";
+import DynamoDBClientProvider from "../../libs/client/aws/DynamoDBClientProvider";
 
 export const enum ExperimentState 
 {
@@ -107,10 +108,10 @@ export class ExperimentProviderFactory
      */
     public createProvider(): IExperimentProvider
     {
-        const providerType: DatabaseType = appConfig.database.provider;
-        switch(providerType) {
-            case DatabaseType.POSTGRES: return new PostgresExperimentProvider(PostgresClientProvider.get());
-            case DatabaseType.SQLITE: return new SQLiteExperimentProvider(SQliteClientProvider.get());
+        switch(appConfig.database.type) {
+            case "postgres": return new PostgresExperimentProvider(PostgresClientProvider.get());
+            case "sqlite": return new SQLiteExperimentProvider(SQliteClientProvider.get());
+            case "dynamodb": return new DynamoDBExperimentProvider(DynamoDBClientProvider.get());
             default: throw new Error("Invalid provider type.");
         }
     }

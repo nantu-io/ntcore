@@ -60,8 +60,8 @@ class Workspaces extends Component {
         const name = rowInfo["name"];
         const id = rowInfo["id"];
         const type = rowInfo["type"];
-        const createdBy = rowInfo["created_by"];
-        const createdAt = (new Date(parseInt(rowInfo["created_at"]) * 1000)).toLocaleString();
+        const createdBy = rowInfo["createdBy"];
+        const createdAt = (new Date(parseInt(rowInfo["createdAt"]))).toLocaleString();
         return [ name, id, type, createdBy, createdAt ]
     }
 
