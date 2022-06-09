@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import './App.css';
 
 const loading = () => <div></div>;
@@ -22,6 +22,7 @@ class App extends Component {
               <Route exact path="/dsp/console/deployments" name='Deployments' render={props => <Applications {...props} />} />
               <Route exact path="/dsp/console/monitoring" name='Monitoring' render={props => <Monitoring {...props} />} />
               {/* <Route exact path=/instances" name='Instances' render={props => <Instances {...props} />} /> */}
+              <Route exact path="/" render={() => <Redirect to="/dsp/console/workspaces"/>} />
             </Switch>
           </React.Suspense>
       </BrowserRouter>

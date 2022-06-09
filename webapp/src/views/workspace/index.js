@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import BaseLayout from '../baseLayout';
-import Button from '@material-ui/core/Button';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepButton from '@material-ui/core/StepButton';
@@ -134,28 +133,6 @@ class Workspace extends Component {
           </Stepper>
           <div>
             {this._createStepContent()}
-            <div className={classes.buttonGroup}>
-              <Button disabled={this.state.activeStep === 0} onClick={this._handleBack} className={classes.button}>
-                Back
-              </Button>
-              {OPTIONAL_STEPS.has(this.state.activeStep) && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={this._handleSkip}
-                  className={classes.button}>
-                  Skip
-                </Button>
-              )}
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={this._handleNext}
-                className={classes.button}
-                disabled={this.state.activeStep === Object.keys(STEPS).length - 1}>
-                Next
-              </Button>
-            </div>
           </div>
         </div>
       </BaseLayout>

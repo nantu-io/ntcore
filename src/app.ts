@@ -28,6 +28,9 @@ export class App
       this.app.get('/dsp/console/*', (req, res, next) => {
         res.sendFile(path.join(__dirname, '/../webapp/build/index.html'));
       });
+      this.app.get('/', (req, res, next) => {
+        res.sendFile(path.join(__dirname, '/../webapp/build/index.html'));
+      });
       // Listen to port
       const PORT = 8180;
       initialize().then(() => {
