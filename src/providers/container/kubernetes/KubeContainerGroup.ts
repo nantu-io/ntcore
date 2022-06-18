@@ -131,6 +131,9 @@ export class KubernetesIngressMiddlewareV1Alpha1
     spec?: {
         stripPrefix?: {
             prefixes: string[];
+        },
+        replacePath?: {
+            path: string;
         }
     }
 }
@@ -180,4 +183,28 @@ class KubernetesIngressV1Beta1
             }
         }[];
     };
+}
+
+/**
+ * Kubernetes traefik ingress route.
+ */
+export class KubernetesTraefikIngressRoute
+{
+    match: string;
+    kind: string;
+    services: { name: string, port: number }[];
+    middlewares: { name: string, namespace: string }[];
+}
+/**
+ * Kubernetes ingress route.
+ */
+export class KubernetesIngressRoute
+{
+    apiVersion: string;
+    kind: string;
+    metadata: KubernetesResourceMetadata;
+    spec?: {
+        entryPoints: string[],
+        routes: KubernetesTraefikIngressRoute[];
+    }
 }

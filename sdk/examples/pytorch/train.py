@@ -118,8 +118,11 @@ def main():
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
 
     from ntcore import Client
-    client = Client()
-    exper = client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT')
+    # Replace with your own server url
+    client = Client(server='http://localhost:8000')
+    # Replace with a real workspace_id
+    workspace_id = "C123"
+    exper = client.start_run(workspace_id)
 
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)

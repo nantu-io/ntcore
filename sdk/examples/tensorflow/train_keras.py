@@ -15,8 +15,12 @@ loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
 
 from ntcore import Client
-client = Client()
-with client.start_run('CEPYLVMD0GMSFEMMYKP8QPA9DT') as exper:
+
+# Replace with your own server url
+client = Client(server='http://localhost:8000')
+# Replace with a real workspace_id
+workspace_id = "C123"
+with client.start_run(workspace_id) as exper:
   model.fit(x_train, y_train, epochs=2, experiment=exper)
   model.evaluate(x_test,  y_test, verbose=2, experiment=exper)
   exper.save_model(model)

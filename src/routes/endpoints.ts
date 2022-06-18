@@ -2,35 +2,24 @@ import * as express from "express";
 import * as multer from 'multer';
 import { DeploymentController } from "../controllers/DeploymentController";
 import { ExperimentController } from "../controllers/ExperimentController";
-import { InstanceController } from "../controllers/InstanceController";
 import { WorkspaceController } from "../controllers/WorkspaceController";
 import { storageProvider } from "../libs/config/AppModule";
 
 export class Routes 
 {
     private workspaceController: WorkspaceController;
-    private instanceController: InstanceController;
     private experimentController: ExperimentController;
     private deploymentController: DeploymentController;
 
     constructor() 
     {
         this.workspaceController = new WorkspaceController();
-        this.instanceController = new InstanceController();
         this.experimentController = new ExperimentController();
         this.deploymentController = new DeploymentController();
     }
 
     public routes(app: express.Application): void 
     {
-        app.route('/dsp/api/v1/service/:name')
-            .get(this.instanceController.getServiceStateV1)
-            .put(this.instanceController.stopServiceV1)
-            .delete(this.instanceController.deleteServiceV1)
-        app.route('/dsp/api/v1/service')
-            .post(this.instanceController.createServiceV1)
-        app.route('/dsp/api/v1/services')
-            .get(this.instanceController.listServicesV1)
         app.route('/dsp/api/v1/workspace')
             .post(this.workspaceController.createWorkspaceV1)
         app.route('/dsp/api/v1/workspace/:id')
