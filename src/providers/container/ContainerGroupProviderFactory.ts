@@ -1,16 +1,10 @@
 import { ProviderType } from "../../commons/ProviderType";
 import { DockerContainerGroupProvider } from "./docker/DockerContainerGroupProvider";
 import { KubernetesContainerGroupContextProvider } from "./kubernetes/KubeContainerGroupContextProvider";
-import { SQLiteContainerGroupStateProvider } from "./state/sqlite/SQLiteContainerGroupStateProvider";
-import { DockerContainerGroupConfigProvider } from "./docker/DockerContainerGroupConfigProvider";
 import { KubernetesContainerGroupProvider } from "./kubernetes/KubeContainerGroupProvider";
-import { KubernetesContainerGroupConfigProvider } from "./kubernetes/KubeContainerGroupConfigProvider";
 import { DockerContainerGroupContextProvider } from "./docker/DockerContainerGroupContextProvider";
 import { appConfig } from "../../libs/config/AppConfigProvider";
-import { IContainerGroupStateProvider, IProviderFactory, IContainerGroupProvider, IContainerGroupConfigProvider, IContainerGroupContextProvider } from "./ContainerGroupProvider";
-import { PostgresServiceStateProvider } from "./state/postgres/PostgresContainerGroupStateProvider";
-import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
-import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
+import { IProviderFactory, IContainerGroupProvider, IContainerGroupContextProvider } from "./ContainerGroupProvider";
 import KubernetesClientProvider from "../../libs/client/KubernetesClientProvider";
 import DockerClientProvider from "../../libs/client/DockerClientProvider";
 
@@ -31,22 +25,6 @@ export class ContainerProviderFactory implements IProviderFactory<IContainerGrou
     }
 }
 
-export class ContainerGroupConfigProviderFactory implements IProviderFactory<IContainerGroupConfigProvider> 
-{
-    /**
-     * Create a provider for local service configurations.
-     * @returns Service configuration provider.
-     */
-    public createProvider(): IContainerGroupConfigProvider 
-    {
-        const providerType: ProviderType = appConfig.container.provider;
-        switch(providerType) {
-            case ProviderType.KUBERNETES: return new KubernetesContainerGroupConfigProvider();
-            case ProviderType.DOCKER: return new DockerContainerGroupConfigProvider();
-        }
-    }
-}
-
 export class ContainerGroupContextProviderFactory implements IProviderFactory<IContainerGroupContextProvider> 
 {
     /**
@@ -60,23 +38,6 @@ export class ContainerGroupContextProviderFactory implements IProviderFactory<IC
             case ProviderType.DOCKER: return new DockerContainerGroupContextProvider();
             case ProviderType.KUBERNETES: return new KubernetesContainerGroupContextProvider();
             default: throw new Error(`Invalid provider type ${providerType}`);
-        }
-    }
-}
-
-export class ContainerGroupStateProviderFactory implements IProviderFactory<IContainerGroupStateProvider> 
-{
-    /**
-     * Create a provider for local service states.
-     * @returns Service state provider.
-     */
-    public createProvider(): IContainerGroupStateProvider 
-    {
-        switch(appConfig.database.type) {
-            case "postgres": return new PostgresServiceStateProvider(PostgresClientProvider.get());
-            case "sqlite": return new SQLiteContainerGroupStateProvider(SQliteClientProvider.get());
-            case "dynamodb": return new SQLiteContainerGroupStateProvider(SQliteClientProvider.get());
-            default: throw new Error(`Invalid provider type. ${appConfig.database.type}`);
         }
     }
 }

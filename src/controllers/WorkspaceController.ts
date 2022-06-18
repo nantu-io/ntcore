@@ -31,19 +31,24 @@ export class WorkspaceController
         const { name, type } = req.body;
         try {
             RequestValidator.validateRequest(name, type);
-            const workspace = {
-                id: this.createWorkspaceId(name),
-                type: type,
-                name: name,
-                createdBy: appConfig.account.username,
-                createdAt: Date.now(),
-                maxVersion: 0
-            }
+            const workspace = this.createWorkspace(name, type);
             await workspaceProvider.create(workspace);
             await storageProvider.createWorkspace(workspace.id);
             res.status(201).send(workspace);
         } catch (err) {
             ErrorHandler.handleException(err, res);
+        }
+    }
+
+    private createWorkspace(name: string, type: "API" | "Batch"): Workspace
+    {
+        return {
+            id: this.createWorkspaceId(name),
+            type: type,
+            name: name,
+            createdBy: appConfig.account.username,
+            createdAt: Date.now(),
+            maxVersion: 0
         }
     }
 
@@ -82,7 +87,8 @@ export class WorkspaceController
      * Example usage: 
      * curl http://localhost:8180/dsp/api/v1/workspaces
      */
-    public async listWorkspacesV1(req: Request, res: Response<Workspace[]>)
+    public async listWorkspacesV1(
+        req: Request<{}, {}, {}, {}>, res: Response<Workspace[]>)
     {
         try {
             const username = appConfig.account.username;
