@@ -57,7 +57,7 @@ function getContainerProviderConfig(config: any): AppConfigContainer
     const provider = ProviderTypeMapping[providerConfig.type];
     switch(provider) {
         case ProviderType.KUBERNETES: return { provider: provider, namespace: providerConfig.config.namespace, images };
-        case ProviderType.DOCKER: return { provider: provider, images: {} };
+        case ProviderType.DOCKER: return { provider: provider, images };
         default: throw new Error("Invalid container provider");
     }
 }
