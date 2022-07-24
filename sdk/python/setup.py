@@ -36,7 +36,8 @@ setup(
         "six",
         "python-jose",
         "requests_toolbelt",
-        "requests-futures"
+        "requests-futures",
+        "psutil"
     ],
     entry_points={
         "console_scripts": [
