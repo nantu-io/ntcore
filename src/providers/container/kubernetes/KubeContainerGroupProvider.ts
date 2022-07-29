@@ -30,11 +30,17 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
      */
     public async start(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
     {
+        // Start prediction endpoint.
         const servicePromise = this.apply(() => this._kubernetesClient.create(context.service), console.warn);
         const deploymentPromise = this.apply(() => this._kubernetesClient.create(context.deployment), console.warn);
-        const middlewarePromises = context.middlewares.map(o => this.apply(() => this._kubernetesClient.create(o), console.warn))
-        const ingressPromise = Promise.all(middlewarePromises).then(() => this.apply(() => this._kubernetesClient.create(context.ingress), console.warn));
-        await Promise.all([servicePromise, deploymentPromise, ingressPromise]);
+        // Start metrics proxy.
+        const metricsProxy = context.metricsProxy;
+        const metricsProxyServicePromise = this.apply(() => this._kubernetesClient.create(metricsProxy.service), console.warn);
+        const metricsProxyDeploymentPromise = this.apply(() => this._kubernetesClient.create(metricsProxy.deployment), console.warn);
+        const middlewarePromises = metricsProxy.middlewares.map(o => this.apply(() => this._kubernetesClient.create(o), console.warn))
+        const ingressPromise = Promise.all(middlewarePromises).then(() => this.apply(() => this._kubernetesClient.create(metricsProxy.ingress), console.warn));
+        await Promise.all([servicePromise, deploymentPromise, metricsProxyServicePromise, metricsProxyDeploymentPromise, ingressPromise]);
+        
         return context;
     }
 
@@ -45,11 +51,17 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
      */
     public async stop(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
     {
+        // Stop prediction endpoint.
+        const servicePromise = this.apply(() => this._kubernetesClient.delete(context.service), console.warn);
         const deploymentPromise = this.apply(() => this._kubernetesClient.delete(context.deployment), console.warn);
-        const servicePromise = this.apply(() => this._kubernetesClient.delete(context.ingress), console.warn);
-        const ingressPromise = this.apply(() => this._kubernetesClient.delete(context.service), console.warn);
-        const middlewarePromises = ingressPromise.then(() => Promise.all(context.middlewares.map(o => this.apply(() => this._kubernetesClient.delete(o), console.warn))));
-        await Promise.all([servicePromise, middlewarePromises, deploymentPromise])
+        // Stop metrics proxy.
+        const metricsProxy = context.metricsProxy;
+        const metricsProxyDeploymentPromise = this.apply(() => this._kubernetesClient.delete(metricsProxy.deployment), console.warn);
+        const metricsProxyServicePromise = this.apply(() => this._kubernetesClient.delete(metricsProxy.ingress), console.warn);
+        const ingressPromise = this.apply(() => this._kubernetesClient.delete(metricsProxy.service), console.warn);
+        const middlewarePromises = ingressPromise.then(() => Promise.all(metricsProxy.middlewares.map(o => this.apply(() => this._kubernetesClient.delete(o), console.warn))));
+        await Promise.all([servicePromise, deploymentPromise, metricsProxyDeploymentPromise, metricsProxyServicePromise, middlewarePromises])
+        
         return context;
     }
     
@@ -70,7 +82,7 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
      */
     public async update(context: KubernetesContainerGroup) 
     {
-        await this.apply(() => this._kubernetesClient.patch(context.deployment), console.warn)
+        await this.apply(() => this._kubernetesClient.replace(context.deployment), console.warn)
         return context;
     }
     

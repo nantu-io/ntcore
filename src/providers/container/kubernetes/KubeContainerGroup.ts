@@ -10,6 +10,12 @@ export class KubernetesContainerGroup extends IContainerGroup
     deployment?: KubernetesDeploymentV1;
     ingress?: KubernetesIngressRouteV1Alpha1;
     middlewares?: KubernetesIngressMiddlewareV1Alpha1[];
+    metricsProxy?: KubernetesProxyContainerGroup
+}
+
+export class KubernetesProxyContainerGroup extends KubernetesContainerGroup
+{
+    
 }
 /**
  * Kubernetes container.

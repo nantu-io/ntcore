@@ -67,8 +67,13 @@ export class DeploymentController
     {
         var deploymentId = uuidv4();
         try {
-            await this._containerGroupProvider.provision(context);
-            deploymentId = (await this._containerGroupProvider.start(context))?.id ?? deploymentId;
+            const containerGroupState = (await this._containerGroupProvider.getState(context)).state;
+            if (containerGroupState === ContainerGroupState.RUNNING) {
+                deploymentId = (await this._containerGroupProvider.update(context))?.id ?? deploymentId;
+            } else {
+                await this._containerGroupProvider.provision(context);
+                deploymentId = (await this._containerGroupProvider.start(context))?.id ?? deploymentId;
+            }
             await this.createDeploymentEntry(workspaceId, deploymentId, version);
             const contextWithDeploymentId = { id: deploymentId, ...context };
             const targetStates = [ContainerGroupState.RUNNING, ContainerGroupState.INACTIVE, ContainerGroupState.STOPPED]
