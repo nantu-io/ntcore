@@ -1,4 +1,4 @@
-# NTCore: Make AI/ML Model Lifecycle Management Easy
+# NTCore: Deploy and Monitor any Model in any Cloud
 
 ![workflows-intro](https://user-images.githubusercontent.com/42594415/146384196-7ff6edcb-b30d-4daf-b878-822a5ddcae73.jpg)
 
