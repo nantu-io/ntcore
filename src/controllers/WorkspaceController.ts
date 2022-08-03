@@ -7,6 +7,8 @@ import { RequestValidator } from '../libs/utils/RequestValidator';
 import { ErrorHandler } from '../libs/utils/ErrorHandler';
 import short = require('short-uuid');
 
+const AUTH_USER_HEADER_NAME = "X-NTCore-Auth-User";
+
 export class WorkspaceController 
 {
     public constructor()
@@ -26,12 +28,12 @@ export class WorkspaceController
      */
     public async createWorkspaceV1(
         req: Request<{}, {}, {name: string, type: "API" | "Batch"}, {}>, 
-        res: Response<Workspace>)
-    {
-        const { name, type } = req.body;
+        res: Response<Workspace>) {
         try {
+            const { name, type } = req.body;
             RequestValidator.validateRequest(name, type);
-            const workspace = this.createWorkspace(name, type);
+            const userId = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
+            const workspace = this.createWorkspace(name, type, userId);
             await workspaceProvider.create(workspace);
             await storageProvider.createWorkspace(workspace.id);
             res.status(201).send(workspace);
@@ -40,13 +42,13 @@ export class WorkspaceController
         }
     }
 
-    private createWorkspace(name: string, type: "API" | "Batch"): Workspace
+    private createWorkspace(name: string, type: "API" | "Batch", userId: string): Workspace
     {
         return {
             id: this.createWorkspaceId(name),
             type: type,
             name: name,
-            createdBy: appConfig.account.username,
+            createdBy: userId,
             createdAt: Date.now(),
             maxVersion: 0
         }
@@ -68,10 +70,10 @@ export class WorkspaceController
      * curl http://localhost:8180/dsp/api/v1/workspace/{id}
      */
     public async getWorkspaceV1(
-        req: Request<{id: string}, {}, {}, {}>, res: Response<Workspace>)
-    {
-        const { id } = req.params;
+        req: Request<{id: string}, {}, {}, {}>, 
+        res: Response<Workspace>) {
         try {
+            const { id } = req.params;
             RequestValidator.validateRequest(id);
             const workspace = await workspaceProvider.read(id);
             res.status(200).send(workspace);
@@ -88,11 +90,11 @@ export class WorkspaceController
      * curl http://localhost:8180/dsp/api/v1/workspaces
      */
     public async listWorkspacesV1(
-        req: Request<{}, {}, {}, {}>, res: Response<Workspace[]>)
-    {
+        req: Request<{}, {}, {}, {}>, 
+        res: Response<Workspace[]>) {
         try {
-            const username = appConfig.account.username;
-            const workspaces = await workspaceProvider.list(username);
+            const userId = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
+            const workspaces = await workspaceProvider.list(userId);
             res.status(200).send(workspaces);
         } catch (err) {
             ErrorHandler.handleException(err, res);
@@ -107,10 +109,10 @@ export class WorkspaceController
      * curl -X DELETE http://localhost:8180/dsp/api/v1/workspace/{id}
      */
     public async deleteWorkspaceV1(
-        req: Request<{id: string}, {}, {}, {}>, res: Response<Workspace>)
-    {
-        const { id } = req.params;
+        req: Request<{id: string}, {}, {}, {}>, 
+        res: Response<Workspace>) {
         try {
+            const { id } = req.params;
             RequestValidator.validateRequest(id);
             await workspaceProvider.delete(id);
             await storageProvider.deleteWorkspace(id);

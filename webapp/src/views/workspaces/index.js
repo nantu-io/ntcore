@@ -51,8 +51,8 @@ class Workspaces extends Component {
     _fetchWorkspacesData() {
         return new Promise((resolve) => this.setState({loading: true}, resolve()))
             .then(() => fetchDataV1(`/dsp/api/v1/workspaces`))
-            .then((res) => this.setState({ rows: res.data.map((rowInfo) => this._createRowData(rowInfo)) }), () => Promise.reject())
-            .catch(this.props.onError)
+            .then((res) => this.setState({ rows: res.data.map((rowInfo) => this._createRowData(rowInfo)) }), (err) => Promise.reject(err))
+            .catch(err =>  this._openSnackBar(SEVERITY.ERROR, err?.response?.data?.error))
             .finally(() => this.setState({loading: false}));
     }
 
