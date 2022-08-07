@@ -20,9 +20,11 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import SettingsIcon from '@material-ui/icons/Settings';
+import Person from '@material-ui/icons/Person';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import BaseModal from '../baseModal';
+import TokenForm from './token';
 
 import { links } from './properties.js';
 
@@ -142,6 +144,7 @@ const useStyles = makeStyles((theme) => ({
 export default function BaseLayout(props) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
+  const [modalOpen, setModalOpen] = React.useState(false);
   const [settingMenuAnchor, setSettingMenuAnchor] = React.useState(null);
   const history = useHistory();
 
@@ -177,11 +180,11 @@ export default function BaseLayout(props) {
 
   const _handleLogout = () => {
     localStorage.removeItem('dspcolumbus_access_token');
-    history.push('/dsp/users/login');
+    window.location.href = '/dsp/users/login';
   }
 
   const _handleLogin = () => {
-    history.push('/dsp/users/login');
+    window.location.href = '/dsp/users/login';
   }
 
   const settingMenuItems = (
@@ -191,6 +194,9 @@ export default function BaseLayout(props) {
       </MenuItem>
       <MenuItem className={classes.settingMenuItem}>
         <ListItemText primary="Log out" onClick={_handleLogout}/>
+      </MenuItem>
+      <MenuItem className={classes.settingMenuItem}>
+        <ListItemText primary="API token" onClick={() => setModalOpen(true)}/>
       </MenuItem>
     </div>
   )
@@ -214,7 +220,7 @@ export default function BaseLayout(props) {
           </Typography>
           <IconButton color="inherit" onClick={_handleSettingMenuClick}>
             <Badge badgeContent={0} color="secondary">
-              <SettingsIcon />
+              <Person />
             </Badge>
           </IconButton>
           <Menu
@@ -267,6 +273,9 @@ export default function BaseLayout(props) {
           </Grid>
         </Container>
       </main>
+      <BaseModal open={modalOpen} onCancel={() => setModalOpen(false)}>
+        <TokenForm onCancel={() => setModalOpen(false)} />
+      </BaseModal>
     </div>
   );
 }
