@@ -27,7 +27,7 @@ class ApiClient(ABC):
         Array with params for encrypted requests(Fields: clientPrivateKeySetLocation, keySetLocation).
     '''
 
-    def __init__(self, username, password, server, encryptionData=None):
+    def __init__(self, api_token, username, password, server, encryptionData=None):
         '''
         Create an instance of the API client.
         This client is used to make the calls to the NTCore API.
@@ -57,8 +57,11 @@ class ApiClient(ABC):
         # The default connection to persist authentication and SSL settings.
         defaultSession = requests.Session()
         defaultSession.mount(self.server, SSLAdapter())
-        defaultSession.auth = (self.username, self.password)
         defaultSession.headers = self.baseHeaders
+        if api_token is not None:
+            defaultSession.headers['Authorization'] = 'Bearer {0}'.format(api_token)
+        else:
+            defaultSession.auth = (self.username, self.password)
 
         self.session = defaultSession
 
