@@ -177,14 +177,23 @@ export default function BaseLayout(props) {
 
   const _handleLogout = () => {
     localStorage.removeItem('dspcolumbus_access_token');
-    history.push('/dsp/user/login');
+    history.push('/dsp/users/login');
+  }
+
+  const _handleLogin = () => {
+    history.push('/dsp/users/login');
   }
 
   const settingMenuItems = (
+    <div>
       <MenuItem className={classes.settingMenuItem}>
-        <ListItemText primary="Logout" onClick={_handleLogout}/>
+        <ListItemText primary="Log in" onClick={_handleLogin}/>
       </MenuItem>
-    )
+      <MenuItem className={classes.settingMenuItem}>
+        <ListItemText primary="Log out" onClick={_handleLogout}/>
+      </MenuItem>
+    </div>
+  )
 
   return (
     <div className={classes.root}>

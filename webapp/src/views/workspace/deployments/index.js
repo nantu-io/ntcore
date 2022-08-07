@@ -6,7 +6,6 @@ import InfoIcon from '@material-ui/icons/Info';
 import IconButton from '@material-ui/core/IconButton';
 import MUIDataTable from "mui-datatables";
 import BaseModal from '../../baseModal';
-import Button from '@material-ui/core/Button';
 import InfoForm from './info';
 import LogsForm from './events';
 
@@ -38,7 +37,6 @@ class Deployments extends Component {
             rows: []
         }
         this._closeModel = this._closeModel.bind(this);
-        this._createViewLogButton = this._createViewLogButton.bind(this);
     }
 
     componentDidMount() {
@@ -52,20 +50,6 @@ class Deployments extends Component {
         this.setState({ rows: rowData });
     }
 
-    _createViewLogButton(index) {
-        const { classes } = this.props;
-        const { rows } = this.state;
-        const deploymentId = rows[index] ? rows[index][0] : null;
-        return (
-            <Button color="primary" className={clsx(classes.log)} disable={true}
-                onClick={() => this.setState({
-                    isModalOpen: true, 
-                    selectedDeployment: deploymentId,
-                    mode: MODAL_MODE.LOG})}>
-                View
-            </Button>)
-    }
-
     _getColumns() {
         return [
             { name: 'id', label: 'Deployment ID' },
@@ -73,7 +57,6 @@ class Deployments extends Component {
             { name: 'createdBy', label: 'Created User' },
             { name: 'createdAt', label: 'Created Date' },
             { name: 'status', label: 'Status' },
-            { name: 'logs', label: 'Logs', options: { customBodyRenderLite: this._createViewLogButton, filter: false, sort: false, viewColumns: false }},
         ];
     }
 
