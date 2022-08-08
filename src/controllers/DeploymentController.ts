@@ -8,6 +8,9 @@ import { DeploymentStatus, ContainerGroupStateToDeploymentStatusMapping } from '
 import { IContainerGroup, IContainerGroupProvider, ContainerGroupState, IContainerGroupContextProvider, ContainerGroupRequestContext } from '../providers/container/ContainerGroupProvider';
 import { experimentProvider, deploymentProvider } from "../libs/config/AppModule";
 import { Experiment } from '../providers/experiment/ExperimentProvider';
+import { appConfig } from '../libs/config/AppConfigProvider';
+
+const AUTH_USER_HEADER_NAME = "X-NTCore-Auth-User";
 
 export class DeploymentController
 {
@@ -38,10 +41,11 @@ export class DeploymentController
         if (!requestContext) {
             return;
         }
+        const createdBy = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
         const context = this._containerGroupContextProvider.getContext(requestContext);
         const version = Math.floor(requestContext.version)
         res.status(201).send({info: `Starting deployment for version ${version}`});
-        await this.startAndWait(requestContext.workspaceId, version, context);
+        await this.startAndWait(requestContext.workspaceId, version, context, createdBy);
     }
 
     private async validateAndReturnDeploymentContext(req: Request, res: Response): Promise<ContainerGroupRequestContext | undefined>
@@ -63,13 +67,13 @@ export class DeploymentController
         }
     }
 
-    private async startAndWait(workspaceId: string, version: number, context: IContainerGroup)
+    private async startAndWait(workspaceId: string, version: number, context: IContainerGroup, createdBy: string)
     {
         var deploymentId = uuidv4();
         try {
             await this._containerGroupProvider.provision(context);
             deploymentId = (await this._containerGroupProvider.start(context))?.id ?? deploymentId;
-            await this.createDeploymentEntry(workspaceId, deploymentId, version);
+            await this.createDeploymentEntry(workspaceId, deploymentId, version, createdBy);
             const contextWithDeploymentId = { id: deploymentId, ...context };
             const targetStates = [ContainerGroupState.RUNNING, ContainerGroupState.INACTIVE, ContainerGroupState.STOPPED]
             const finalState = await this.waitForContainerGroupState(contextWithDeploymentId, targetStates);
@@ -94,14 +98,14 @@ export class DeploymentController
         }
     }
 
-    private async createDeploymentEntry(workspaceId: string, deploymentId: string, version: number) 
+    private async createDeploymentEntry(workspaceId: string, deploymentId: string, version: number, createdBy: string) 
     {
         return await deploymentProvider.create({
             workspaceId,
             deploymentId,
             version,
             status: DeploymentStatus.PENDING,
-            createdBy: 'ntcore',
+            createdBy: createdBy,
             createdAt: new Date(),
         });
     }

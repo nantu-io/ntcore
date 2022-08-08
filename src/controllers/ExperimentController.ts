@@ -2,6 +2,9 @@ import { Request, Response } from 'express';
 import { Experiment, ExperimentState } from "../providers/experiment/ExperimentProvider";
 import { workspaceProvider, experimentProvider } from "../libs/config/AppModule";
 import { storageProvider } from "../libs/config/AppModule";
+import { appConfig } from '../libs/config/AppConfigProvider';
+
+const AUTH_USER_HEADER_NAME = "X-NTCore-Auth-User";
 
 export class ExperimentController 
 {
@@ -34,6 +37,7 @@ export class ExperimentController
         const metrics = JSON.parse(req.body.metrics);
         const state = ExperimentState.UNREGISTERED;
         const version = await workspaceProvider.incrementVersion(workspaceId);
+        const createdBy = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
         const experiment: Experiment = {
             workspaceId,
             version,
@@ -43,7 +47,7 @@ export class ExperimentController
             metrics,
             description,
             state,
-            createdBy: 'ntcore',
+            createdBy: createdBy,
             createdAt: new Date()
         }
         if (req.body.model) {

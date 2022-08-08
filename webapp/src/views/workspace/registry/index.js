@@ -67,14 +67,18 @@ class Registry extends React.Component {
 
     _fetchRegistry() {
         fetchDataV1(`/dsp/api/v1/workspace/${this.props.workspaceId}/registry`)
-        .then((res) => this.setState({ 
-            version: parseInt(res.data.version),
-            framework: res.data.framework,
-            createdAt: res.data.created_at,
-            createdBy: res.data.created_by,
-            runtime: res.data.runtime,
-            description: res.data.description
-        }))
+        .then((res) => {
+            if (res?.data?.version) {
+                this.setState({ 
+                    version: parseInt(res.data.version),
+                    framework: res.data.framework,
+                    createdAt: res.data.created_at,
+                    createdBy: res.data.created_by,
+                    runtime: res.data.runtime,
+                    description: res.data.description
+                })
+            }
+        })
         .catch(this.props.onError);
     }
 
