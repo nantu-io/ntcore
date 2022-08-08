@@ -50,6 +50,7 @@ export class ExperimentController
             createdBy: createdBy,
             createdAt: new Date()
         }
+        console.log(experiment);
         if (req.body.model) {
             experiment.model = Buffer.from(req.body.model, 'base64');
         } else {
@@ -74,7 +75,9 @@ export class ExperimentController
     {
         const workspaceId = req.params.workspaceId;
         try {
+            console.log(workspaceId);
             const experiments = await experimentProvider.list(workspaceId);
+            console.log(experiments);
             res.status(200).send(experiments);
         } catch (err) {
             res.status(500).send({error: `Unable to list experiments: ${err}`});
