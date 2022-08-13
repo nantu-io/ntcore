@@ -1,8 +1,8 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
-import { SQLiteWorkspaceProvider } from "./sqlite/SQLiteWorkspaceProvider";
+import { SQLiteWorkspaceProvider } from "./sqlite/WorkspaceProviderImpl";
 import { appConfig } from "../../libs/config/AppConfigProvider";
-import { PostgresWorkspaceProvider } from "./postgres/PostgresWorkspaceProvider";
+import { PostgresWorkspaceProvider } from "./postgres/WorkspaceProviderImpl";
 import DynamoDBClientProvider from "../../libs/client/aws/DynamoDBClientProvider";
 import DynamoDBWorkspaceProvider from "./dynamodb/WorkspaceProviderImpl";
 

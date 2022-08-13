@@ -72,8 +72,8 @@ class Registry extends React.Component {
                 this.setState({ 
                     version: parseInt(res.data.version),
                     framework: res.data.framework,
-                    createdAt: res.data.created_at,
-                    createdBy: res.data.created_by,
+                    createdAt: res.data.createdAt,
+                    createdBy: res.data.createdBy,
                     runtime: res.data.runtime,
                     description: res.data.description
                 })
@@ -130,7 +130,7 @@ class Registry extends React.Component {
         }
         // TODO: Change endpoint to `/s/pre-prod/${workspaceId}/predict` after enabling pre-prod deployment;
         const endpoint = "--";
-        const formattedCreatedAt = createdAt ? dateFormat((new Date(parseInt(createdAt) * 1000)), "mm/dd/yyyy HH:MM:ss") : null;
+        const formattedCreatedAt = createdAt ? dateFormat((new Date(createdAt * 1000)), "mm/dd/yyyy HH:MM:ss") : null;
 
         return (
             <div className={clsx(classes.root, classes.content)}>

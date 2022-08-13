@@ -1,45 +1,18 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
 import { Runtime } from '../../commons/Runtime';
 import { Framework } from '../../commons/Framework';
-import { SQLiteExperimentProvider } from "./sqlite/SQLiteExperimentProvider";
+import { SQLiteExperimentProvider } from "./sqlite/ExperimentProviderImpl";
 import { appConfig } from "../../libs/config/AppConfigProvider";
-import { PostgresExperimentProvider } from "./postgres/PostgresExperimentProvider";
+import { PostgresExperimentProvider } from "./postgres/ExperimentProviderImpl";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 import DynamoDBExperimentProvider from "./dynamodb/ExperimentProviderImpl";
 import DynamoDBClientProvider from "../../libs/client/aws/DynamoDBClientProvider";
 
-export const enum ExperimentState 
-{
-    /**
-     * Deploy instances locally with docker.
-     */
-    PENDING = "PENDING",
-    /**
-     * Deploy instances in Kubernetes cluster.
-     */
-    REGISTERED = "REGISTERED",
-    /**
-     * Deploy instances in AWS 
-     */
-    UNREGISTERED = "UNREGISTERED",
-}
 /**
- * Provider type mapping.
+ * Experiment states.
  */
-export const ExperimentStateMapping = {
-    /**
-     * Docker.
-     */
-    "PENDING": ExperimentState.PENDING,
-    /**
-     * Kubernetes.
-     */
-    "REGISTERED": ExperimentState.REGISTERED,
-    /**
-     * AWS.
-     */
-    "UNREGISTERED": ExperimentState.UNREGISTERED,
-}
+export type ExperimentState = "PENDING" | "REGISTERED" | "UNREGISTERED";
+
 /**
  * Experiment class.
  */
@@ -50,7 +23,7 @@ export class Experiment
     runtime: Runtime;
     framework: Framework;
     createdBy: string;
-    createdAt: Date;
+    createdAt: number;
     description: string;
     parameters: string;
     metrics: string;
@@ -82,10 +55,6 @@ export interface IExperimentProvider
      * Delete a given experiment.
      */
     delete: (workspaceId: string, version: number) => Promise<any>;
-    /**
-     * Load model
-     */
-    loadModel: (workspaceId: string, version: number) => Promise<string>
     /**
      * Register model.
      */

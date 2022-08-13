@@ -41,7 +41,7 @@ class RegisterForm extends Component {
     _handleSubmit = () => {
       const { workspaceId, version, callback, errorHandler } = this.props;
       this.setState({ loading: true }, () => this._registerModel(workspaceId, version)
-        .then((res) => this.setState({ loading: false }, () => callback(res.data.info)))
+        .then((res) => this.setState({ loading: false }, () => callback(`Successfully register experiment ${version}`)))
         .catch((err) => this.setState({ loading: false }, () => errorHandler(err.response.data.error))));
     }
 

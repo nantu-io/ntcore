@@ -7,7 +7,7 @@ import {
     WORKSPACE_LIST,
     WORKSPACE_DELETE,
     MAX_VERSION_INCREMENT,
-} from './SQLiteWorkspaceQueries';
+} from './WorkspaceQueries';
 import Database = require("better-sqlite3");
 
 export class SQLiteWorkspaceProvider implements IWorkspaceProvider 

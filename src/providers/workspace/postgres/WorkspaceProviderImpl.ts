@@ -1,7 +1,4 @@
-import { 
-    IWorkspaceProvider,
-    Workspace
-} from '../WorkspaceProvider';
+import { IWorkspaceProvider,Workspace } from '../WorkspaceProvider';
 import {
     WORKPACE_INITIALIZATION,
     WORKSPACE_CREATE,
@@ -10,7 +7,7 @@ import {
     WORKSPACE_LIST,
     WORKSPACE_DELETE,
     MAX_VERSION_INCREMENT,
-} from './PostgresWorkspaceQueries';
+} from './WorkspaceQueries';
 import { Pool } from 'pg';
 
 export class PostgresWorkspaceProvider implements IWorkspaceProvider 
@@ -28,7 +25,6 @@ export class PostgresWorkspaceProvider implements IWorkspaceProvider
     public async initialize() 
     {
         await this._pgPool.query(WORKPACE_INITIALIZATION);
-        console.log('Initialized workspaces table.');
     }
 
     /**

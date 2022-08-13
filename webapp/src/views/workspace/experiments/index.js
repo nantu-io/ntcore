@@ -9,7 +9,6 @@ import RegisterForm from './register';
 import DeleteForm from './delete';
 import BaseModal from '../../baseModal';
 import MUIDataTable from "mui-datatables";
-import dateFormat from "dateformat";
 import Loader from '../../loading';
 
 const useStyles = (theme) => ({
@@ -40,7 +39,7 @@ class Experiments extends Component {
             rowsSelected: [],
             model: null,
             loading: false,
-            // rows: [{id: 1, version: '1', createdBy: 'ntcore', createdAt: '2021-01-01 10:30:00', runtime: 'python-3.8', framework: 'sklearn', metrics: {"auc":0.9}, parameters: {"penalty": "l1"}, description: 'Logistic Regression'}]
+            // rows: [{id: 1, version: '1', createdBy: 'ntcore', createdAt: 1660423948, runtime: 'python-3.8', framework: 'sklearn', metrics: {"auc":0.9}, parameters: {"penalty": "l1"}, description: 'Logistic Regression'}]
             rows: []
         }
         this._createRegisterButton = this._createRegisterButton.bind(this);
@@ -64,8 +63,8 @@ class Experiments extends Component {
         const version = parseInt(row["version"]);
         const runtime = row["runtime"];
         const framework = row["framework"];
-        const createdBy = row["created_by"];
-        const createdAt = dateFormat((new Date(parseInt(row["created_at"]) * 1000)), "mm/dd/yyyy HH:MM:ss");
+        const createdBy = row["createdBy"];
+        const createdAt = row["createdAt"];
         const description = row["description"];
         const parameters = JSON.parse(row["parameters"]);
         const metrics = JSON.parse(row["metrics"]);
@@ -166,15 +165,15 @@ class Experiments extends Component {
         const { rows, rowsSelected, loading } = this.state;
         const extendedColumns = this._extendColumns();
         const expandedRows = rows.map(row => {
-            const datetime = row.createdAt.split(" ");
+            const datetime = new Date(row.createdAt * 1000);
             return {
                 id: row.id,
                 runtime: row.runtime, 
                 framework: row.framework,
                 description: (row.description) ? row.description : "", 
                 owner: row.createdBy, 
-                date: datetime[0],
-                time: datetime[1],
+                date: datetime.toLocaleDateString(),
+                time: datetime.toLocaleTimeString('en-GB'),
                 ...row.parameters,
                 ...row.metrics
             }

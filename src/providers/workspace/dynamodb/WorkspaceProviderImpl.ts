@@ -1,4 +1,4 @@
-import { DynamoDBClient, PutItemCommand, GetItemCommand, DeleteItemCommand, BatchGetItemCommand, UpdateItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, GetItemCommand, DeleteItemCommand, UpdateItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { IWorkspaceProvider, Workspace, WorkspaceType } from '../WorkspaceProvider';
 
 const TABLE_NAME = "Workspaces";
@@ -6,11 +6,11 @@ const INDEX_NAME = "created_by-index";
 
 export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
 {
-    private _client: DynamoDBClient;
+    private _databaseClient: DynamoDBClient;
     
     constructor(client: DynamoDBClient) 
     {
-        this._client = client;
+        this._databaseClient = client;
     }
 
     /**
@@ -34,7 +34,7 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
             created_at: { N: workspace.createdAt?.toString() },
             max_version: { N: workspace.maxVersion?.toString() }
         }
-        await this._client.send(new PutItemCommand({ TableName: TABLE_NAME, Item: item }));
+        await this._databaseClient.send(new PutItemCommand({ TableName: TABLE_NAME, Item: item }));
         return workspace.id;
     }
 
@@ -55,7 +55,7 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
                 ":max_version": { N: workspace.maxVersion?.toString() }
             }
         });
-        await this._client.send(command);
+        await this._databaseClient.send(command);
         return workspace.id;
     }
 
@@ -64,7 +64,7 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
      */
     public async read(id: string): Promise<Workspace>
     {
-        const item = (await this._client.send(new GetItemCommand({
+        const item = (await this._databaseClient.send(new GetItemCommand({
             TableName: TABLE_NAME,
             Key: { id: { S: id } },
         })))?.Item;
@@ -92,7 +92,7 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
                 ":username": { S: username },
             }
         });
-        const items = (await this._client.send(command)).Items;
+        const items = (await this._databaseClient.send(command)).Items;
         return items?.map(item => ({
             id: item?.id.S,
             name: item?.name.S,
@@ -108,7 +108,7 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
      */
     public async delete(id: string): Promise<void>
     {
-        await this._client.send(new DeleteItemCommand({
+        await this._databaseClient.send(new DeleteItemCommand({
             TableName: TABLE_NAME,
             Key: { id: { S: id } }
         }));
@@ -122,10 +122,11 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
         const command = new UpdateItemCommand({
             TableName: TABLE_NAME,
             Key: { id: { S: id } },
-            UpdateExpression: "set max_version = max_version + 1",
-            ReturnValues: "UPDATED_NEW"
+            UpdateExpression: "set max_version = max_version + :incr",
+            ReturnValues: "UPDATED_NEW",
+            ExpressionAttributeValues: { ":incr": { N: "1" } }
         });
-        const item = await this._client.send(command);
+        const item = await this._databaseClient.send(command);
         return Number(item.Attributes.max_version.N)
     }
 }
