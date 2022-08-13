@@ -10,6 +10,7 @@ import DeleteForm from './delete';
 import BaseModal from '../../baseModal';
 import MUIDataTable from "mui-datatables";
 import dateFormat from "dateformat";
+import Loader from '../../loading';
 
 const useStyles = (theme) => ({
     root: {
@@ -38,6 +39,7 @@ class Experiments extends Component {
             selectedFramework: null,
             rowsSelected: [],
             model: null,
+            loading: false,
             // rows: [{id: 1, version: '1', createdBy: 'ntcore', createdAt: '2021-01-01 10:30:00', runtime: 'python-3.8', framework: 'sklearn', metrics: {"auc":0.9}, parameters: {"penalty": "l1"}, description: 'Logistic Regression'}]
             rows: []
         }
@@ -51,12 +53,14 @@ class Experiments extends Component {
     }
 
     _fetchExperiments() {
-        fetchDataV1(`/dsp/api/v1/workspace/${this.props.workspaceId}/experiments`)
-            .then((res) => this.setState({ rows: res.data.map((rowInfo) => this.createRowData(rowInfo)) }))
-            .catch(this.props.onError);
+        return new Promise((resolve) => this.setState({loading: true}, resolve()))
+            .then(() => fetchDataV1(`/dsp/api/v1/workspace/${this.props.workspaceId}/experiments`))
+            .then((res) => this.setState({ rows: res.data.map((rowInfo) => this._createRowData(rowInfo)) }), (err) => Promise.reject(err))
+            .catch(this.props.onError)
+            .finally(() => this.setState({loading: false}));
     }
 
-    createRowData(row) {
+    _createRowData(row) {
         const version = parseInt(row["version"]);
         const runtime = row["runtime"];
         const framework = row["framework"];
@@ -159,7 +163,7 @@ class Experiments extends Component {
 
     render() {
         const { classes, onSuccess, onError } = this.props;
-        const { rows, rowsSelected } = this.state;
+        const { rows, rowsSelected, loading } = this.state;
         const extendedColumns = this._extendColumns();
         const expandedRows = rows.map(row => {
             const datetime = row.createdAt.split(" ");
@@ -193,6 +197,7 @@ class Experiments extends Component {
             print: false, 
             responsive: 'scrollMaxHeight',
             rowsSelected: rowsSelected,
+            setTableProps: () => ({ size: 'small' }),
             customToolbarSelect: (selectedRows) => (
                 <IconButton aria-label="delete">
                     <DeleteIcon onClick={() => this.setState({isModalOpen: true, mode: MODAL_MODE.DELETE })}/>
@@ -205,6 +210,7 @@ class Experiments extends Component {
 
         return (
             <div className={clsx(classes.root, classes.table)}>
+                <Loader loading={loading}/>
                 <MUIDataTable
                     title={"Experiments"}
                     data={data}

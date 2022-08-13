@@ -139,6 +139,7 @@ class Workspaces extends Component {
             print: false,
             rowsSelected: rowsSelected,
             responsive: 'scrollMaxHeight',
+            setTableProps: () => ({ size: 'small' }),
             customToolbar: () => (
                 <IconButton aria-label="add" onClick={() => this._openModal(MODAL_MODE.CREATE)}>
                     <Add />

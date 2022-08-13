@@ -102,7 +102,7 @@ export interface IDeploymentProvider
     /**
      * List all deployments.
      */
-    listActive: () => Promise<Array<Deployment>>;
+    listActive: (userId: string) => Promise<Array<Deployment>>;
     /**
      * Aquire deployment lock;
      */

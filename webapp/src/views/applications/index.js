@@ -70,7 +70,14 @@ class Applications extends Component {
         const { classes } = this.props;
         const { rows, loading } = this.state;
         const columns = this._getColumns();
-        const options = { filterType: 'checkbox', download: false, print: false, selectableRows: false, responsive: 'scrollMaxHeight' };
+        const options = { 
+            filterType: 'checkbox', 
+            download: false, 
+            print: false, 
+            selectableRows: false, 
+            responsive: 'scrollMaxHeight',
+            setTableProps: () => ({ size: 'small' }),
+        };
         return (
             <BaseLayout index={1}>
                 <Loader loading={loading}/> 

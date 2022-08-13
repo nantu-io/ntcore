@@ -53,7 +53,7 @@ export const DEPLOYMENTS_LIST = `SELECT id, workspace_id, version, status, creat
 export const DEPLOYMENTS_ACTIVE_LIST = `
     SELECT id, workspace_id, version, status, created_by, created_at
     FROM deployments
-    WHERE status = 'RUNNING'
+    WHERE status = 'RUNNING' and created_by = $created_by
     ORDER BY created_at DESC;
 ;`
 /**

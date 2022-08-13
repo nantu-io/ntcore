@@ -63,9 +63,9 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
     /**
      * List all active deployments.
      */
-    public async listActive() 
+    public async listActive(userId: string) 
     {
-        return this._databaseClient.prepare(DEPLOYMENTS_ACTIVE_LIST).all();
+        return this._databaseClient.prepare(DEPLOYMENTS_ACTIVE_LIST).all({created_by: userId});
     }
 
     /**

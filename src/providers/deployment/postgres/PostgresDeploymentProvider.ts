@@ -57,9 +57,9 @@ export class PostgresDeploymentProvider implements IDeploymentProvider
     /**
      * List all active deployments.
      */
-    public async listActive() 
+    public async listActive(userId: string) 
     {
-        return this._pgPool.query(DEPLOYMENTS_ACTIVE_LIST).then(res => res.rows ? res.rows : []);
+        return this._pgPool.query(DEPLOYMENTS_ACTIVE_LIST, [userId]).then(res => res.rows ? res.rows : []);
     }
 
     /**

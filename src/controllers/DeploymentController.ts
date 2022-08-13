@@ -217,7 +217,8 @@ export class DeploymentController
     public async listActiveDeploymentsV1(req: Request, res: Response) 
     {
         try {
-            const deployments = await deploymentProvider.listActive();
+            const userId = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
+            const deployments = await deploymentProvider.listActive(userId);
             res.status(200).send(deployments);
         } catch (err) {
             res.status(500).send({error: 'Unable to list active deployments.'});
