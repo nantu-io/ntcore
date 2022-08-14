@@ -7,6 +7,7 @@ import Button from '@material-ui/core/Button';
 import dateFormat from "dateformat";
 import BaseModal from '../../baseModal';
 import DeployForm from './deploy';
+import Loader from '../../loading';
 import { fetchDataV1 } from '../../../global';
 
 const useStyles = (theme) => ({
@@ -56,6 +57,7 @@ class Registry extends React.Component {
             description: null,
             isModelOpen: false,
             model: null,
+            loading: false
         }
         this._createDeployButton = this._createDeployButton.bind(this);
         this._fetchRegistry = this._fetchRegistry.bind(this);
@@ -66,20 +68,22 @@ class Registry extends React.Component {
     }
 
     _fetchRegistry() {
-        fetchDataV1(`/dsp/api/v1/workspace/${this.props.workspaceId}/registry`)
-        .then((res) => {
-            if (res?.data?.version) {
-                this.setState({ 
-                    version: parseInt(res.data.version),
-                    framework: res.data.framework,
-                    createdAt: res.data.createdAt,
-                    createdBy: res.data.createdBy,
-                    runtime: res.data.runtime,
-                    description: res.data.description
-                })
-            }
-        })
-        .catch(this.props.onError);
+        return new Promise((resolve) => this.setState({loading: true}, resolve()))
+            .then(() => fetchDataV1(`/dsp/api/v1/workspace/${this.props.workspaceId}/registry`))
+            .then((res) => {
+                if (res?.data?.version) {
+                    this.setState({ 
+                        version: parseInt(res.data.version),
+                        framework: res.data.framework,
+                        createdAt: res.data.createdAt,
+                        createdBy: res.data.createdBy,
+                        runtime: res.data.runtime,
+                        description: res.data.description
+                    })
+                }
+            })
+            .catch(this.props.onError)
+            .finally(() => this.setState({loading: false}));;
     }
 
     _createDeployButton() {
@@ -117,7 +121,7 @@ class Registry extends React.Component {
 
     render() {
         const { classes, onSuccess, onError } = this.props;
-        const { version, framework, createdBy, createdAt, runtime, description } = this.state;
+        const { version, framework, createdBy, createdAt, runtime, description, loading } = this.state;
 
         const closeModel = () => {
             this.setState({isModalOpen: false});
@@ -134,6 +138,7 @@ class Registry extends React.Component {
 
         return (
             <div className={clsx(classes.root, classes.content)}>
+                <Loader loading={loading}/>
                 <Paper elevation={4}>
                     <p className={clsx(classes.summary)}>Summary</p>
                     <Grid container className={clsx(classes.container)}>

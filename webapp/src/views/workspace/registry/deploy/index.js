@@ -53,9 +53,12 @@ class DeployForm extends Component {
   _handleSubmit = () => {
     const { workspaceId, callback, errorHandler} = this.props;
     const { workflow, command } = this.state;
-    this.setState({ loading: true }, () => this._deployModel(workspaceId, workflow, command)
-      .then((res) => this.setState({ loading: false }, () => callback(res.data.info)))
-      .catch((err) => this.setState({ loading: false }, () => errorHandler(err.response.data.error))));
+
+    return new Promise((resolve) => this.setState({loading: true}, resolve()))
+      .then(() => this._deployModel(workspaceId, workflow, command))
+      .then((res) => callback(`Start deployment for version ${res.data.version}`), (err) => Promise.reject(err))
+      .catch((err) => errorHandler(err.response.data.error))
+      .finally(() => this.setState({loading: false}));
   }
 
   _handleCommandChange = (e) => this.setState({ command: e.target.value });

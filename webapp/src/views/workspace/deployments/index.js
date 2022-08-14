@@ -8,6 +8,7 @@ import MUIDataTable from "mui-datatables";
 import BaseModal from '../../baseModal';
 import InfoForm from './info';
 import LogsForm from './events';
+import Loader from '../../loading';
 
 const useStyles = (theme) => ({
     root: {
@@ -33,6 +34,7 @@ class Deployments extends Component {
             isModalOpen: false,
             selectedDeployment: null,
             mode: MODAL_MODE.INFO,
+            loading: false,
             // rows: [['dfsafs', 1, 'ntcore', '2021-01-01 10:30:00', 'SUCCEED', 'RUNNING']]
             rows: []
         }
@@ -40,9 +42,11 @@ class Deployments extends Component {
     }
 
     componentDidMount() {
-        fetchDataV1(`/dsp/api/v1/workspace/${this.props.workspaceId}/deployments`) 
+        return new Promise((resolve) => this.setState({loading: true}, resolve()))
+            .then(() => fetchDataV1(`/dsp/api/v1/workspace/${this.props.workspaceId}/deployments`))
             .then((res) => this._createRowDataWithState(res.data))
-            .catch(this.props.onError);
+            .catch(this.props.onError)
+            .finally(() => this.setState({loading: false}));
     }
 
     _createRowDataWithState(rows) {
@@ -61,11 +65,11 @@ class Deployments extends Component {
     }
 
     _createRowData(row, index) {
-        const id = row["id"];
+        const id = row["deploymentId"];
         const version = row["version"];
         const status = row["status"];
-        const createdBy = row["created_by"];
-        const createdAt = (new Date(parseInt(row["created_at"]) * 1000)).toLocaleString();
+        const createdBy = row["createdBy"];
+        const createdAt = (new Date(parseInt(row["createdAt"]) * 1000)).toLocaleString();
         return [
             id,
             version,
@@ -93,7 +97,7 @@ class Deployments extends Component {
 
     render() {
         const { classes } = this.props;
-        const { rows } = this.state;
+        const { rows, loading } = this.state;
         const columns = this._getColumns();
         const options = { 
             filterType: 'checkbox', 
@@ -110,6 +114,7 @@ class Deployments extends Component {
         };
         return (
             <div className={clsx(classes.root, classes.table)}>
+                <Loader loading={loading}/>
                 <MUIDataTable
                     title={"Deployments"}
                     data={rows}

@@ -4,7 +4,6 @@ import { Framework } from "../../../commons/Framework";
 import { Runtime } from "../../../commons/Runtime";
 
 const TABLE_NAME = "Experiments";
-const WORKSPACE_ID_INDEX_NAME = "workspace_id-index";
 const WORKSPACE_ID_STATE_INDEX_NAME = "workspace_id-rgtr_state-index";
 
 export default class DynamoDBExperimentProvider implements IExperimentProvider 
@@ -31,7 +30,7 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
     {
         const item = {
             workspace_id: { S: experiment.workspaceId },
-            version     : { S: experiment.version.toString() },
+            version     : { N: experiment.version.toString() },
             runtime     : { S: experiment.runtime },
             framework   : { S: experiment.framework },
             description : { S: experiment.description ?? "" },
@@ -53,14 +52,14 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
     {
         const command =  new QueryCommand({
             TableName: TABLE_NAME,
-            IndexName: WORKSPACE_ID_INDEX_NAME,
             KeyConditionExpression: `workspace_id = :workspaceId`,
-            ExpressionAttributeValues: { ":workspaceId": { S: workspaceId } }
+            ExpressionAttributeValues: { ":workspaceId": { S: workspaceId } },
+            ScanIndexForward: false
         });
         const items = (await this._databaseClient.send(command)).Items;
         return items?.map(item => ({
             workspaceId : workspaceId,
-            version     : parseInt(item?.version.S),
+            version     : parseInt(item?.version.N),
             runtime     : item?.runtime.S as Runtime,
             framework   : item?.framework.S as Framework,
             description : item?.description.S,
@@ -81,12 +80,12 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
     {
         const item = (await this._databaseClient.send(new GetItemCommand({
             TableName: TABLE_NAME,
-            Key: { workspace_id: { S: workspaceId }, version: { S: version.toString() }}
+            Key: { workspace_id: { S: workspaceId }, version: { N: version.toString() }}
         })))?.Item;
         if (!item) return null;
         const experiment: Experiment = {
             workspaceId : workspaceId,
-            version     : parseInt(item?.version.S),
+            version     : parseInt(item?.version.N),
             runtime     : item?.runtime.S as Runtime,
             framework   : item?.framework.S as Framework,
             description : item?.description.S,
@@ -108,7 +107,7 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
     {
         await this._databaseClient.send(new DeleteItemCommand({
             TableName: TABLE_NAME,
-            Key: { workspace_id: { S: workspaceId }, version: { S: version.toString() }}
+            Key: { workspace_id: { S: workspaceId }, version: { N: version.toString() }}
         }));
     }
 
@@ -121,7 +120,7 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
     {
         const command = new UpdateItemCommand({
             TableName: TABLE_NAME,
-            Key: { workspace_id: { S: workspaceId }, version: { S: version.toString() } },
+            Key: { workspace_id: { S: workspaceId }, version: { N: version.toString() } },
             UpdateExpression: "set rgtr_state=:state",
             ExpressionAttributeValues: { ":state": { S: "REGISTERED" }}
         });
@@ -136,7 +135,7 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
     {
         const command = new UpdateItemCommand({
             TableName: TABLE_NAME,
-            Key: { workspace_id: { S: workspaceId }, version: { S: version.toString() }},
+            Key: { workspace_id: { S: workspaceId }, version: { N: version.toString() }},
             UpdateExpression: "set rgtr_state=:state",
             ExpressionAttributeValues: { ":state": { S: "UNREGISTERED" } }
         });
@@ -159,7 +158,7 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
         if (!item) return null;
         return {
             workspaceId : workspaceId,
-            version     : parseInt(item?.version.S),
+            version     : parseInt(item?.version.N),
             runtime     : item?.runtime.S as Runtime,
             framework   : item?.framework.S as Framework,
             description : item?.description.S,

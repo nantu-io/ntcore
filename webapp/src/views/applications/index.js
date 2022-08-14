@@ -52,11 +52,11 @@ class Applications extends Component {
     }
 
     _createRowData(row) {
-        const id = row["id"];
-        const workspaceId = row["workspace_id"];
+        const id = row["deploymentId"];
+        const workspaceId = row["workspaceId"];
         const version = row["version"];
-        const createdBy = row["created_by"];
-        const createdAt = (new Date(parseInt(row["created_at"]) * 1000)).toLocaleString();
+        const createdBy = row["createdBy"];
+        const createdAt = (new Date(parseInt(row["createdAt"]) * 1000)).toLocaleString();
         return [
             id,
             workspaceId,

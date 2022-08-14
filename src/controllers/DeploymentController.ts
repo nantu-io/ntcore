@@ -4,10 +4,13 @@ import { waitUntil } from 'async-wait-until';
 import { ContainerProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
 import { ContainerGroupContextProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
 import { FrameworkToContainerGroupTypeMapping } from '../commons/Framework';
-import { DeploymentStatus, ContainerGroupStateToDeploymentStatusMapping } from '../providers/deployment/DeploymentProvider';
+import { ContainerGroupStateToDeploymentStatusMapping } from '../providers/deployment/DeploymentProvider';
 import { IContainerGroup, IContainerGroupProvider, ContainerGroupState, IContainerGroupContextProvider, ContainerGroupRequestContext } from '../providers/container/ContainerGroupProvider';
 import { experimentProvider, deploymentProvider } from "../libs/config/AppModule";
+import { Deployment } from "../providers/deployment/DeploymentProvider";
 import { Experiment } from '../providers/experiment/ExperimentProvider';
+import { ErrorHandler } from '../libs/utils/ErrorHandler';
+import { RequestValidator } from '../libs/utils/RequestValidator';
 import { appConfig } from '../libs/config/AppConfigProvider';
 
 const AUTH_USER_HEADER_NAME = "X-NTCore-Auth-User";
@@ -25,7 +28,6 @@ export class DeploymentController
         this.listActiveDeploymentsV1 = this.listActiveDeploymentsV1.bind(this);
         this.deployModelV1 = this.deployModelV1.bind(this);
         this.terminateDeploymentV1 = this.terminateDeploymentV1.bind(this);
-        this.retrieveLogEvents = this.retrieveLogEvents.bind(this);
     }
 
     /**
@@ -35,53 +37,72 @@ export class DeploymentController
      * Example usage:
      * curl -X POST -H "Content-Type: application/json" -d '{"workspaceId": "C123"}' localhost:8180/dsp/api/v1/deployments
      */
-    public async deployModelV1(req: Request, res: Response)
+    public async deployModelV1(
+        req: Request<{}, {}, {workspaceId: string}, {}>,
+        res: Response<{version: number}>)
     {
         const requestContext = await this.validateAndReturnDeploymentContext(req, res);
-        if (!requestContext) {
-            return;
-        }
+        if (!requestContext) return;
         const createdBy = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
         const context = this._containerGroupContextProvider.getContext(requestContext);
         const version = Math.floor(requestContext.version)
-        res.status(201).send({info: `Starting deployment for version ${version}`});
+        res.status(201).send({version});
+
         await this.startAndWait(requestContext.workspaceId, version, context, createdBy);
     }
 
     private async validateAndReturnDeploymentContext(req: Request, res: Response): Promise<ContainerGroupRequestContext | undefined>
     {
         const { workspaceId } = req.body;
+        const [registry, deployment] = await Promise.all([
+            this.validateRegisteredExperiment(workspaceId), 
+            this.validatePendingDeployment(workspaceId)
+        ]);
+        
+        if (!registry?.version) {
+            res.status(400).send({error: 'Unable to find registered model version.'});
+            return null;
+        } else if ("PENDING" === deployment?.status) {
+            res.status(400).send({error: 'Last deployment is still in progress.'});
+            return null;
+        }
+        return this.getRequestContext(req, workspaceId, registry);
+    }
+
+    private async validateRegisteredExperiment(workspaceId: string)
+    {
         try {
-            const [registry, latestDeployment] = await Promise.all([experimentProvider.getRegistry(workspaceId), deploymentProvider.getLatest(workspaceId)]);
-            if (!registry?.version) {
-                res.status(400).send({error: 'Unable to find registered model.'});
-                return null;
-            } else if (latestDeployment?.status === DeploymentStatus.PENDING) {
-                res.status(400).send({error: 'Last deployment is still in progress.'});
-                return null;
-            }
-            return this.getRequestContext(req, workspaceId, registry);
+            return (await experimentProvider.getRegistry(workspaceId));
         } catch (err) {
-            res.status(500).send({error: err});
             return null;
         }
     }
 
-    private async startAndWait(workspaceId: string, version: number, context: IContainerGroup, createdBy: string)
+    private async validatePendingDeployment(workspaceId: string)
+    {
+        try {
+            return (await deploymentProvider.getLatest(workspaceId));
+        } catch (err) {
+            return null;
+        }
+    }
+
+    private async startAndWait(workspaceId: string, version: number, context: IContainerGroup, createdBy: string): Promise<Deployment>
     {
         var deploymentId = uuidv4();
         try {
+            const deployment = await this.createDeploymentEntry(workspaceId, deploymentId, version, createdBy);
             await this._containerGroupProvider.provision(context);
-            deploymentId = (await this._containerGroupProvider.start(context))?.id ?? deploymentId;
-            await this.createDeploymentEntry(workspaceId, deploymentId, version, createdBy);
+            await this._containerGroupProvider.start(context);
             const contextWithDeploymentId = { id: deploymentId, ...context };
             const targetStates = [ContainerGroupState.RUNNING, ContainerGroupState.INACTIVE, ContainerGroupState.STOPPED]
             const finalState = await this.waitForContainerGroupState(contextWithDeploymentId, targetStates);
             await deploymentProvider.updateStatus(workspaceId, deploymentId, ContainerGroupStateToDeploymentStatusMapping[finalState]);
+            return deployment;
         } catch (err) {
             await this._containerGroupProvider.delete(context);
             // TODO: Handle failed deployment upsert
-            await deploymentProvider.updateStatus(workspaceId, deploymentId, DeploymentStatus.FAILED);
+            await deploymentProvider.updateStatus(workspaceId, deploymentId, "FAILED");
         }
     }
 
@@ -98,16 +119,18 @@ export class DeploymentController
         }
     }
 
-    private async createDeploymentEntry(workspaceId: string, deploymentId: string, version: number, createdBy: string) 
+    private async createDeploymentEntry(workspaceId: string, deploymentId: string, version: number, createdBy: string): Promise<Deployment>
     {
-        return await deploymentProvider.create({
+        const deployment: Deployment = {
             workspaceId,
             deploymentId,
             version,
-            status: DeploymentStatus.PENDING,
+            status: "PENDING",
             createdBy: createdBy,
-            createdAt: new Date(),
-        });
+            createdAt: Math.floor((new Date()).getTime()/1000),
+        }
+        await deploymentProvider.create(deployment);
+        return deployment;
     }
 
     private async waitForContainerGroupState(context: IContainerGroup, states: ContainerGroupState[]): Promise<ContainerGroupState>
@@ -128,31 +151,27 @@ export class DeploymentController
      * Example usage:
      * curl -X DELETE http://localhost:8180/dsp/api/v1/{workspace_id}/deployment
      */
-    public async terminateDeploymentV1(req: Request, res: Response)
+    public async terminateDeploymentV1(
+        req: Request<{workspaceId: string}, {}, {}, {}>,
+        res: Response<string>)
     {
         const requestContext = await this.validateAndReturnTerminationContext(req, res);
-        if (!requestContext) {
-            return;
-        }
+        if (!requestContext) return;
         const context = this._containerGroupContextProvider.getContext(requestContext);
-        res.status(201).send({info: `Terminating Deployment ${context.id}`});
+        res.status(201).send(context.id);
+        
         await this.stopAndWait(req.params.workspaceId, context.id, context);
     }
 
     private async validateAndReturnTerminationContext(req: Request, res: Response): Promise<ContainerGroupRequestContext | undefined>
     {
         const { workspaceId } = req.params;
-        try {
-            const latestDeployment = await deploymentProvider.getLatest(workspaceId);
-            if (latestDeployment.status === DeploymentStatus.PENDING) {
-                res.status(400).send({error: '[Error] Last deployment is still in progress.'});
-                return null;
-            }
-            return this.getRequestContext(req, workspaceId, null);
-        } catch (err) {
-            res.status(500).send({error: `[Error] ${err}`});
+        const deployment = await this.validatePendingDeployment(workspaceId);
+        if ("PENDING" === deployment?.status) {
+            res.status(400).send({error: 'Last deployment is still in progress.'});
             return null;
         }
+        return this.getRequestContext(req, workspaceId, null);
     }
 
     private async stopAndWait(workspaceId: string, deploymentId: string, context: IContainerGroup) 
@@ -169,41 +188,22 @@ export class DeploymentController
     }
 
     /**
-     * Retrieve the log events for a given deployment.
-     * @param req Request
-     * @param res Response
-     * Example usage:
-     * curl http://localhost:8180/dsp/api/v1/{workspaceId}/logs/{deploymentId}
-     */
-     public async retrieveLogEvents(req: Request, res: Response)
-     {
-        const workspaceId = req.params.workspaceId;
-        const deploymentId = req.params.deploymentId;
-        try {
-            // const deploymentDetails = deploymentProvider.read(workspaceId, deploymentId);
-            const eventName = { definition: "torch-standard-single-node-beta", name: "default", id: deploymentId };
-            const events = await this._containerGroupProvider.getLogs(eventName);
-            res.status(201).json({events: events});
-        } catch {
-            res.status(500).json({error: 'Unable to retrieve log events. Please wait and retry.'});
-        }
-     }
-
-    /**
      * Endpoint to list deployments based on the given workspace id.
      * @param req Request
      * @param res Response
      * Example usage: 
      * curl http://localhost:8180/dsp/api/v1/workspace/{workspaceId}/deployments
      */
-    public async listDeploymentsV1(req: Request, res: Response) 
-    {
-        const workspaceId = req.params.workspaceId;
+    public async listDeploymentsV1(
+        req: Request<{workspaceId: string}, {}, {}, {}>, 
+        res: Response<Deployment[]>) {
+        const { workspaceId } = req.params;
         try {
+            RequestValidator.validateRequest(workspaceId);
             const deployments = await deploymentProvider.list(workspaceId);
             res.status(200).send(deployments);
         } catch (err) {
-            res.status(500).send({error: 'Unable to list deployments.'});
+            ErrorHandler.handleException(err, res);
         }
     }
 
@@ -214,14 +214,16 @@ export class DeploymentController
      * Example usage: 
      * curl http://localhost:8180/dsp/api/v1/deployments/active
      */
-    public async listActiveDeploymentsV1(req: Request, res: Response) 
-    {
+    public async listActiveDeploymentsV1(
+        req: Request<{}, {}, {}, {}>, 
+        res: Response<Deployment[]>) {
         try {
             const userId = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
+            RequestValidator.validateRequest(userId);
             const deployments = await deploymentProvider.listActive(userId);
             res.status(200).send(deployments);
         } catch (err) {
-            res.status(500).send({error: 'Unable to list active deployments.'});
+            ErrorHandler.handleException(err, res);
         }
     }
 }

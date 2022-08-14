@@ -48,8 +48,6 @@ export class Routes
          // TODO: follow the below url format to modify the above.
         app.route('/dsp/api/v1/:workspaceId/deployment')
             .delete(this.deploymentController.terminateDeploymentV1)
-        app.route('/dsp/api/v1/:workspaceId/logs/:deploymentId')
-            .get(this.deploymentController.retrieveLogEvents)
         app.post('/dsp/api/v1/:workspaceId/experiment', 
             multer({ storage: storageProvider.getStorageEngine() }).single('model'), 
             this.experimentController.createExperimentV1);

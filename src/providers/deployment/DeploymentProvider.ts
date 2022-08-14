@@ -1,7 +1,7 @@
 import SQliteClientProvider from "../../libs/client/SQLiteClientProvider";
-import { SQLiteDeploymentProvider } from "./sqlite/SQLiteDeploymentProvider";
+import { SQLiteDeploymentProvider } from "./sqlite/DeploymentProviderImpl";
 import { appConfig } from "../../libs/config/AppConfigProvider";
-import { PostgresDeploymentProvider } from "./postgres/PostgresDeploymentProvider";
+import { PostgresDeploymentProvider } from "./postgres/DeploymentProviderImpl";
 import DynamoDBClientProvider from "../../libs/client/aws/DynamoDBClientProvider";
 import PostgresClientProvider from "../../libs/client/PostgresClientProvider";
 import { ContainerGroupState } from "../container/ContainerGroupProvider";
@@ -14,46 +14,24 @@ export const ContainerGroupStateToDeploymentStatusMapping = {
     /**
      * Pending.
      */
-    [ContainerGroupState.PENDING] : DeploymentStatus.PENDING,
+    [ContainerGroupState.PENDING] : "PENDING",
     /**
      * Running.
      */
-    [ContainerGroupState.RUNNING] : DeploymentStatus.RUNNING,
+    [ContainerGroupState.RUNNING] : "RUNNING",
     /**
      * Stopped.
      */
-    [ContainerGroupState.STOPPED] : DeploymentStatus.STOPPED,
+    [ContainerGroupState.STOPPED] : "STOPPED",
     /**
      * Inactive.
      */
-    [ContainerGroupState.INACTIVE] : DeploymentStatus.STOPPED,
+    [ContainerGroupState.INACTIVE] : "STOPPED",
 }
 /**
  * Defines the deployment statuses.
  */
-export const enum DeploymentStatus
-{
-    /**
-     * Indicates the deployment is succeed.
-     */
-    RUNNING = "RUNNING",
-    /**
-     * Indicates the deployment is succeed.
-     */
-    STOPPED = "STOPPED",
-    /**
-     * Indicates the deployment is failed.
-     */
-    FAILED = "FAILED",
-    /**
-     * Indicate the deployment is ongoing.
-     */
-    PENDING = "PENDING",
-    /**
-     * Indicate deployment retrieval is failed.
-     */
-    UNKNOWN = "UNKNOWN"
-}
+export type DeploymentStatus = "RUNNING" | "STOPPED" | "FAILED" | "PENDING" | "UNKNOWN"
 /**
  * Defines the deployment object.
  */
@@ -64,7 +42,7 @@ export class Deployment
     version: number;
     status: DeploymentStatus;
     createdBy: string;
-    createdAt: Date;
+    createdAt: number;
 }
 /**
  * Defines the illegal state error.
@@ -92,10 +70,6 @@ export interface IDeploymentProvider
      */
     list: (workspaceId: string) => Promise<Array<Deployment>>;
     /**
-     * Get active deployment.
-     */
-    getActive: (workspaceId: string) => Promise<Deployment>;
-    /**
      * Get the latest deployment.
      */
     getLatest: (workspaceId: string) => Promise<Deployment>;
@@ -103,14 +77,6 @@ export interface IDeploymentProvider
      * List all deployments.
      */
     listActive: (userId: string) => Promise<Array<Deployment>>;
-    /**
-     * Aquire deployment lock;
-     */
-    aquireLock: (workspaceId: string, version: number) => Promise<any>;
-    /**
-     * Release deployment lock;
-     */
-    releaseLock: (workspaceId: string) => Promise<any>;
     /**
      * Update the status of a deployment;
      */
