@@ -39,6 +39,7 @@ export class ExperimentController
         const { description, runtime, framework, parameters, metrics } = req.body;
         try {
             RequestValidator.validateRequest(workspaceId);
+            await RequestValidator.throwOnException(() => workspaceProvider.read(workspaceId));
             const state = "UNREGISTERED" as ExperimentState;
             const version = await workspaceProvider.incrementVersion(workspaceId);
             const createdBy = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
@@ -75,6 +76,7 @@ export class ExperimentController
         const { workspaceId } = req.params;
         try {
             RequestValidator.validateRequest(workspaceId);
+            await RequestValidator.throwOnException(() => workspaceProvider.read(workspaceId));
             const experiments = await experimentProvider.list(workspaceId);
             res.status(200).send(experiments);
         } catch (err) {
@@ -96,6 +98,7 @@ export class ExperimentController
         const { workspaceId, version } = req.params;
         try {
             RequestValidator.validateRequest(workspaceId, version);
+            await RequestValidator.throwOnException(() => workspaceProvider.read(workspaceId));
             const experiment = await experimentProvider.read(workspaceId, parseInt(version));
             res.status(200).send(experiment);
         } catch (err) {
@@ -117,6 +120,7 @@ export class ExperimentController
         const { workspaceId, version } = req.params;
         try {
             RequestValidator.validateRequest(workspaceId, version);
+            await RequestValidator.throwOnException(() => workspaceProvider.read(workspaceId));
             await experimentProvider.delete(workspaceId, parseInt(version))
             res.status(201).send();
         } catch (err) {
@@ -138,6 +142,7 @@ export class ExperimentController
         const { version } = req.body;
         try {
             RequestValidator.validateRequest(workspaceId, version);
+            await RequestValidator.throwOnException(() => workspaceProvider.read(workspaceId));
             await experimentProvider.register(workspaceId, parseInt(version));
             res.status(200).send();
         } catch (err) {
@@ -158,6 +163,7 @@ export class ExperimentController
         const workspaceId = req.params.workspaceId;
         try {
             RequestValidator.validateRequest(workspaceId);
+            await RequestValidator.throwOnException(() => workspaceProvider.read(workspaceId));
             const registry = await experimentProvider.getRegistry(workspaceId);
             await experimentProvider.deregister(workspaceId, registry.version);
             res.status(201).send();
@@ -179,6 +185,7 @@ export class ExperimentController
         const { workspaceId }= req.params;
         try {
             RequestValidator.validateRequest(workspaceId);
+            await RequestValidator.throwOnException(() => workspaceProvider.read(workspaceId));
             const registry = await experimentProvider.getRegistry(workspaceId);
             res.status(200).json(registry);
         } catch (err) {

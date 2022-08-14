@@ -1,8 +1,9 @@
-import { DynamoDBClient, PutItemCommand, GetItemCommand, DeleteItemCommand, UpdateItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, GetItemCommand, UpdateItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { IllegalArgumentException } from "../../../commons/Errors";
 import { IWorkspaceProvider, Workspace, WorkspaceType } from '../WorkspaceProvider';
 
 const TABLE_NAME = "Workspaces";
-const INDEX_NAME = "created_by-index";
+const INDEX_NAME = "created_by-is_deleted-index";
 
 export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
 {
@@ -32,7 +33,8 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
             type: { S: workspace.type },
             created_by: { S: workspace.createdBy },
             created_at: { N: workspace.createdAt?.toString() },
-            max_version: { N: workspace.maxVersion?.toString() }
+            max_version: { N: workspace.maxVersion?.toString() },
+            is_deleted: { N: workspace.isDeleted.toString() }
         }
         await this._databaseClient.send(new PutItemCommand({ TableName: TABLE_NAME, Item: item }));
         return workspace.id;
@@ -68,6 +70,9 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
             TableName: TABLE_NAME,
             Key: { id: { S: id } },
         })))?.Item;
+        if ("1" === item?.is_deleted?.N) {
+            throw new IllegalArgumentException();
+        }
         const workspace: Workspace = {
             id: item?.id.S,
             name: item?.name.S,
@@ -87,10 +92,8 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
         const command =  new QueryCommand({
             TableName: TABLE_NAME,
             IndexName: INDEX_NAME,
-            KeyConditionExpression: `created_by = :username`,
-            ExpressionAttributeValues: {
-                ":username": { S: username },
-            }
+            KeyConditionExpression: `created_by = :username AND is_deleted = :isDeleted`,
+            ExpressionAttributeValues: { ":username": { S: username }, ":isDeleted": { N: "0" } }
         });
         const items = (await this._databaseClient.send(command)).Items;
         return items?.map(item => ({
@@ -106,12 +109,17 @@ export default class DynamoDBWorkspaceProvider implements IWorkspaceProvider
     /**
      * Delete a workspace based on a given id.
      */
-    public async delete(id: string): Promise<void>
+    public async delete(workspaceId: string): Promise<void>
     {
-        await this._databaseClient.send(new DeleteItemCommand({
+        const command = new UpdateItemCommand({
             TableName: TABLE_NAME,
-            Key: { id: { S: id } }
-        }));
+            Key: { id: { S: workspaceId } },
+            UpdateExpression: "set is_deleted=:isDeleted",
+            ExpressionAttributeValues: {
+                ":isDeleted": { N: "1" },
+            },
+        });
+        await this._databaseClient.send(command);
     }
 
     /**

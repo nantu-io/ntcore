@@ -21,6 +21,7 @@ export class Workspace
     createdBy: string;
     createdAt: number;
     maxVersion: number;
+    isDeleted?: number;
 }
 /**
  * Interface for workspace provider.

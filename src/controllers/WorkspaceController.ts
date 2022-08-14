@@ -5,9 +5,11 @@ import { appConfig } from '../libs/config/AppConfigProvider';
 import { Workspace } from '../providers/workspace/WorkspaceProvider';
 import { RequestValidator } from '../libs/utils/RequestValidator';
 import { ErrorHandler } from '../libs/utils/ErrorHandler';
+import { v4 as uuidv4 } from 'uuid';
 import short = require('short-uuid');
 
 const AUTH_USER_HEADER_NAME = "X-NTCore-Auth-User";
+const SHORT_UUID_TRANSLATOR = short('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 
 export class WorkspaceController 
 {
@@ -45,21 +47,14 @@ export class WorkspaceController
     private createWorkspace(name: string, type: "API" | "Batch", userId: string): Workspace
     {
         return {
-            id: this.createWorkspaceId(name),
+            id: `C${SHORT_UUID_TRANSLATOR.fromUUID(uuidv4())}`,
             type: type,
             name: name,
             createdBy: userId,
             createdAt: Date.now(),
-            maxVersion: 0
+            maxVersion: 0,
+            isDeleted: 0,
         }
-    }
-
-    private createWorkspaceId(name: string)
-    {
-        const uuidv5 = require('uuid/v5');
-        const uuid = uuidv5(name, '0a285782-a757-44ed-ad94-094509b1494e');
-        const translator = short('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-        return `C${translator.fromUUID(uuid)}`;
     }
 
     /**

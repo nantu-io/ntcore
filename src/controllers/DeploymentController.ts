@@ -55,10 +55,9 @@ export class DeploymentController
     {
         const { workspaceId } = req.body;
         const [registry, deployment] = await Promise.all([
-            this.validateRegisteredExperiment(workspaceId), 
-            this.validatePendingDeployment(workspaceId)
+            RequestValidator.nullOnException(() => experimentProvider.getRegistry(workspaceId)),
+            RequestValidator.nullOnException(() => deploymentProvider.getLatest(workspaceId)),
         ]);
-        
         if (!registry?.version) {
             res.status(400).send({error: 'Unable to find registered model version.'});
             return null;
@@ -69,27 +68,9 @@ export class DeploymentController
         return this.getRequestContext(req, workspaceId, registry);
     }
 
-    private async validateRegisteredExperiment(workspaceId: string)
-    {
-        try {
-            return (await experimentProvider.getRegistry(workspaceId));
-        } catch (err) {
-            return null;
-        }
-    }
-
-    private async validatePendingDeployment(workspaceId: string)
-    {
-        try {
-            return (await deploymentProvider.getLatest(workspaceId));
-        } catch (err) {
-            return null;
-        }
-    }
-
     private async startAndWait(workspaceId: string, version: number, context: IContainerGroup, createdBy: string): Promise<Deployment>
     {
-        var deploymentId = uuidv4();
+        const deploymentId = uuidv4();
         try {
             const deployment = await this.createDeploymentEntry(workspaceId, deploymentId, version, createdBy);
             await this._containerGroupProvider.provision(context);
@@ -166,7 +147,7 @@ export class DeploymentController
     private async validateAndReturnTerminationContext(req: Request, res: Response): Promise<ContainerGroupRequestContext | undefined>
     {
         const { workspaceId } = req.params;
-        const deployment = await this.validatePendingDeployment(workspaceId);
+        const deployment = await RequestValidator.nullOnException(() => deploymentProvider.getLatest(workspaceId));
         if ("PENDING" === deployment?.status) {
             res.status(400).send({error: 'Last deployment is still in progress.'});
             return null;
