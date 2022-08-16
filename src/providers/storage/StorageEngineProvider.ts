@@ -1,8 +1,9 @@
-import { StorageEngineType } from "../../commons/ProviderType";
 import { appConfig } from "../../libs/config/AppConfigProvider";
 import { StorageEngine } from "multer";
 import { DockerVolumeProvider } from "./volume/DockerVolumeProvider";
+import { S3Provider } from "../storage/s3/S3Provider";
 import { RequestHandler } from "express";
+import S3ClientProvider from "../../libs/client/aws/s3Client";
 
 /**
  * Interface for volume provider.
@@ -34,15 +35,14 @@ export interface StorageProvider
 export class StorageProviderFactory 
 {
     /**
-     * Create a provider for local volumes.
+     * Create a provider for volumes.
      * @returns Deployment provider.
      */
     public createProvider(): StorageProvider 
     {
-        const providerType: StorageEngineType = appConfig.storage.provider;
-        switch(providerType) {
-            case StorageEngineType.S3: return;
-            case StorageEngineType.VOLUME: return new DockerVolumeProvider();
+        switch(appConfig.storage.type) {
+            case "s3": return new S3Provider(S3ClientProvider.get());
+            case "volume": return new DockerVolumeProvider();
             default: throw new Error("Invalid storage type.");
         }
     }

@@ -21,30 +21,3 @@ export const ProviderTypeMapping = {
      */
     "kubernetes": ProviderType.KUBERNETES,
 }
-/**
- * Storage engine type.
- */
-export const enum StorageEngineType
-{
-    /**
-     * Local storage type.
-     */
-    VOLUME = "VOLUME",
-    /**
-     * AWS S3.
-     */
-    S3 = "S3",
-}
-/**
- * Storage engine type mapping.
- */
-export const StorageEngineTypeMapping = {
-    /**
-     * Disk volume
-     */
-    "volume": StorageEngineType.VOLUME,
-    /**
-     * AWS S3.
-     */
-    "s3": StorageEngineType.S3,
-}

@@ -1,6 +1,6 @@
-##############################
-## Local configurations
-##############################
+################################
+## Configs for local deployment
+################################
 container:
   provider:
     type: docker
@@ -21,6 +21,40 @@ storage:
     config:
       root: data/binary
 
-## This is a temporary config before user auth is onboarded
+## Default userId when user auth is disabled
 account: 
   username: ntcore
+
+#####################################
+## Example config for AWS deployment
+#####################################
+# container:
+#   provider:
+#     type: kubernetes
+#     config:
+#       namespace: default
+#   images:
+#     sklearn: ntcore/fast-sklearn
+#     tensorflow: ntcore/tensorflow-serving
+#     pytorch: ntcore/fast-torch
+
+# database:
+#   provider:
+#     type: dynamodb
+#     config:
+#       region:
+#       accessKeyId:
+#       secretAccessKey:
+
+# storage:
+#   provider:
+#     type: s3
+#     config:
+#       bucket: ntcore-model-storage
+#       root: binary
+#       region:
+#       accessKeyId:
+#       secretAccessKey:
+
+# account: 
+#   username: ntcore
