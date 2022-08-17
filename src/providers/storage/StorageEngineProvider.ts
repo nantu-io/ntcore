@@ -3,7 +3,7 @@ import { StorageEngine } from "multer";
 import { DockerVolumeProvider } from "./volume/DockerVolumeProvider";
 import { S3Provider } from "../storage/s3/S3Provider";
 import { RequestHandler } from "express";
-import S3ClientProvider from "../../libs/client/aws/s3Client";
+import S3ClientProvider from "../../libs/client/aws/S3Client";
 
 /**
  * Interface for volume provider.
