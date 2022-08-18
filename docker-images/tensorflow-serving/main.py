@@ -1,6 +1,7 @@
 import logging, tarfile, os
 from pathlib import Path
 from ntcore import Client
+import proxy
 
 def download_model():
     """
@@ -34,3 +35,7 @@ def download_model():
 if __name__ == '__main__':
     # Downloads model from ntcore server and place in the serving path.
     download_model()
+    with proxy.Proxy() as p:
+    # Uncomment the line below and
+    # implement your app your logic here
+        proxy.sleep_loop()
