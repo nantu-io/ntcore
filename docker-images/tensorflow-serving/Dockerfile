@@ -5,8 +5,7 @@ RUN apt-get update -y && \
     apt-get install -y python3.8 python3-pip curl
 
 # Install required packages
-RUN pip3 install requests &&\
-    pip3 install setuptools-rust &&\
+RUN pip3 install requests setuptools-rust proxy.py &&\
     pip3 install --upgrade pip &&\
     pip3 install ntcore
 
