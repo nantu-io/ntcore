@@ -25,33 +25,6 @@ def archive_model(server, workspace_id, framework, root):
         click.echo(f"Uploading archived model to NTCore ...")
         exper.save_model(root)
 
-    """
-    try:
-        dir = root if os.path.isabs(root) else Path(root).absolute()
-        click.echo(f"Archiving {dir} ...")
-        archive_name = "ntcore_model_archive"
-        shutil.make_archive(archive_name, "gztar", dir)
-
-        client = Client(server=server)
-        with client.start_run(workspace_id) as exper:
-            exper.framework = framework
-
-
-            serialized = open(archive_name + ".tar.gz", "rb").read()
-            click.echo(f"Uploading archived model to NTCore ...")
-            exper.save_model(serialized)
-
-
-        os.remove(archive_name + ".tar.gz")
-
-    except Exception:
-        client = Client(server=server)
-        with client.start_run(workspace_id) as exper:
-            exper.framework = framework
-            click.echo(f"Uploading archived model to NTCore ...")
-            exper.save_model(root)
-    """
-
 
 if __name__ == '__main__':
     archive_model()
