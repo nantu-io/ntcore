@@ -14,7 +14,8 @@ class Monitor(ABC):
                 password=None,
                 program_token=None, 
                 server="http://localhost:8000/",
-                encryption_data=None):
+                encryption_data=None,
+                api_token=None):
         '''
         Generate Monitor class
         This is the general Python interface that user can monitor the ML/AL models.
@@ -33,7 +34,7 @@ class Monitor(ABC):
         self._password = password
         self._program_token = program_token
         self._server = server
-        self._api_client = ApiAsyncClient(self._username, self._password, self._server, encryption_data)
+        self._api_client = ApiAsyncClient(self._username, self._password, self._server, encryption_data, api_token)
 
     def add_metric(self, name, value):
         '''

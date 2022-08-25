@@ -27,7 +27,7 @@ class ApiClient(ABC):
         Array with params for encrypted requests(Fields: clientPrivateKeySetLocation, keySetLocation).
     '''
 
-    def __init__(self, api_token, username, password, server, encryptionData=None):
+    def __init__(self, username, password, server, encryptionData=None, api_token=None):
         '''
         Create an instance of the API client.
         This client is used to make the calls to the NTCore API.
