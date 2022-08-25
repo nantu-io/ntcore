@@ -53,14 +53,14 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         const workspaceId = requestContext.workspaceId;
         const name = `ntcore-${workspaceId.toLocaleLowerCase()}`;
         const image = appConfig.container.images['tensorflow'];
-        const container = this.getKubernetesContainer(workspaceId, image, name, 8501, `/v1/models/${workspaceId}`, 120);
+        const container = this.getKubernetesContainer(workspaceId, image, name, 18080, `/v1/models/${workspaceId}`, 120);
         const replacePathMiddleware = this._ingressRouteProvider.getReplacePathMiddleware(namespace, name, `/v1/models/${workspaceId}:predict`);
-        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 8501, `/s/${workspaceId}/predict`, [ name ]);
+        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 18080, `/s/${workspaceId}/predict`, [ name ]);
         return {
             name, 
             type: requestContext.type,
             namespace: namespace,
-            service: this.getKubernetesService(namespace, name, 8501),
+            service: this.getKubernetesService(namespace, name, 18080),
             deployment: this.getKubernetesDeployment(namespace, name, [ container ]),
             ingress: this._ingressRouteProvider.getKubernetesIngressRoute(namespace, name, ['web'], [ traefikIngressRoute ]),
             middlewares: [ replacePathMiddleware ]
