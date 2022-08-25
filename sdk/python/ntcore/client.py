@@ -34,13 +34,12 @@ class Client(object):
         Create an instance of the API interface.
         This is the main interface the user will call to interact with the API.
         '''
-        self._api_token = api_token
         self._username = username
         self._password = password
         self._program_token = program_token
         self._active_experiments = set()
         self._server = server
-        self._api_client = ApiClient(self._api_token, self._username, self._password, self._server, encryption_data)
+        self._api_client = ApiClient(self._username, self._password, self._server, encryption_data, api_token)
 
     def create_workspace(self, name):
         '''

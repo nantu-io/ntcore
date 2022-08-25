@@ -22,12 +22,12 @@ class ApiAsyncClient(ApiClient):
         Array with params for encrypted requests(Fields: clientPrivateKeySetLocation, keySetLocation).
     '''
 
-    def __init__(self, username, password, server, encryptionData=None):
+    def __init__(self, username, password, server, encryptionData=None, api_token=None):
         '''
         Create an instance of the API async client.
         This client is used to make the calls to the NTCore API.
         '''
-        super(ApiAsyncClient, self).__init__(username, password, server, encryptionData=encryptionData)
+        super(ApiAsyncClient, self).__init__(username, password, server, encryptionData=encryptionData, api_token=api_token)
 
         defaultSession = FuturesSession()
         defaultSession.mount(self.server, SSLAdapter())
