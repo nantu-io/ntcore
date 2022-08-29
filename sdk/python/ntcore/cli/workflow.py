@@ -16,20 +16,14 @@ def archive_model(server, workspace_id, framework, root):
     if framework not in FRAMEWORKS:
         click.echo(click.style("Error", fg="red") + ": Invalid framework, acceptable values are sklearn, tensorflow, pytorch.")
         exit(1)
-    
-    dir = root if os.path.isabs(root) else Path(root).absolute()
-    click.echo(f"Archiving {dir} ...")
-    archive_name = "ntcore_model_archive"
-    shutil.make_archive(archive_name, "gztar", dir)
-    
+
+    click.echo(f"Archiving {root} ...")
+
     client = Client(server=server)
     with client.start_run(workspace_id) as exper:
         exper.framework = framework
-        serialized = open(archive_name + ".tar.gz", "rb").read()
         click.echo(f"Uploading archived model to NTCore ...")
-        exper.save_model(serialized)
-    
-    os.remove(archive_name + ".tar.gz")
+        exper.save_model(root)
 
 
 if __name__ == '__main__':
