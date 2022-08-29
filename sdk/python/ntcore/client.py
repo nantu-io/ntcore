@@ -87,7 +87,7 @@ class Client(object):
         Deploy a trained model as API based on the given workspace id and version.
         '''
         return self._api_client.doPost(self.__build_url('deployments'), data={'workspaceId': workspace_id})
-
+    
     def download_model(self, path, workspace_id=None, version=None):
         '''
         Deploy a trained model as API based on the given workspace id and version.
@@ -105,7 +105,7 @@ class Client(object):
             _version = version
         if _version is None:
             raise ValueError('Unable to find model version.')
-
+        
         serialized = self._api_client.doGet(self.__build_url(_workspace_id, 'models', str(floor(float(_version)))))
         with open(path, 'wb') as f:
             f.write(serialized)
@@ -133,22 +133,7 @@ class Client(object):
         if workspace_id is None:
             raise ValueError('Workspace id is required')
 
-        try:
-            serialized_model = open(model, "rb").read()
-            print(type(model))
-            framework = self.__get_framework_from_model_filename(model)
-            model_file = None
-        except Exception:
-            try:
-                dir = model if os.path.isabs(model) else Path(model).absolute()
-                archive_name = "ntcore_model_archive"
-                shutil.make_archive(archive_name, "gztar", dir)
-                serialized_model = open(archive_name + ".tar.gz", "rb").read()
-                framework = None
-                model_file = None
-            except Exception:
-                serialized_model, framework, model_file = self.__serialize_model(model)
-
+        serialized_model, framework, model_file = self.__serialize_model(model)
         framework = framework if framework else experiment.framework
         payload = dict(
             runtime = get_runtime_version(),
@@ -206,13 +191,11 @@ class Client(object):
     def __get_framework_from_model_filename(self, model_filename: str):
         if model_filename.endswith(".pt") or model_filename.endswith(".pth"):
             return 'pytorch'
-        elif model_filename.endswith(".pkl") or model_filename.endswith(".pickle"):
+        elif model_filename.endswith(".pkl"):
             return 'sklearn'
-        elif model_filename.endswith(".h5") or model_filename.endswith(".pb"):
-            return 'tensorflow'
         else:
             return None
-
+                
     def __is_sklearn_model(self, model):
         try:
             from sklearn.base import BaseEstimator
