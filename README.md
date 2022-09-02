@@ -79,7 +79,7 @@ Join our community on [Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1
     ```
 
 ## Documentation
-NTCore documentation: https://nantu-io.github.io/ntcore-doc.
+NTCore documentation: https://docs.thenetron.com/#/.
 
 - [Quickstart](https://nantu-io.github.io/ntcore-doc/#/quick_start)
 - [Production](https://nantu-io.github.io/ntcore-doc/#/production)
