@@ -30,8 +30,6 @@ NTCore helps data scientists and machine learning engineers easily version, depl
 * Clean UI dashboards to manage ML model versions, deployments and performance metrics (roadmap).
 * High-level APIs to automate ML workflows with integration to workflow managers, e.g, Apache Airflow.
 
-Join our community on [Slack](https://app.slack.com/client/T02DN2XTE2J/C02R163F1K4).
-
 ----
 ## What’s In This Document
 - [Quick Start](#quickstart)
