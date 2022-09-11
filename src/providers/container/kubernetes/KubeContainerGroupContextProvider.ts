@@ -119,7 +119,8 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
                 template: {
                     metadata: { labels: { app: name } },
                     spec: {
-                        containers: containers
+                        containers: containers,
+                        volumes: [ { name: name, emptyDir: {} } ]
                     }
                 }
             }
@@ -137,6 +138,7 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
                 { name: "DSP_MONITORING_ENDPOINT", value: "ntcore-monitoring:8180"},
                 { name: "DSP_WORKSPACE_ID", value: workspaceId }
             ],
+            volumeMounts: [{ mountPath: "/models", name: name }],
             readinessProbe: {
                 httpGet: { path: healthCheckPath, port: port },
                 initialDelaySeconds: initialDelaySeconds,
