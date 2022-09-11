@@ -20,8 +20,12 @@ export class KubernetesContainer extends IContainer
     image: string;
     env: KubernetesEnvironmentVariable[];
     ports: {
-        name: string
-        containerPort: number
+        name: string;
+        containerPort: number;
+    }[];
+    volumeMounts?: {
+        mountPath: string;
+        name: string;
     }[];
     readinessProbe?: {
         httpGet?: {
@@ -92,6 +96,7 @@ export class KubernetesServiceV1
             metadata: KubernetesResourceMetadata;
             spec: {
                 containers: KubernetesContainer[];
+                volumes: { name: string; emptyDir: {} }[]
             }
         };
     }
