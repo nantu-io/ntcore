@@ -72,10 +72,8 @@ export const DEPLOYMENT_READ = `SELECT id, workspace_id, version, status, create
  */
 export const DEPLOYMENT_STATUS_UPDATE = `
     UPDATE deployments
-    SET status = CASE
-        WHEN id=$id THEN $status
-        ELSE 'STOPPED' END
-    WHERE workspace_id = $workspaceId AND (status = 'PENDING' OR status = 'RUNNING');
+    SET status = $status
+    WHERE workspace_id = $workspaceId AND id = $id;
 `;
 /**
  * Query to upsert the status of a deployment;
