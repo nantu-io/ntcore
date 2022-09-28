@@ -121,6 +121,7 @@ export class ContainerGroupRequestContext
     runtime?: Runtime;
     command?: string;
     workflow?: string;
+    lastDeploymentId?: string;
 }
 /**
  * Interface for container provider.

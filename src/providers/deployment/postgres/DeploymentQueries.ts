@@ -57,7 +57,5 @@ export const DEPLOYMENT_READ = `SELECT id, workspace_id, version, status, create
 */
 export const DEPLOYMENT_STATUS_UPDATE = `
     UPDATE deployments
-    SET status = 
-        CASE WHEN id = $2 THEN $3
-        ELSE 'STOPPED' END
-    WHERE workspace_id = $1 AND (status = 'PENDING' OR status = 'RUNNING');`;
+    SET status = $3
+    WHERE workspace_id = $1 AND id = $2;`;
