@@ -24,6 +24,7 @@ export class DeploymentController
     {   
         this._containerGroupContextProvider = new ContainerGroupContextProviderFactory().createProvider();
         this._containerGroupProvider = new ContainerProviderFactory().createProvider();
+        this._deploymentContextProvider = new DeploymentContextProvider();
         this.listDeploymentsV1 = this.listDeploymentsV1.bind(this);
         this.listActiveDeploymentsV1 = this.listActiveDeploymentsV1.bind(this);
         this.deployModelV1 = this.deployModelV1.bind(this);
