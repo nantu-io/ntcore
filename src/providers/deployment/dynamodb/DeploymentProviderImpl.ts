@@ -3,6 +3,7 @@ import { DynamoDBClient, PutItemCommand, GetItemCommand, UpdateItemCommand, Quer
 
 const TABLE_NAME = "Deployments";
 const WORKSPACE_ID_CREATED_AT_INDEX = "workspace_id-created_at-index";
+const WORKSPACE_ID_STATUS_INDEX = "workspace_id-deploy_status-index";
 const CREATED_BY_STATUS_INDEX = "created_by-deploy_status-index";
 
 export default class DynamoDeploymentProvider implements IDeploymentProvider 
@@ -28,7 +29,7 @@ export default class DynamoDeploymentProvider implements IDeploymentProvider
      * Create a new deployment.
      * @param deployment Deployment object.
      */
-    public async create(deployment: Deployment): Promise<string>
+    public async create(deployment: Deployment): Promise<Deployment>
     {
         const item = {
             workspace_id   : { S: deployment.workspaceId },
@@ -39,14 +40,14 @@ export default class DynamoDeploymentProvider implements IDeploymentProvider
             created_at     : { N: deployment.createdAt?.toString() },
         }
         await this._databaseClient.send(new PutItemCommand({ TableName: TABLE_NAME, Item: item }));
-        return deployment.deploymentId;
+        return deployment;
     }
 
     /**
      * List all the deployments in a workspace.
      * @param workspaceId Workspace id.
      */
-    public async list(workspaceId: string): Promise<Deployment[]> 
+    public async listAll(workspaceId: string): Promise<Deployment[]> 
     {
         const command =  new QueryCommand({
             TableName: TABLE_NAME,
@@ -140,6 +141,32 @@ export default class DynamoDeploymentProvider implements IDeploymentProvider
             IndexName: WORKSPACE_ID_CREATED_AT_INDEX,
             KeyConditionExpression: `workspace_id = :workspaceId`,
             ExpressionAttributeValues: { ":workspaceId": { S: workspaceId } },
+            ScanIndexForward: false
+        });
+        const item = (await this._databaseClient.send(command)).Items[0];
+        if (!item) return null;
+        const deployment: Deployment = {
+            workspaceId  : item?.workspace_id.S,
+            deploymentId : item?.deployment_id.S,
+            version      : parseInt(item?.version.N),
+            status       : item?.deploy_status.S as DeploymentStatus,
+            createdBy    : item?.created_by.S,
+            createdAt    : Number(item?.created_at.N)
+        }
+        return deployment;
+    }
+
+    /**
+     * Get the latest deployment id.
+     * @param workspaceId workspace id.
+     */
+    public async getActive(workspaceId: string): Promise<Deployment>
+    {
+        const command =  new QueryCommand({
+            TableName: TABLE_NAME,
+            IndexName: WORKSPACE_ID_STATUS_INDEX,
+            KeyConditionExpression: `workspace_id = :workspaceId AND deploy_status = :status`,
+            ExpressionAttributeValues: { ":workspaceId": { S: workspaceId }, ":status": { S: "RUNNING" } },
             ScanIndexForward: false
         });
         const item = (await this._databaseClient.send(command)).Items[0];
