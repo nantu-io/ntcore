@@ -60,7 +60,7 @@ export interface IDeploymentProvider
     /**
      * Create a new deployment.
      */
-    create: (deployment: Deployment) => Promise<string>;
+    create: (deployment: Deployment) => Promise<Deployment>;
     /**
      * Retrieve a deployment.
      */
@@ -68,15 +68,19 @@ export interface IDeploymentProvider
     /**
      * List all deployments.
      */
-    list: (workspaceId: string) => Promise<Array<Deployment>>;
+    listAll: (workspaceId: string) => Promise<Array<Deployment>>;
+    /**
+     * List all deployments.
+     */
+    listActive: (userId: string) => Promise<Array<Deployment>>;
     /**
      * Get the latest deployment.
      */
     getLatest: (workspaceId: string) => Promise<Deployment>;
     /**
-     * List all deployments.
+     * Get the current active deployment.
      */
-    listActive: (userId: string) => Promise<Array<Deployment>>;
+    getActive: (workspaceId: string) => Promise<Deployment>;
     /**
      * Update the status of a deployment;
      */

@@ -6,7 +6,8 @@ import {
     DEPLOYMENT_CREATE,
     DEPLOYMENT_READ,
     DEPLOYMENT_STATUS_UPDATE,
-    DEPLOYMENT_LATEST_READ
+    DEPLOYMENT_LATEST_READ,
+    DEPLOYMENT_ACTIVE_READ
 } from "./DeploymentQueries";
 import Database = require("better-sqlite3");
 
@@ -33,7 +34,7 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
      * Create a new deployment.
      * @param deployment Deployment object.
      */
-    public async create(deployment: Deployment): Promise<string>
+    public async create(deployment: Deployment): Promise<Deployment>
     {
         this._databaseClient.prepare(DEPLOYMENT_CREATE).run({
             id: deployment.deploymentId,
@@ -43,14 +44,14 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
             created_by: deployment.createdBy,
             created_at: deployment.createdAt
         });
-        return deployment.deploymentId;
+        return deployment;
     }
 
     /**
      * List all the deployments in a workspace.
      * @param workspaceId Workspace id.
      */
-    public async list(workspaceId: string): Promise<Deployment[]>
+    public async listAll(workspaceId: string): Promise<Deployment[]>
     {
         return this._databaseClient.prepare(DEPLOYMENTS_LIST).all({workspace_id: workspaceId})?.map(item => ({
             workspaceId  : item?.workspace_id,
@@ -114,6 +115,24 @@ export class SQLiteDeploymentProvider implements IDeploymentProvider
     public async getLatest(workspaceId: string): Promise<Deployment>
     {
         const item = this._databaseClient.prepare(DEPLOYMENT_LATEST_READ).get({workspaceId: workspaceId});
+        if (!item) return null; 
+        return {
+            workspaceId  : item?.workspace_id,
+            deploymentId : item?.id,
+            version      : parseInt(item?.version),
+            status       : item?.status as DeploymentStatus,
+            createdBy    : item?.created_by,
+            createdAt    : Number(item?.created_at)
+        };
+    }
+
+    /**
+     * Get the latest deployment id.
+     * @param workspaceId workspace id.
+     */
+    public async getActive(workspaceId: string): Promise<Deployment>
+    {
+        const item = this._databaseClient.prepare(DEPLOYMENT_ACTIVE_READ).get({workspaceId: workspaceId});
         if (!item) return null; 
         return {
             workspaceId  : item?.workspace_id,

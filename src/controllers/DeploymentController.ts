@@ -3,15 +3,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { waitUntil } from 'async-wait-until';
 import { ContainerProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
 import { ContainerGroupContextProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
-import { FrameworkToContainerGroupTypeMapping } from '../commons/Framework';
 import { ContainerGroupStateToDeploymentStatusMapping } from '../providers/deployment/DeploymentProvider';
 import { IContainerGroup, IContainerGroupProvider, ContainerGroupState, IContainerGroupContextProvider, ContainerGroupRequestContext } from '../providers/container/ContainerGroupProvider';
-import { experimentProvider, deploymentProvider } from "../libs/config/AppModule";
+import { deploymentProvider } from "../libs/config/AppModule";
 import { Deployment } from "../providers/deployment/DeploymentProvider";
-import { Experiment } from '../providers/experiment/ExperimentProvider';
 import { ErrorHandler } from '../libs/utils/ErrorHandler';
 import { RequestValidator } from '../libs/utils/RequestValidator';
 import { appConfig } from '../libs/config/AppConfigProvider';
+import { DeploymentContextProvider } from '../providers/deployment/DeploymentContextProvider';
 
 const AUTH_USER_HEADER_NAME = "X-NTCore-Auth-User";
 
@@ -19,6 +18,7 @@ export class DeploymentController
 {
     private readonly _containerGroupContextProvider: IContainerGroupContextProvider;
     private readonly _containerGroupProvider: IContainerGroupProvider;
+    private readonly _deploymentContextProvider: DeploymentContextProvider;
 
     public constructor()
     {   
@@ -41,30 +41,13 @@ export class DeploymentController
         req: Request<{}, {}, {workspaceId: string}, {}>,
         res: Response<{version: number}>)
     {
-        const requestContext = await this.validateAndReturnDeploymentContext(req, res);
+        const requestContext = await this._deploymentContextProvider.validateAndReturnDeploymentContext(req, res);
         if (!requestContext) return;
         const createdBy = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
         const version = Math.floor(requestContext.version)
         res.status(201).send({version});
 
         await this.startAndWait(requestContext, createdBy);
-    }
-
-    private async validateAndReturnDeploymentContext(req: Request, res: Response): Promise<ContainerGroupRequestContext | undefined>
-    {
-        const { workspaceId } = req.body;
-        const [registry, deployment] = await Promise.all([
-            RequestValidator.nullOnException(() => experimentProvider.getRegistry(workspaceId)),
-            RequestValidator.nullOnException(() => deploymentProvider.getLatest(workspaceId)),
-        ]);
-        if (!registry?.version) {
-            res.status(400).send({error: 'Unable to find registered model version.'});
-            return null;
-        } else if ("PENDING" === deployment?.status) {
-            res.status(400).send({error: 'Last deployment is still in progress.'});
-            return null;
-        }
-        return this.getRequestContext(req, workspaceId, registry, deployment?.deploymentId);
     }
 
     private async startAndWait(requestContext: ContainerGroupRequestContext, createdBy: string): Promise<Deployment>
@@ -81,26 +64,13 @@ export class DeploymentController
             const targetStates = [ContainerGroupState.RUNNING, ContainerGroupState.INACTIVE, ContainerGroupState.STOPPED]
             const finalState = await this.waitForContainerGroupState(contextWithDeploymentId, targetStates);
             await deploymentProvider.updateStatus(workspaceId, deploymentId, ContainerGroupStateToDeploymentStatusMapping[finalState]);
-            await deploymentProvider.updateStatus(workspaceId, requestContext.lastDeploymentId, ContainerGroupState.STOPPED);
+            if (!requestContext.lastActiveId) return deployment;
+            await deploymentProvider.updateStatus(workspaceId, requestContext.lastActiveId, ContainerGroupState.STOPPED);
             return deployment;
         } catch (err) {
             await this._containerGroupProvider.delete(context);
             // TODO: Handle failed deployment upsert
             await deploymentProvider.updateStatus(workspaceId, deploymentId, "FAILED");
-        }
-    }
-
-    private getRequestContext(req: Request, workspaceId: string, registry: Experiment, lastDeploymentId: string): ContainerGroupRequestContext
-    {    
-        return {
-            type: registry?.framework ? FrameworkToContainerGroupTypeMapping[registry.framework] : null,
-            name: `ntcore-${workspaceId.toLowerCase()}`,
-            version:  registry?.version,
-            runtime: registry?.runtime,
-            workspaceId: workspaceId,
-            command: req.body.command,
-            workflow: req.body.workflow,
-            lastDeploymentId: lastDeploymentId
         }
     }
 
@@ -114,8 +84,7 @@ export class DeploymentController
             createdBy: createdBy,
             createdAt: Math.floor((new Date()).getTime()/1000),
         }
-        await deploymentProvider.create(deployment);
-        return deployment;
+        return await deploymentProvider.create(deployment);
     }
 
     private async waitForContainerGroupState(context: IContainerGroup, states: ContainerGroupState[]): Promise<ContainerGroupState>
@@ -140,23 +109,12 @@ export class DeploymentController
         req: Request<{workspaceId: string}, {}, {}, {}>,
         res: Response<string>)
     {
-        const requestContext = await this.validateAndReturnTerminationContext(req, res);
+        const requestContext = await this._deploymentContextProvider.validateAndReturnTerminationContext(req, res);
         if (!requestContext) return;
         const context = this._containerGroupContextProvider.getContext(requestContext);
         res.status(201).send(context.id);
         
         await this.stopAndWait(req.params.workspaceId, context);
-    }
-
-    private async validateAndReturnTerminationContext(req: Request, res: Response): Promise<ContainerGroupRequestContext | undefined>
-    {
-        const { workspaceId } = req.params;
-        const deployment = await RequestValidator.nullOnException(() => deploymentProvider.getLatest(workspaceId));
-        if ("PENDING" === deployment?.status) {
-            res.status(400).send({error: 'Last deployment is still in progress.'});
-            return null;
-        }
-        return this.getRequestContext(req, workspaceId, null, deployment?.deploymentId);
     }
 
     private async stopAndWait(workspaceId: string, context: IContainerGroup) 
@@ -185,7 +143,7 @@ export class DeploymentController
         const { workspaceId } = req.params;
         try {
             RequestValidator.validateRequest(workspaceId);
-            const deployments = await deploymentProvider.list(workspaceId);
+            const deployments = await deploymentProvider.listAll(workspaceId);
             res.status(200).send(deployments);
         } catch (err) {
             ErrorHandler.handleException(err, res);

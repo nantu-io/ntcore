@@ -6,7 +6,8 @@ import {
     DEPLOYMENT_CREATE,
     DEPLOYMENT_READ,
     DEPLOYMENT_STATUS_UPDATE,
-    DEPLOYMENT_LATEST_READ
+    DEPLOYMENT_LATEST_READ,
+    DEPLOYMENT_ACTIVE_READ
 } from "./DeploymentQueries";
 import { Pool } from 'pg';
 
@@ -32,19 +33,19 @@ export class PostgresDeploymentProvider implements IDeploymentProvider
     /**
      * Create a new deployment.
      */
-    public async create(deployment: Deployment): Promise<string>
+    public async create(deployment: Deployment): Promise<Deployment>
     {
         const { deploymentId, workspaceId, version, status, createdBy, createdAt } = deployment;
         await this._pgPool.query(DEPLOYMENT_CREATE, 
             [deploymentId, workspaceId, version, status, createdBy, createdAt]);
-        return deploymentId;
+        return deployment;
     }
 
     /**
      * List all the deployments in a workspace.
      * @param workspaceId Workspace id.
      */
-    public async list(workspaceId: string): Promise<Deployment[]>
+    public async listAll(workspaceId: string): Promise<Deployment[]>
     {
         return (await this._pgPool.query(DEPLOYMENTS_LIST, [workspaceId]))?.rows?.map(item => ({
             workspaceId  : item?.workspace_id,
@@ -92,7 +93,7 @@ export class PostgresDeploymentProvider implements IDeploymentProvider
     /**
      * Update the status of a deployment given a workspace id and deployment id.
      * @param workspaceId Workspace id.
-     * @param id Deployment id.
+     * @param deploymentId Deployment id.
      * @param status Status of the deployment.
      */
     public async updateStatus(workspaceId: string, deploymentId: string, status: DeploymentStatus): Promise<void>
@@ -107,6 +108,23 @@ export class PostgresDeploymentProvider implements IDeploymentProvider
     public async getLatest(workspaceId: string): Promise<Deployment>
     {
         const rows = (await this._pgPool.query(DEPLOYMENT_LATEST_READ, [workspaceId]))?.rows.map(item => ({
+            workspaceId  : item?.workspace_id,
+            deploymentId : item?.id,
+            version      : parseInt(item?.version),
+            status       : item?.status as DeploymentStatus,
+            createdBy    : item?.created_by,
+            createdAt    : Number(item?.created_at)
+        }));
+        return rows && rows.length > 0 ? rows[0] : null;
+    }
+
+    /**
+     * Get the latest deployment id.
+     * @param workspaceId workspace id.
+     */
+    public async getActive(workspaceId: string): Promise<Deployment>
+    {
+        const rows = (await this._pgPool.query(DEPLOYMENT_ACTIVE_READ, [workspaceId]))?.rows.map(item => ({
             workspaceId  : item?.workspace_id,
             deploymentId : item?.id,
             version      : parseInt(item?.version),
