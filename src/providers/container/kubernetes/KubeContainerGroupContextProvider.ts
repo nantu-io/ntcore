@@ -21,7 +21,7 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
     {
         switch (requestContext.type) {
             case ContainerGroupType.SKLEARN: return this.getSklearnAPIContext(requestContext);
-            case ContainerGroupType.TENSORFLOW: return this.getTensorflowAPIContext(requestContext);
+            case ContainerGroupType.TENSORFLOW: return this.getTensorflowServingContext(requestContext);
             case ContainerGroupType.PYTORCH: return this.getTorchAPIContext(requestContext);
             default: throw new Error('Invalid container group type.');
         }
@@ -47,21 +47,23 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         }
     }
 
-    private getTensorflowAPIContext(requestContext: ContainerGroupRequestContext): KubernetesContainerGroup 
+    private getTensorflowServingContext(requestContext: ContainerGroupRequestContext): KubernetesContainerGroup 
     {
         const namespace = appConfig.container.namespace;
         const workspaceId = requestContext.workspaceId;
         const name = `ntcore-${workspaceId.toLocaleLowerCase()}`;
-        const image = appConfig.container.images['tensorflow'];
-        const container = this.getKubernetesContainer(workspaceId, image, name, 18080, `/v1/models/${workspaceId}`, 120);
+        const modelServingImage = appConfig.container.images['tensorflow'];
+        const bootstrapImage = appConfig.container.images['bootstrap'];
+        const modelServingContainer = this.getModelServingContainer(workspaceId, modelServingImage, name, 8051, `/v1/models/${workspaceId}`, 120);
+        const bootstrapContainer = this.getBootstrapContainer(workspaceId, bootstrapImage, name, 5);
         const replacePathMiddleware = this._ingressRouteProvider.getReplacePathMiddleware(namespace, name, `/v1/models/${workspaceId}:predict`);
-        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 18080, `/s/${workspaceId}/predict`, [ name ]);
+        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 8051, `/s/${workspaceId}/predict`, [ name ]);
         return {
             name, 
             type: requestContext.type,
             namespace: namespace,
-            service: this.getKubernetesService(namespace, name, 18080),
-            deployment: this.getKubernetesDeployment(namespace, name, [ container ]),
+            service: this.getKubernetesService(namespace, name, 8051),
+            deployment: this.getKubernetesDeployment(namespace, name, [ bootstrapContainer, modelServingContainer ]),
             ingress: this._ingressRouteProvider.getKubernetesIngressRoute(namespace, name, ['web'], [ traefikIngressRoute ]),
             middlewares: [ replacePathMiddleware ]
         }
@@ -148,6 +150,45 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
                 requests: {
                     /* memory: `${memory}Gi`, cpu: `${cpus}` */
                 }
+            }
+        }
+    }
+
+    private getModelServingContainer(workspaceId: string, image: string, name: string, port: number, healthCheckPath: string, initialDelaySeconds: number): KubernetesContainer 
+    {
+        return {
+            name: name, image: image,
+            ports: [ { name: "web", containerPort: port } ],
+            env: [ { name: "MODEL_NAME", value: workspaceId } ],
+            volumeMounts: [{ mountPath: "/models", name: name }],
+            readinessProbe: {
+                httpGet: { path: healthCheckPath, port: port },
+                initialDelaySeconds: initialDelaySeconds,
+                periodSeconds: 10,
+            },
+            resources: {
+                requests: {
+                    /* memory: `${memory}Gi`, cpu: `${cpus}` */
+                }
+            }
+        }
+    }
+
+    private getBootstrapContainer(workspaceId: string, image: string, name: string, initialDelaySeconds: number): KubernetesContainer 
+    {
+        return {
+            name: name + "-bootstrap",
+            image: image,
+            args: [ "/bin/sh", "-c", "touch /tmp/healthy; sleep infinity" ],
+            env: [
+                { name: "DSP_API_ENDPOINT", value: "ntcore:8180" },
+                { name: "DSP_WORKSPACE_ID", value: workspaceId }
+            ],
+            volumeMounts: [{ mountPath: "/models", name: name }],
+            readinessProbe: {
+                exec: { command: [ "cat", "/tmp/healthy" ] },
+                initialDelaySeconds: initialDelaySeconds,
+                periodSeconds: 10,
             }
         }
     }
