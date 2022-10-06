@@ -62,7 +62,7 @@ export class DeploymentController
             await this._containerGroupProvider.provision(context);
             await this._containerGroupProvider.start(context);
             const contextWithDeploymentId = { id: deploymentId, ...context };
-            const targetStates = [ContainerGroupState.RUNNING, ContainerGroupState.INACTIVE, ContainerGroupState.STOPPED]
+            const targetStates = [ ContainerGroupState.RUNNING ]
             const finalState = await this.waitForContainerGroupState(contextWithDeploymentId, targetStates);
             await deploymentProvider.updateStatus(workspaceId, deploymentId, ContainerGroupStateToDeploymentStatusMapping[finalState]);
             if (!requestContext.lastActiveId) return deployment;
