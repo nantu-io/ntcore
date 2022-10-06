@@ -6,8 +6,10 @@ container:
     type: docker
   images:
     sklearn: ntcore/fast-sklearn
-    tensorflow: ntcore/tensorflow-serving
+    tensorflow: tensorflow/serving
     pytorch: ntcore/fast-torch
+    bootstrap: ntcore/bootstrap
+    metricsProxy: ntcore/metrics-proxy
 
 database:
   provider:

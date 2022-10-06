@@ -19,7 +19,8 @@ export class KubernetesContainer extends IContainer
     name: string;
     image: string;
     env: KubernetesEnvironmentVariable[];
-    ports: {
+    args?: string[];
+    ports?: {
         name: string;
         containerPort: number;
     }[];
@@ -31,6 +32,9 @@ export class KubernetesContainer extends IContainer
         httpGet?: {
             path: string;
             port: number;
+        };
+        exec?: {
+            command: string[];
         };
         initialDelaySeconds?: number;
         periodSeconds?: number;
