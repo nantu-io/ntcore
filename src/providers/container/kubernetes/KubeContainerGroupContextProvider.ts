@@ -54,10 +54,10 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         const name = `ntcore-${workspaceId.toLocaleLowerCase()}`;
         const modelServingImage = appConfig.container.images['tensorflow'];
         const bootstrapImage = appConfig.container.images['bootstrap'];
-        const modelServingContainer = this.getModelServingContainer(workspaceId, modelServingImage, name, 8051, `/v1/models/${workspaceId}`, 120);
+        const modelServingContainer = this.getModelServingContainer(workspaceId, modelServingImage, name, 8501, `/v1/models/${workspaceId}`, 120);
         const bootstrapContainer = this.getBootstrapContainer(workspaceId, bootstrapImage, name, 5);
         const replacePathMiddleware = this._ingressRouteProvider.getReplacePathMiddleware(namespace, name, `/v1/models/${workspaceId}:predict`);
-        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 8051, `/s/${workspaceId}/predict`, [ name ]);
+        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 8501, `/s/${workspaceId}/predict`, [ name ]);
         return {
             name, 
             type: requestContext.type,
