@@ -37,7 +37,7 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         const stripPrefixesMiddleware = this._ingressRouteProvider.getStripPrefixMiddleware(namespace, name, [ `/s/${workspaceId}` ]);
         const traefikIngressRoute = this._ingressRouteProvider.getPathPrefixMatchedRoute(namespace, name, 8000, `/s/${workspaceId}`, [ name ]);
         return {
-            name, 
+            name,
             type: requestContext.type,
             namespace: namespace,
             service: this.getKubernetesService(namespace, name, 8000),
@@ -53,17 +53,19 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         const workspaceId = requestContext.workspaceId;
         const name = `ntcore-${workspaceId.toLocaleLowerCase()}`;
         const modelServingImage = appConfig.container.images['tensorflow'];
+        const metricsProxyImage = appConfig.container.images['metricsProxy'];
         const bootstrapImage = appConfig.container.images['bootstrap'];
-        const modelServingContainer = this.getModelServingContainer(workspaceId, modelServingImage, name, 8501, `/v1/models/${workspaceId}`, 120);
+        const modelServingContainer = this.getModelServingContainer(workspaceId, modelServingImage, name, 8501, `/v1/models/${workspaceId}`, 60);
+        const metricsProxyContainer = this.getMetricsProxyContainer(workspaceId, metricsProxyImage, name, 8501, `/v1/models/${workspaceId}`, 10);
         const bootstrapContainer = this.getBootstrapContainer(workspaceId, bootstrapImage, name, 5);
         const replacePathMiddleware = this._ingressRouteProvider.getReplacePathMiddleware(namespace, name, `/v1/models/${workspaceId}:predict`);
-        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 8501, `/s/${workspaceId}/predict`, [ name ]);
+        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 8080, `/s/${workspaceId}/predict`, [ name ]);
         return {
             name, 
             type: requestContext.type,
             namespace: namespace,
-            service: this.getKubernetesService(namespace, name, 8051),
-            deployment: this.getKubernetesDeployment(namespace, name, [ bootstrapContainer, modelServingContainer ]),
+            service: this.getKubernetesService(namespace, name, 8080),
+            deployment: this.getKubernetesDeployment(namespace, name, [ bootstrapContainer, metricsProxyContainer, modelServingContainer ]),
             ingress: this._ingressRouteProvider.getKubernetesIngressRoute(namespace, name, ['web'], [ traefikIngressRoute ]),
             middlewares: [ replacePathMiddleware ]
         }
@@ -187,6 +189,25 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
             volumeMounts: [{ mountPath: "/models", name: name }],
             readinessProbe: {
                 exec: { command: [ "cat", "/tmp/healthy" ] },
+                initialDelaySeconds: initialDelaySeconds,
+                periodSeconds: 10,
+            }
+        }
+    }
+
+    private getMetricsProxyContainer(workspaceId: string, image: string, name: string, backendPort: number, healthCheckPath: string, initialDelaySeconds: number): KubernetesContainer 
+    {
+        return {
+            name: name + "-proxy",
+            image: image,
+            ports: [ { name: "web", containerPort: 8080 } ],
+            env: [
+                { name: "DSP_MONITORING_ENDPOINT", value: "ntcore-monitoring:8180"},
+                { name: "DSP_WORKSPACE_ID", value: workspaceId },
+                { name: "DSP_BACKEND_PORT", value: `${backendPort}` }
+            ],
+            readinessProbe: {
+                httpGet: { path: healthCheckPath, port: 8080 },
                 initialDelaySeconds: initialDelaySeconds,
                 periodSeconds: 10,
             }
