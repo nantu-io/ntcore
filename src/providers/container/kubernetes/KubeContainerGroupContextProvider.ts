@@ -59,12 +59,12 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         const metricsProxyContainer = this.getMetricsProxyContainer(workspaceId, metricsProxyImage, name, 8501, `/v1/models/${workspaceId}`, 10);
         const bootstrapContainer = this.getBootstrapContainer(workspaceId, bootstrapImage, name, 5);
         const replacePathMiddleware = this._ingressRouteProvider.getReplacePathMiddleware(namespace, name, `/v1/models/${workspaceId}:predict`);
-        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 8080, `/s/${workspaceId}/predict`, [ name ]);
+        const traefikIngressRoute = this._ingressRouteProvider.getPathMatchedRoute(namespace, name, 18080, `/s/${workspaceId}/predict`, [ name ]);
         return {
             name, 
             type: requestContext.type,
             namespace: namespace,
-            service: this.getKubernetesService(namespace, name, 8080),
+            service: this.getKubernetesService(namespace, name, 18080),
             deployment: this.getKubernetesDeployment(namespace, name, [ bootstrapContainer, metricsProxyContainer, modelServingContainer ]),
             ingress: this._ingressRouteProvider.getKubernetesIngressRoute(namespace, name, ['web'], [ traefikIngressRoute ]),
             middlewares: [ replacePathMiddleware ]
@@ -200,14 +200,15 @@ export class KubernetesContainerGroupContextProvider implements IContainerGroupC
         return {
             name: name + "-proxy",
             image: image,
-            ports: [ { name: "web", containerPort: 8080 } ],
+            ports: [ { name: "web", containerPort: 18080 } ],
+            args: [ "mitmdump", "-s", "/usr/local/bin/metrics_collector.py", "--listen-port", "18080" ],
             env: [
                 { name: "DSP_MONITORING_ENDPOINT", value: "ntcore-monitoring:8180"},
                 { name: "DSP_WORKSPACE_ID", value: workspaceId },
                 { name: "DSP_BACKEND_PORT", value: `${backendPort}` }
             ],
             readinessProbe: {
-                httpGet: { path: healthCheckPath, port: 8080 },
+                httpGet: { path: healthCheckPath, port: 18080 },
                 initialDelaySeconds: initialDelaySeconds,
                 periodSeconds: 10,
             }
