@@ -46,7 +46,6 @@ class Applications extends Component {
             { name: 'id', label: 'Deployment ID' },
             { name: 'workspaceId', label: 'Workspace ID' },
             { name: 'version', label: 'Version' },
-            { name: 'createdBy', label: 'Created User' },
             { name: 'createdAt', label: 'Created Date' },
         ];
     }
@@ -55,13 +54,11 @@ class Applications extends Component {
         const id = row["deploymentId"];
         const workspaceId = row["workspaceId"];
         const version = row["version"];
-        const createdBy = row["createdBy"];
         const createdAt = (new Date(parseInt(row["createdAt"]) * 1000)).toLocaleString();
         return [
             id,
             workspaceId,
             version,
-            createdBy,
             createdAt,
         ]
     }
@@ -70,17 +67,17 @@ class Applications extends Component {
         const { classes } = this.props;
         const { rows, loading } = this.state;
         const columns = this._getColumns();
-        const options = { 
-            filterType: 'checkbox', 
-            download: false, 
-            print: false, 
-            selectableRows: false, 
+        const options = {
+            filterType: 'checkbox',
+            download: false,
+            print: false,
+            selectableRows: false,
             responsive: 'scrollMaxHeight',
             setTableProps: () => ({ size: 'small' }),
         };
         return (
             <BaseLayout index={1}>
-                <Loader loading={loading}/> 
+                <Loader loading={loading}/>
                 <div className={clsx(classes.root, classes.table)}>
                     <MUIDataTable
                         title={"Deployments"}

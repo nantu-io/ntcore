@@ -58,7 +58,6 @@ class Deployments extends Component {
         return [
             { name: 'id', label: 'Deployment ID' },
             { name: 'version', label: 'Version' },
-            { name: 'createdBy', label: 'Created User' },
             { name: 'createdAt', label: 'Created Date' },
             { name: 'status', label: 'Status' },
         ];
@@ -68,12 +67,10 @@ class Deployments extends Component {
         const id = row["deploymentId"];
         const version = row["version"];
         const status = row["status"];
-        const createdBy = row["createdBy"];
         const createdAt = (new Date(parseInt(row["createdAt"]) * 1000)).toLocaleString();
         return [
             id,
             version,
-            createdBy,
             createdAt,
             status,
         ]
@@ -90,7 +87,7 @@ class Deployments extends Component {
     _createActiveForm() {
         const { workspaceId } = this.props;
         const { mode, selectedDeployment } = this.state;
-        return mode === "Info" ? 
+        return mode === "Info" ?
             <InfoForm workspaceId={workspaceId}/> :
             <LogsForm workspaceId={workspaceId} deploymentId={selectedDeployment}/>
     }
@@ -99,11 +96,11 @@ class Deployments extends Component {
         const { classes } = this.props;
         const { rows, loading } = this.state;
         const columns = this._getColumns();
-        const options = { 
-            filterType: 'checkbox', 
-            download: false, 
-            print: false, 
-            selectableRows: false, 
+        const options = {
+            filterType: 'checkbox',
+            download: false,
+            print: false,
+            selectableRows: false,
             responsive: 'scrollMaxHeight',
             setTableProps: () => ({ size: 'small' }),
             customToolbar: () => (

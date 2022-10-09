@@ -29,8 +29,8 @@ class Workspaces extends Component {
           isModalOpen: false,
           mode: null,
           loading: false,
-          snackBarOpen: false, 
-          snackBarSeverity: null, 
+          snackBarOpen: false,
+          snackBarSeverity: null,
           snackBarContent: null,
           rowsSelected: [],
           // rows: [['test', 'C123', 'test', 'ntcore', '2021-01-01 10:30:00']],
@@ -43,7 +43,7 @@ class Workspaces extends Component {
         this._deleteWorkspacesCallback = this._deleteWorkspacesCallback.bind(this);
         this._closeSnackBar = this._closeSnackBar.bind(this);
     }
-    
+
     componentDidMount() {
         this._fetchWorkspacesData();
     }
@@ -60,16 +60,15 @@ class Workspaces extends Component {
         const name = rowInfo["name"];
         const id = rowInfo["id"];
         const type = rowInfo["type"];
-        const createdBy = rowInfo["createdBy"];
         const createdAt = (new Date(parseInt(rowInfo["createdAt"]))).toLocaleString();
-        return [ name, id, type, createdBy, createdAt ]
+        return [ name, id, type, createdAt ]
     }
 
     _openSnackBar(severity, message) {
         const snackBarContent = message ? message.toString() : '';
         this.setState({ snackBarOpen: true, snackBarSeverity: severity, snackBarContent: snackBarContent });
     };
-    
+
     _closeSnackBar() {
         this.setState({ snackBarOpen: false });
     };
@@ -86,14 +85,13 @@ class Workspaces extends Component {
 
     _getColumns() {
         return [
-            { 
-              name: 'name', 
-              label: 'Name', 
-              options: { customBodyRenderLite: this._createHyperLink, filter: false, sort: false, viewColumns: false } 
+            {
+              name: 'name',
+              label: 'Name',
+              options: { customBodyRenderLite: this._createHyperLink, filter: false, sort: false, viewColumns: false }
             },
             { name: 'id', label: 'ID' },
             { name: 'type', label: 'Type' },
-            { name: 'createdBy', label: 'Created User' },
             { name: 'createdAt', label: 'Created Date' }
         ];
     }
@@ -101,7 +99,7 @@ class Workspaces extends Component {
     _openModal(mode) {
         this.setState({mode: mode, isModalOpen: true});
     }
-    
+
     _closeModal() {
         this.setState({isModalOpen: false});
     }
@@ -133,9 +131,9 @@ class Workspaces extends Component {
         const { classes } = this.props;
         const { rows, loading, rowsSelected } = this.state;
         const columns = this._getColumns();
-        const options = { 
-            filterType: 'checkbox', 
-            download: false, 
+        const options = {
+            filterType: 'checkbox',
+            download: false,
             print: false,
             rowsSelected: rowsSelected,
             responsive: 'scrollMaxHeight',
