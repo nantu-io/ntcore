@@ -46,7 +46,13 @@ class Applications extends Component {
             { name: 'id', label: 'Deployment ID' },
             { name: 'workspaceId', label: 'Workspace ID' },
             { name: 'version', label: 'Version' },
-            { name: 'createdAt', label: 'Created Date' },
+            {
+              name: 'createdAt',
+              label: 'Created Date',
+              options: {
+                customBodyRender: value => value.toLocaleString()
+              }
+            },
         ];
     }
 
@@ -54,7 +60,7 @@ class Applications extends Component {
         const id = row["deploymentId"];
         const workspaceId = row["workspaceId"];
         const version = row["version"];
-        const createdAt = (new Date(parseInt(row["createdAt"]) * 1000)).toLocaleString();
+        const createdAt = new Date(parseInt(row["createdAt"]));
         return [
             id,
             workspaceId,

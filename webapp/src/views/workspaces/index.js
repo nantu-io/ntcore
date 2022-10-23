@@ -60,7 +60,7 @@ class Workspaces extends Component {
         const name = rowInfo["name"];
         const id = rowInfo["id"];
         const type = rowInfo["type"];
-        const createdAt = (new Date(parseInt(rowInfo["createdAt"]))).toLocaleString();
+        const createdAt = new Date(parseInt(rowInfo["createdAt"]));
         return [ name, id, type, createdAt ]
     }
 
@@ -83,6 +83,15 @@ class Workspaces extends Component {
           </Snackbar>);
     }
 
+    _dateString2Integer(dateObj){
+      const dateString = JSON.stringify(dateObj);
+      const [dateComponents, timeComponents] = dateString.split(', ');
+      const [month, day, year] = dateComponents.substr(1).split('/');
+      const [hours, minutes, seconds] = timeComponents.split(':');
+      const date = new Date(+parseInt(year), +parseInt(month) - 1, +parseInt(day), +parseInt(hours), +parseInt(minutes), +parseInt(seconds));
+      return date
+    }
+
     _getColumns() {
         return [
             {
@@ -92,7 +101,13 @@ class Workspaces extends Component {
             },
             { name: 'id', label: 'ID' },
             { name: 'type', label: 'Type' },
-            { name: 'createdAt', label: 'Created Date' }
+            {
+              name: 'createdAt',
+              label: 'Created Date' ,
+              options: {
+                customBodyRender: value => value.toLocaleString()
+              }
+            }
         ];
     }
 

@@ -58,7 +58,13 @@ class Deployments extends Component {
         return [
             { name: 'id', label: 'Deployment ID' },
             { name: 'version', label: 'Version' },
-            { name: 'createdAt', label: 'Created Date' },
+            {
+              name: 'createdAt',
+              label: 'Created Date',
+              options: {
+                customBodyRender: value => value.toLocaleString()
+              }
+            },
             { name: 'status', label: 'Status' },
         ];
     }
@@ -67,7 +73,7 @@ class Deployments extends Component {
         const id = row["deploymentId"];
         const version = row["version"];
         const status = row["status"];
-        const createdAt = (new Date(parseInt(row["createdAt"]) * 1000)).toLocaleString();
+        const createdAt = new Date(parseInt(row["createdAt"]));
         return [
             id,
             version,
