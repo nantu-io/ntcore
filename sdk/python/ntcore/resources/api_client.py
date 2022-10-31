@@ -235,6 +235,8 @@ class ApiClient(ABC):
             Response to be checked. **REQUIRED**
         '''
 
+        if 'Content-Type' not in response.headers:
+            return False
         contentType = response.headers['Content-Type']
         expectedContentType = 'application/jose+json' if self.encrypted else 'application/json'
         return response.status_code != 204 and contentType is not None and expectedContentType in contentType
