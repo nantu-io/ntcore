@@ -1,5 +1,5 @@
 import { DeploymentContext } from "../../deployment/DeploymentContextProvider";
-import { KubernetesResourceMetadata } from "./KubeContainerGroup";
+import { KubernetesResourceMetadata } from "./KubeContainerGroupContextProvider";
 import { interpolation } from 'interpolate-json';
 import yaml = require('js-yaml');
 import fs = require('fs');

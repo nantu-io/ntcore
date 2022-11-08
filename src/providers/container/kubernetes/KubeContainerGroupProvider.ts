@@ -1,5 +1,5 @@
 import { IContainerGroupProvider, ContainerGroupState } from "../ContainerGroupProvider";
-import { KubernetesContainerGroup } from "./KubeContainerGroup";
+import { KubernetesContainerGroup } from "./KubeContainerGroupContextProvider";
 import { KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node';
 import { IncomingMessage } from "http";
 

@@ -1,6 +1,6 @@
 import { appConfig } from '../../../libs/config/AppConfigProvider';
 import { DeploymentContext } from '../../deployment/DeploymentContextProvider';
-import { KubernetesContainer, KubernetesResourceMetadata } from './KubeContainerGroup';
+import { KubernetesContainer, KubernetesResourceMetadata } from './KubeContainerGroupContextProvider';
 import { interpolation } from 'interpolate-json';
 import yaml = require('js-yaml');
 import fs = require('fs');
