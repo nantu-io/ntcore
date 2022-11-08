@@ -1,0 +1,21 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: ${namespace}
+  name: ${name}
+  labels: 
+    app: ${name}
+spec:
+  replicas: ${*replicas}
+  selector: 
+    matchLabels: 
+      app: ${name}
+  template:
+    metadata: 
+      labels: 
+        app: ${name}
+    spec:
+        containers:
+        volumes:
+          - name: ${name}
+            emptyDir:

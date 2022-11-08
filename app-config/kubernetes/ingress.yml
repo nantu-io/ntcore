@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: ${namespace}
+  name: ${name}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: ${targetPath}
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    - http:
+        paths:
+          - path: ${sourcePath}
+            pathType: Exact
+            backend:
+              service:
+                name: ${name}
+                port:
+                  number: ${*listenPort}

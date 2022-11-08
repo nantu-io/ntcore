@@ -5,4 +5,4 @@ tensorflow:
   healthCheckPath: /v1/models/${workspaceId}
   environment:
     - name:  MODEL_NAME
-      value: ${workspace_id}
+      value: ${workspaceId}
