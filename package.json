@@ -10,7 +10,7 @@
     "dependencies": {
         "@aws-sdk/client-batch": "^3.67.0",
         "@aws-sdk/client-cloudwatch-logs": "^3.67.0",
-        "@aws-sdk/client-dynamodb": "^3.100.0",
+        "@aws-sdk/client-dynamodb": "^3.200.0",
         "@aws-sdk/client-ecs": "^3.67.0",
         "@aws-sdk/client-s3": "^3.145.0",
         "@kubernetes/client-node": "^0.15.1",
@@ -22,7 +22,8 @@
         "body-parser": "^1.18.3",
         "dockerode": "^3.3.1",
         "express": "^4.16.4",
-        "file-system": "^2.2.2",
+        "file-system": "^1.2.2",
+        "interpolate-json": "^2.2.2",
         "js-yaml": "^4.1.0",
         "lodash": "^4.17.21",
         "moment": "^2.29.4",
@@ -52,7 +53,7 @@
         "@types/multer-s3": "^2.7.12",
         "@types/pg": "^8.6.1",
         "@types/uuid": "^8.3.0",
-        "babel-loader": "8.1.0",
+        "babel-loader": "^8.3.0",
         "webpack": "^5.73.0",
         "webpack-dev-server": "^4.9.2"
     },

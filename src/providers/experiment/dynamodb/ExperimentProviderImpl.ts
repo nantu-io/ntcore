@@ -1,5 +1,5 @@
 import { Experiment, ExperimentState, IExperimentProvider } from "../ExperimentProvider";
-import { DynamoDBClient, PutItemCommand, GetItemCommand, DeleteItemCommand, UpdateItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, GetItemCommand, DeleteItemCommand, UpdateItemCommand, QueryCommand, BatchWriteItemCommand } from "@aws-sdk/client-dynamodb";
 import { Framework } from "../../../commons/Framework";
 import { Runtime } from "../../../commons/Runtime";
 
@@ -28,7 +28,13 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
      */
     public async create(experiment: Experiment) 
     {
-        const item = {
+        await this._databaseClient.send(new PutItemCommand({ TableName: TABLE_NAME, Item: this.createExperimentRecord(experiment) }));
+        return experiment.version;
+    }
+
+    private createExperimentRecord(experiment: Experiment)
+    {
+        return {
             workspace_id: { S: experiment.workspaceId },
             version     : { N: experiment.version.toString() },
             runtime     : { S: experiment.runtime },
@@ -40,8 +46,6 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
             created_by  : { S: experiment.createdBy },
             created_at  : { N: experiment.createdAt?.toString() }
         }
-        await this._databaseClient.send(new PutItemCommand({ TableName: TABLE_NAME, Item: item }));
-        return experiment.version;
     }
 
     /**
@@ -63,8 +67,8 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
             runtime     : item?.runtime.S as Runtime,
             framework   : item?.framework.S as Framework,
             description : item?.description.S,
-            parameters  : item?.parameters.S,
-            metrics     : item?.metrics.S,
+            parameters  : JSON.parse(item?.parameters.S),
+            metrics     : JSON.parse(item?.metrics.S),
             state       : item?.rgtr_state.S as ExperimentState,
             createdBy   : item?.created_by.S,
             createdAt   : Number(item?.created_at.N),
@@ -89,8 +93,8 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
             runtime     : item?.runtime.S as Runtime,
             framework   : item?.framework.S as Framework,
             description : item?.description.S,
-            parameters  : item?.parameters.S,
-            metrics     : item?.metrics.S,
+            parameters  : JSON.parse(item?.parameters.S),
+            metrics     : JSON.parse(item?.metrics.S),
             state       : item?.rgtr_state.S as ExperimentState,
             createdBy   : item?.created_by.S,
             createdAt   : Number(item?.created_at.N),
@@ -118,13 +122,12 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
      */
     public async register(workspaceId: string, version: number): Promise<void>
     {
-        const command = new UpdateItemCommand({
-            TableName: TABLE_NAME,
-            Key: { workspace_id: { S: workspaceId }, version: { N: version.toString() } },
-            UpdateExpression: "set rgtr_state=:state",
-            ExpressionAttributeValues: { ":state": { S: "REGISTERED" }}
-        });
-        await this._databaseClient.send(command);
+        const registry: Experiment = await (this.getRegistry(workspaceId));
+        if (registry?.version === version) return;
+        const experimentToRegister: Experiment = await this.read(workspaceId, version);
+        const putRequests = [ { PutRequest: { Item: { ...this.createExperimentRecord(experimentToRegister), rgtr_state: { S: "REGISTERED" } } } } ];
+        if (registry) putRequests.push({ PutRequest: { Item: { ...this.createExperimentRecord(registry), rgtr_state: { S: "UNREGISTERED" } } } });
+        await this._databaseClient.send(new BatchWriteItemCommand({ RequestItems: { [TABLE_NAME]: putRequests } }));
     }
 
     /**
@@ -162,8 +165,8 @@ export default class DynamoDBExperimentProvider implements IExperimentProvider
             runtime     : item?.runtime.S as Runtime,
             framework   : item?.framework.S as Framework,
             description : item?.description.S,
-            parameters  : item?.parameters.S,
-            metrics     : item?.metrics.S,
+            parameters  : JSON.parse(item?.parameters.S),
+            metrics     : JSON.parse(item?.metrics.S),
             state       : item?.rgtr_state.S as ExperimentState,
             createdBy   : item?.created_by.S,
             createdAt   : Number(item?.created_at.N),

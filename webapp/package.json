@@ -3,15 +3,9 @@
   "version": "0.2.0",
   "private": true,
   "dependencies": {
-    "@material-ui/core": "^4.11.0",
-    "@material-ui/data-grid": "^4.0.0-alpha.20",
-    "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.57",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.5.0",
-    "@testing-library/user-event": "^7.2.1",
+    "@material-ui/core": "^4.12.4",
+    "@material-ui/lab": "^4.0.0-alpha.61",
     "async-wait-until": "^2.0.5",
-    "aws-sdk": "^2.754.0",
     "axios": "^0.27.2",
     "dateformat": "^4.5.1",
     "history": "^5.0.0",
@@ -20,14 +14,15 @@
     "react-dom": "^16.13.1",
     "react-dropzone": "^11.2.0",
     "react-router-dom": "^5.2.0",
-    "react-s3": "^1.3.1",
-    "react-s3-uploader": "^4.9.3",
     "react-scripts": "^5.0.1",
     "react-spinners": "^0.9.0",
     "react-toastify": "^6.0.8",
     "reactide-config": "^1.0.2"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
     "http-proxy-middleware": "^1.0.5"
   },
   "scripts": {

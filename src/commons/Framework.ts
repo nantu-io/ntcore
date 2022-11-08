@@ -1,9 +1,9 @@
 import { ContainerGroupType } from "../providers/container/ContainerGroupProvider"
 
 /**
- * Runtimes.
+ * Frameworks.
  */
- export type Framework = "sklearn" | "tensorflow" | "pytorch"
+export type Framework = "sklearn" | "tensorflow" | "pytorch"
 /**
  * Framework to container group type mapping.
  */

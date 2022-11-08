@@ -1,8 +1,8 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: ntcore
-
 spec:
   ports:
     - protocol: TCP
@@ -16,11 +16,9 @@ spec:
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  namespace: default
   name: ntcore
   labels:
     app: ntcore
-
 spec:
   replicas: 1
   selector:
@@ -38,6 +36,7 @@ spec:
       containers:
         - name: ntcore
           image: ntcore/webserver:latest
+          imagePullPolicy: Always
           ports:
             - name: web
               containerPort: 8180
@@ -46,17 +45,32 @@ spec:
               mountPath: /usr/src/app/app-config
 
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: ntcore-ingress-route
-  namespace: default
+  annotations:  
+    kubernetes.io/ingress.class: nginx
+  name: ntcore
 spec:
-  entryPoints:
-    - web
-  routes:
-  - match: PathPrefix(`/`)
-    kind: Rule
-    services:
-    - name: ntcore
-      port: 8180
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ntcore
+            port:
+              number: 8180
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-controller-ingress-nginx-controller
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      name: web
+      port: 80

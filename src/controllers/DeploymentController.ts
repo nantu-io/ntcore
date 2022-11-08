@@ -4,13 +4,13 @@ import { waitUntil } from 'async-wait-until';
 import { ContainerProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
 import { ContainerGroupContextProviderFactory } from '../providers/container/ContainerGroupProviderFactory';
 import { ContainerGroupStateToDeploymentStatusMapping } from '../providers/deployment/DeploymentProvider';
-import { IContainerGroup, IContainerGroupProvider, ContainerGroupState, IContainerGroupContextProvider, ContainerGroupRequestContext } from '../providers/container/ContainerGroupProvider';
+import { IContainerGroup, IContainerGroupProvider, ContainerGroupState, IContainerGroupContextProvider } from '../providers/container/ContainerGroupProvider';
+import { DeploymentContext, DeploymentContextProvider } from '../providers/deployment/DeploymentContextProvider';
 import { deploymentProvider } from "../libs/config/AppModule";
 import { Deployment } from "../providers/deployment/DeploymentProvider";
 import { ErrorHandler } from '../libs/utils/ErrorHandler';
 import { RequestValidator } from '../libs/utils/RequestValidator';
 import { appConfig } from '../libs/config/AppConfigProvider';
-import { DeploymentContextProvider } from '../providers/deployment/DeploymentContextProvider';
 
 const AUTH_USER_HEADER_NAME = "X-NTCore-Auth-User";
 
@@ -42,7 +42,7 @@ export class DeploymentController
         req: Request<{}, {}, {workspaceId: string}, {}>,
         res: Response<{version: number}>)
     {
-        const requestContext = await this._deploymentContextProvider.validateAndReturnDeploymentContext(req, res);
+        const requestContext = await this._deploymentContextProvider.validateAndGetDeploymentContext(req, res);
         if (!requestContext) return;
         const createdBy = req.get(AUTH_USER_HEADER_NAME) ?? appConfig.account.username;
         const version = Math.floor(requestContext.version)
@@ -51,7 +51,7 @@ export class DeploymentController
         await this.startAndWait(requestContext, createdBy);
     }
 
-    private async startAndWait(requestContext: ContainerGroupRequestContext, createdBy: string): Promise<Deployment>
+    private async startAndWait(requestContext: DeploymentContext, createdBy: string): Promise<Deployment>
     {
         const workspaceId = requestContext.workspaceId;
         const context = this._containerGroupContextProvider.getContext(requestContext);
@@ -110,7 +110,7 @@ export class DeploymentController
         req: Request<{workspaceId: string}, {}, {}, {}>,
         res: Response<string>)
     {
-        const requestContext = await this._deploymentContextProvider.validateAndReturnTerminationContext(req, res);
+        const requestContext = await this._deploymentContextProvider.validateAndGetTerminationContext(req, res);
         if (!requestContext) return;
         const context = this._containerGroupContextProvider.getContext(requestContext);
         res.status(201).send(context.id);

@@ -1,14 +1,16 @@
 import { IContainerGroup, IContainer } from "../ContainerGroupProvider";
+import { KubernetesIngressV1 } from "./KubeIngressProvider";
 
 /**
  * Kubernetes container service.
  */
 export class KubernetesContainerGroup extends IContainerGroup 
 {
-    namespace?: string;
+    namespace: string;
     service?: KubernetesServiceV1;
     deployment?: KubernetesDeploymentV1;
-    ingress?: KubernetesIngressRouteV1Alpha1;
+    ingressRoute?: KubernetesIngressRouteV1Alpha1;
+    ingress?: KubernetesIngressV1;
     middlewares?: KubernetesIngressMiddlewareV1Alpha1[];
 }
 /**
@@ -18,7 +20,7 @@ export class KubernetesContainer extends IContainer
 {
     name: string;
     image: string;
-    env: KubernetesEnvironmentVariable[];
+    env: {name: string, value: string}[];
     args?: string[];
     ports?: {
         name: string;
@@ -57,15 +59,8 @@ export class KubernetesResourceMetadata
 {
     namespace?: string;
     name?: string;
-    labels?: {}
-}
-/**
- * Kubernetes environment variable.
- */
-export class KubernetesEnvironmentVariable 
-{
-    name: string;
-    value: string;
+    labels?: {};
+    annotations?: { [key: string]: string }
 }
 /**
  * Kubernetes service configuration.
@@ -145,31 +140,6 @@ export class KubernetesIngressMiddlewareV1Alpha1
             path: string;
         }
     }
-}
-/**
- * Kubernetes ingress v1.
- */
-class KubernetesIngressV1 
-{
-    apiVersion: string;
-    kind: string;
-    metadata: KubernetesResourceMetadata;
-    spec?: {
-        rules: {
-            http: {
-                paths: {
-                    pathType: "Prefix";
-                    path: string;
-                    backend: {
-                        service: {
-                            name: string,
-                            port: { number: number }
-                        }
-                    }
-                }[]
-            }
-        }[];
-    };
 }
 /**
  * Kubernetes ingress v1beta1.
