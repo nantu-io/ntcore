@@ -7,7 +7,7 @@ container:
   images:
     sklearn: ntcore/fast-sklearn
     tensorflow: tensorflow/serving
-    pytorch: ntcore/fast-torch
+    pytorch: pytorch/torchserve
     bootstrap: ntcore/bootstrap
     metricsProxy: ntcore/metrics-proxy
 
@@ -26,37 +26,3 @@ storage:
 ## Default userId when user auth is disabled
 account: 
   username: ntcore
-
-#####################################
-## Example config for AWS deployment
-#####################################
-# container:
-#   provider:
-#     type: kubernetes
-#     config:
-#       namespace: default
-#   images:
-#     sklearn: ntcore/fast-sklearn
-#     tensorflow: ntcore/tensorflow-serving
-#     pytorch: ntcore/fast-torch
-
-# database:
-#   provider:
-#     type: dynamodb
-#     config:
-#       region:
-#       accessKeyId:
-#       secretAccessKey:
-
-# storage:
-#   provider:
-#     type: s3
-#     config:
-#       bucket: ntcore-model-storage
-#       root: binary
-#       region:
-#       accessKeyId:
-#       secretAccessKey:
-
-# account: 
-#   username: ntcore

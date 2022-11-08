@@ -9,21 +9,50 @@ data:
       provider:
         type: kubernetes
         config:
-          namespace: default
+          namespace: ntcore
       images:
         sklearn: ntcore/fast-sklearn
         tensorflow: tensorflow/serving
-        pytorch: ntcore/fast-torch
+        pytorch: pytorch/torchserve
         bootstrap: ntcore/bootstrap
+        metricsProxy: ntcore/metrics-proxy
     database:
       provider:
         type: dynamodb
         config:
-          region: 'cn-northwest-1'
+          region: us-east-1
     storage:
       provider:
-        type: volume
+        type: s3
         config:
-          root: data/binary
-    account:
+          bucket: ntcore-model-storage
+          root: binary
+          region: us-east-1
+    account: 
       username: ntcore
+  
+  serving.yml: |
+    tensorflow:
+      targetPort: 8501
+      sourcePath: /s/${workspaceId}/predict
+      targetPath: /v1/models/${workspaceId}:predict
+      healthCheckPath: /v1/models/${workspaceId}
+      environment:
+        - name:  MODEL_NAME
+          value: ${workspace_id}
+    pytorch:
+      targetPort: 8501
+      sourcePath: /s/${workspaceId}/predict
+      targetPath: /v1/models/${workspaceId}:predict
+      healthCheckPath: /v1/models/${workspaceId}
+      environment:
+        - name:  MODEL_NAME
+          value: ${workspace_id}
+    sklearn:
+      targetPort: 8501
+      sourcePath: /s/${workspaceId}/predict
+      targetPath: /v1/models/${workspaceId}:predict
+      healthCheckPath: /v1/models/${workspaceId}
+      environment:
+        - name:  MODEL_NAME
+          value: ${workspace_id}

@@ -1,19 +1,52 @@
 import { Request, Response } from 'express';
 import { experimentProvider, deploymentProvider } from "../../libs/config/AppModule";
-import { ContainerGroupRequestContext } from '../../providers/container/ContainerGroupProvider';
 import { RequestValidator } from '../../libs/utils/RequestValidator';
 import { FrameworkToContainerGroupTypeMapping } from '../../commons/Framework';
 import { Experiment } from "../../providers/experiment/ExperimentProvider";
+import { ContainerGroupType } from '../container/ContainerGroupProvider';
+import { Runtime } from '../../commons/Runtime';
+import { interpolation } from 'interpolate-json';
+import yaml = require('js-yaml');
+import fs = require('fs');
 
+/* Load container config from yaml */
+const servingConfig = yaml.load(fs.readFileSync('app-config/serving.yml', 'utf8'));
+
+/**
+ * Container group request context.
+ */
+export class DeploymentContext
+{
+    name: string;
+    type: ContainerGroupType;
+    workspaceId: string;
+    version: number;
+    runtime: Runtime;
+    lastActiveId?: string;
+    listenPort: number;
+    servingConfig: {
+        targetPort: number;
+        sourcePath: string;
+        targetPath: string;
+        environment: { name: string, value: string }[];
+        healthCheckPath: string;
+    }
+}
+
+/**
+ * Provides deployment context.
+ */
 export class DeploymentContextProvider
 {
+    private static readonly PENDING = "PENDING";
+
     /**
      * Validates and return the deployment initialization context.
      * @param req Express request
      * @param res Express response
      * @returns Deployment context
      */
-    public async validateAndReturnDeploymentContext(req: Request, res: Response): Promise<ContainerGroupRequestContext | undefined>
+    public async validateAndGetDeploymentContext(req: Request, res: Response): Promise<DeploymentContext | undefined>
     {
         const { workspaceId } = req.body;
         const [registry, lastDeployment, lastActiveDeployment] = await Promise.all([
@@ -24,11 +57,11 @@ export class DeploymentContextProvider
         if (!registry?.version) {
             res.status(400).send({error: 'Unable to find registered model version.'});
             return null;
-        } else if ("PENDING" === lastDeployment?.status) {
+        } else if (DeploymentContextProvider.PENDING === lastDeployment?.status) {
             res.status(400).send({error: 'Last deployment is still in progress.'});
             return null;
         }
-        return this.getRequestContext(req, workspaceId, registry, lastActiveDeployment?.deploymentId);
+        return this.getContext(workspaceId, registry, lastActiveDeployment?.deploymentId);
     }
 
     /**
@@ -37,31 +70,32 @@ export class DeploymentContextProvider
      * @param res Express response
      * @returns Deployment context
      */
-    public async validateAndReturnTerminationContext(req: Request, res: Response): Promise<ContainerGroupRequestContext | undefined>
+    public async validateAndGetTerminationContext(req: Request, res: Response): Promise<DeploymentContext | undefined>
     {
         const { workspaceId } = req.params;
         const [lastDeployment, lastActiveDeployment] = await Promise.all([
             RequestValidator.nullOnException(() => deploymentProvider.getLatest(workspaceId)),
             RequestValidator.nullOnException(() => deploymentProvider.getActive(workspaceId)),
         ]);
-        if ("PENDING" === lastDeployment?.status) {
+        if (DeploymentContextProvider.PENDING === lastDeployment?.status) {
             res.status(400).send({error: 'Last deployment is still in progress.'});
             return null;
         }
-        return this.getRequestContext(req, workspaceId, null, lastActiveDeployment?.deploymentId);
+        return this.getContext(workspaceId, null, lastActiveDeployment?.deploymentId);
     }
 
-    private getRequestContext(req: Request, workspaceId: string, registry: Experiment, lastActiveId: string): ContainerGroupRequestContext
-    {    
+    private getContext(workspaceId: string, registry: Experiment, lastActiveId: string): DeploymentContext
+    {   
+        const type = registry?.framework ? FrameworkToContainerGroupTypeMapping[registry.framework] : null;
         return {
-            type: registry?.framework ? FrameworkToContainerGroupTypeMapping[registry.framework] : null,
+            type: type,
             name: `ntcore-${workspaceId.toLowerCase()}`,
-            version:  registry?.version,
+            version: registry?.version,
             runtime: registry?.runtime,
             workspaceId: workspaceId,
-            command: req.body.command,
-            workflow: req.body.workflow,
-            lastActiveId: lastActiveId
+            lastActiveId: lastActiveId,
+            listenPort: 18080,
+            servingConfig: interpolation.expand(servingConfig, { workspaceId })[type.toLowerCase()]
         }
     }
 }

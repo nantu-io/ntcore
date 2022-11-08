@@ -25,8 +25,8 @@ export class Experiment
     createdBy: string;
     createdAt: number;
     description: string;
-    parameters: string;
-    metrics: string;
+    parameters: { [key: string]: string | number };
+    metrics: { [key: string]: string | number };
     model?: Buffer;
     state: ExperimentState
 }

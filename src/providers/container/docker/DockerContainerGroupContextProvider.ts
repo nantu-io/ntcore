@@ -1,6 +1,7 @@
-import { ContainerGroupType, ContainerGroupRequestContext, IContainerGroupContextProvider } from '../ContainerGroupProvider';
+import { ContainerGroupType, IContainerGroupContextProvider } from '../ContainerGroupProvider';
 import { DockerContainer, DockerContainerGroup } from './DockerContainerGroup';
 import { appConfig } from '../../../libs/config/AppConfigProvider';
+import { DeploymentContext } from '../../deployment/DeploymentContextProvider';
 
 export class DockerContainerGroupContextProvider implements IContainerGroupContextProvider 
 {
@@ -9,7 +10,7 @@ export class DockerContainerGroupContextProvider implements IContainerGroupConte
      * @param requestContext request context.
      * @returns context for docker container creation.
      */
-    public getContext(requestContext: ContainerGroupRequestContext): DockerContainerGroup 
+    public getContext(requestContext: DeploymentContext): DockerContainerGroup 
     {
         switch (requestContext.type) {
             case ContainerGroupType.SKLEARN: return this.getSklearnAPIContext(requestContext);
@@ -19,7 +20,7 @@ export class DockerContainerGroupContextProvider implements IContainerGroupConte
         }
     }
 
-    private getSklearnAPIContext(requestContext: ContainerGroupRequestContext): DockerContainerGroup
+    private getSklearnAPIContext(requestContext: DeploymentContext): DockerContainerGroup
     {
         const workspaceId = requestContext.workspaceId;
         const labels = {
@@ -34,7 +35,7 @@ export class DockerContainerGroupContextProvider implements IContainerGroupConte
         };
     }
 
-    private getTensorflowAPIContext(requestContext: ContainerGroupRequestContext): DockerContainerGroup 
+    private getTensorflowAPIContext(requestContext: DeploymentContext): DockerContainerGroup 
     {
         const workspaceId = requestContext.workspaceId;
         const labels = {
@@ -52,7 +53,7 @@ export class DockerContainerGroupContextProvider implements IContainerGroupConte
         };
     }
 
-    private getTorchAPIContext(requestContext: ContainerGroupRequestContext): DockerContainerGroup
+    private getTorchAPIContext(requestContext: DeploymentContext): DockerContainerGroup
     {
         const workspaceId = requestContext.workspaceId;
         const labels = { 
@@ -69,7 +70,7 @@ export class DockerContainerGroupContextProvider implements IContainerGroupConte
         };
     }
 
-    private getContainer(requestContext: ContainerGroupRequestContext, image: string, labels: { [label: string]: string; }): DockerContainer
+    private getContainer(requestContext: DeploymentContext, image: string, labels: { [label: string]: string; }): DockerContainer
     {
         return {
             Image: image,

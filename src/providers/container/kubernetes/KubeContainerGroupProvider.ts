@@ -2,7 +2,6 @@ import { IContainerGroupProvider, ContainerGroupState } from "../ContainerGroupP
 import { KubernetesContainerGroup } from "./KubeContainerGroup";
 import { KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node';
 import { IncomingMessage } from "http";
-import { NotImplementedException } from "../../../commons/Errors";
 
 export class KubernetesContainerGroupProvider implements IContainerGroupProvider 
 {
@@ -32,8 +31,7 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
     {
         const servicePromise = this.apply(() => this._kubernetesClient.create(context.service), console.warn);
         const deploymentPromise = this.apply(() => this._kubernetesClient.create(context.deployment), console.warn);
-        const middlewarePromises = context.middlewares.map(o => this.apply(() => this._kubernetesClient.create(o), console.warn))
-        const ingressPromise = Promise.all(middlewarePromises).then(() => this.apply(() => this._kubernetesClient.create(context.ingress), console.warn));
+        const ingressPromise = this.apply(() => this._kubernetesClient.create(context.ingress), console.warn)
         await Promise.all([servicePromise, deploymentPromise, ingressPromise]);
         return context;
     }
@@ -43,13 +41,12 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
      * @param context Kubernetes container service config.
      * @returns Kubernetes container service config.
      */
-    public async stop(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
+    public async stop(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup>
     {
         const deploymentPromise = this.apply(() => this._kubernetesClient.delete(context.deployment), console.warn);
-        const servicePromise = this.apply(() => this._kubernetesClient.delete(context.ingress), console.warn);
-        const ingressPromise = this.apply(() => this._kubernetesClient.delete(context.service), console.warn);
-        const middlewarePromises = ingressPromise.then(() => Promise.all(context.middlewares.map(o => this.apply(() => this._kubernetesClient.delete(o), console.warn))));
-        await Promise.all([servicePromise, middlewarePromises, deploymentPromise])
+        const servicePromise = this.apply(() => this._kubernetesClient.delete(context.service), console.warn);
+        const ingressPromise = this.apply(() => this._kubernetesClient.delete(context.ingress), console.warn);
+        await Promise.all([servicePromise, deploymentPromise, ingressPromise])
         return context;
     }
     
@@ -90,11 +87,6 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
         } catch (e) {
             return { namespace: context.namespace, type: context.type, name: context.name, state: ContainerGroupState.INACTIVE };
         }
-    }
-
-    public async getLogs(context: KubernetesContainerGroup): Promise<string>
-    {
-        throw new NotImplementedException();
     }
 
     /**

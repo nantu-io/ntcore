@@ -1,6 +1,6 @@
 import { ProviderType } from '../../commons/ProviderType'; 
-import { Runtime } from '../../commons/Runtime';
-import { Framework } from '../../commons/Framework';
+import { DeploymentContext } from '../deployment/DeploymentContextProvider';
+
 /**
  * Defines the service loading states
  */
@@ -41,10 +41,6 @@ export const enum ContainerGroupType
      */
     SKLEARN = "SKLEARN",
     /**
-     * RStudio.
-     */
-    RSTUDIO = "RSTUDIO",
-    /**
      * Tensorflow notebook.
      */
     TENSORFLOW = "TENSORFLOW",
@@ -52,39 +48,19 @@ export const enum ContainerGroupType
      * PyTorch notebook.
      */
     PYTORCH = "PYTORCH",
-    /**
-     * Jupyter notebook or Jupyter lab.
-     */
-    JUPYTER = "JUPYTER",
-    /**
-     * Theia python ide.
-     */
-    THEIA_PYTHON = "THEIA_PYTHON",
 }
 /**
  * Mapping from string to ServiceType.
  */
 export const ContainerGroupTypeMapping = {
     /**
-     * Jupyter notebook/lab.
-     */
-    JUPYTER: ContainerGroupType.JUPYTER,
-    /**
      * Jupyter notebook/lab with Pytorch
      */
     PYTORCH: ContainerGroupType.PYTORCH,
     /**
-     * Rstudio suite.
-     */
-    RSTUDIO: ContainerGroupType.RSTUDIO,
-    /**
      * Jupyter notebook/lab with Tensorflow.
      */
     TENSORFLOW: ContainerGroupType.TENSORFLOW,
-    /**
-     * Jupyter notebook/lab with Tensorflow.
-     */
-    THEIA_PYTHON: ContainerGroupType.THEIA_PYTHON,
     /**
      * Flask for sklearn.
      */
@@ -108,20 +84,6 @@ export abstract class IContainerGroup
     name?: string;
     state?: ContainerGroupState;
     vars?: string[]
-}
-/**
- * Container group request context.
- */
-export class ContainerGroupRequestContext
-{
-    name?: string;
-    type?: ContainerGroupType;
-    workspaceId?: string;
-    version?: number;
-    runtime?: Runtime;
-    command?: string;
-    workflow?: string;
-    lastActiveId?: string;
 }
 /**
  * Interface for container provider.
@@ -152,53 +114,13 @@ export interface IContainerGroupProvider
      * Returns the state of a service.
      */
     getState: (context: IContainerGroup) => Promise<IContainerGroup>
-    /**
-     * Returns the logs of a service.
-     */
-    getLogs: (context: IContainerGroup) => Promise<string>
-}
-/**
- * Interface for service state provider.
- */
-export interface IContainerGroupStateProvider
-{
-    /**
-     * Initialize required resource.
-     */
-    initialize: () => Promise<void>;
-    /**
-     * Records the service state.
-     */
-    record: (config: IContainerGroup, username: string, state: ContainerGroupState, runtime?: Runtime, cpus?: any, memory?: any, packages?: string[]) => Promise<IContainerGroup>;
-    /**
-     * Gets the service state.
-     */
-    get: (name: string, username: string) => Promise<IContainerGroup>;
-    /**
-     * Lists service states.
-     */
-    list: (username: string) => Promise<IContainerGroup[]>
-}
-/**
- * Interface for config provider.
- */
-export interface IContainerGroupConfigProvider 
-{
-    /**
-     * Create config for development instances.
-     */
-    createDevelopmentConfig: (name: string, type?: ContainerGroupType, runtime?: Runtime, cpus?: any, memory?: any, packages?: string[]) => IContainerGroup
-    /**
-     * Create config for deployment instances.
-     */
-    createDeploymentConfig: (type: ContainerGroupType, workspaceId: string, version?: number, runtime?: Runtime, framework?: Framework, cpus?: any, memory?: any, publishedPort?: number) => IContainerGroup
 }
 /**
  * Interface for context provider.
  */
 export interface IContainerGroupContextProvider 
 {
-    getContext: (requestContext: ContainerGroupRequestContext) => IContainerGroup
+    getContext: (requestContext: DeploymentContext) => IContainerGroup
 }
 /**
  * Provider factory.

@@ -1,0 +1,8 @@
+tensorflow:
+  targetPort: 8501
+  sourcePath: /s/${workspaceId}/predict
+  targetPath: /v1/models/${workspaceId}:predict
+  healthCheckPath: /v1/models/${workspaceId}
+  environment:
+    - name:  MODEL_NAME
+      value: ${workspace_id}

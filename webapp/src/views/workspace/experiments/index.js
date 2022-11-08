@@ -66,8 +66,8 @@ class Experiments extends Component {
         const createdBy = row["createdBy"];
         const createdAt = row["createdAt"];
         const description = row["description"];
-        const parameters = JSON.parse(row["parameters"]);
-        const metrics = JSON.parse(row["metrics"]);
+        const parameters = row["parameters"];
+        const metrics = row["metrics"];
         return {
             id: version,
             runtime,
