@@ -6,23 +6,18 @@ container:
     type: docker
   images:
     sklearn: ntcore/fast-sklearn
-    tensorflow: tensorflow/serving
-    pytorch: pytorch/torchserve
-    bootstrap: ntcore/bootstrap
-    metricsProxy: ntcore/metrics-proxy
-
+    tensorflow: ntcore/tensorflow-serving
+    pytorch: ntcore/fast-torch
 database:
   provider:
     type: sqlite
     config:
       path: data/db/ntcore.db
-
 storage:
   provider:
     type: volume
     config:
       root: data/binary
-
-## Default userId when user auth is disabled
+## Default username when user authorization is not enabled
 account: 
   username: ntcore

@@ -41,7 +41,7 @@ function getContainerProviderConfig(config: any): AppConfigContainer
 
 export function getAppConfig(): AppConfig 
 {
-    const config = yaml.load(fs.readFileSync('app-config/ntcore.yml', 'utf8'));
+    const config = yaml.load(fs.readFileSync('app-config/global/ntcore.yml', 'utf8'));
     return { 
         container: getContainerProviderConfig(config),
         database: config['database'].provider,

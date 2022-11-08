@@ -1,8 +1,14 @@
 import { DeploymentContext } from "../../deployment/DeploymentContextProvider";
 import { KubernetesResourceMetadata } from "./KubeContainerGroup";
+import { interpolation } from 'interpolate-json';
+import yaml = require('js-yaml');
+import fs = require('fs');
+
+/* Load ingress resource template from yaml */
+const ingressResource = yaml.load(fs.readFileSync('app-config/kubernetes/ingress.yml', 'utf8'));
 
 /**
- * Kubernetes ingress definition.
+ * Kubernetes ingress resource definition.
  */
 export class KubernetesIngressV1
 {
@@ -27,34 +33,19 @@ export class KubernetesIngressV1
     };
 }
 
+/**
+ * Kubernetes ingress resource provider.
+ */
 export class KubernetesIngressProviderV1
 {
     /**
-     * Generate the nginx ingress for target service.
+     * Generate the kubernetes nginx ingress for model serving.
      * @param namespace kubernetes namespace
      * @param dc container group request context
-     * @returns kubernetes ingress object
+     * @returns kubernetes ingress resource
      */
     public getKubernetesIngress(namespace: string, dc: DeploymentContext): KubernetesIngressV1
     {
-        return {
-            apiVersion: "networking.k8s.io/v1",
-            kind: "Ingress",
-            metadata: {
-                namespace: namespace,
-                name: dc.name,
-                annotations: {
-                    "nginx.ingress.kubernetes.io/rewrite-target": dc.servingConfig.targetPath,
-                    "kubernetes.io/ingress.class": "nginx"
-                }
-            },
-            spec: {
-                rules: [{
-                    http: {
-                        paths: [ { path: dc.servingConfig.sourcePath, pathType: "Exact", backend: { service: { name: dc.name, port: { number: dc.listenPort } } } } ]
-                    }
-                }]
-            }
-        }
+        return interpolation.expand(ingressResource, { namespace, name: dc.name, sourcePath: dc.servingConfig.sourcePath, targetPath: dc.servingConfig.targetPath, listenPort: dc.listenPort });
     }
 }

@@ -2,7 +2,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: ntcore
+  name: ntcore-global
 data:
   ntcore.yml: |
     container:
@@ -14,8 +14,6 @@ data:
         sklearn: ntcore/fast-sklearn
         tensorflow: tensorflow/serving
         pytorch: pytorch/torchserve
-        bootstrap: ntcore/bootstrap
-        metricsProxy: ntcore/metrics-proxy
     database:
       provider:
         type: dynamodb
@@ -40,19 +38,134 @@ data:
       environment:
         - name:  MODEL_NAME
           value: ${workspace_id}
-    pytorch:
-      targetPort: 8501
-      sourcePath: /s/${workspaceId}/predict
-      targetPath: /v1/models/${workspaceId}:predict
-      healthCheckPath: /v1/models/${workspaceId}
-      environment:
-        - name:  MODEL_NAME
-          value: ${workspace_id}
-    sklearn:
-      targetPort: 8501
-      sourcePath: /s/${workspaceId}/predict
-      targetPath: /v1/models/${workspaceId}:predict
-      healthCheckPath: /v1/models/${workspaceId}
-      environment:
-        - name:  MODEL_NAME
-          value: ${workspace_id}
+
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ntcore-kubernetes
+data:
+  containers.yml: |
+    modelServing:
+      name: ${name}-core
+      image: ${image}
+      ports:
+        - name: web
+          containerPort: ${*targetPort}
+      env:
+      volumeMounts:
+        - name: ${name}
+          mountPath: /models
+      readinessProbe:
+        httpGet: 
+          path: ${healthCheckPath}
+          port: ${*targetPort}
+        initialDelaySeconds: ${*initialDelaySeconds}
+        periodSeconds: ${*periodSeconds}
+      resources:
+        requests:
+    bootstrap:
+      name: ${name}-bootstrap
+      image: ntcore/bootstrap
+      args: 
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep infinity
+      env:
+        - name: DSP_API_ENDPOINT
+          value: ntcore:8180
+        - name: DSP_WORKSPACE_ID
+          value: ${workspaceId}
+      volumeMounts:
+        - name: ${name}
+          mountPath: /models
+      readinessProbe:
+        exec: 
+          command: 
+            - cat
+            - /tmp/healthy
+        initialDelaySeconds: ${*initialDelaySeconds}
+        periodSeconds: ${*periodSeconds}
+    metricsProxy:
+      name: ${name}-proxy
+      image: ntcore/metrics-proxy
+      ports:
+        - name: web
+          containerPort: ${*listenPort}
+      args: 
+        - mitmdump
+        - -s
+        - /usr/local/bin/metrics_collector.py
+        - --listen-port
+        - ${listenPort}
+      env:
+        - name: DSP_MONITORING_ENDPOINT
+          value: ntcore-monitoring:8180
+        - name: DSP_WORKSPACE_ID
+          value: ${workspaceId}
+        - name: DSP_BACKEND_PORT
+          value: ${targetPort}
+      readinessProbe:
+        httpGet: 
+          path: ${healthCheckPath}
+          port: ${*listenPort}
+        initialDelaySeconds: ${*initialDelaySeconds}
+        periodSeconds: ${*periodSeconds}
+
+  service.yml: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: ${name}
+      namespace: ${namespace}
+    spec:
+      selector: 
+        app: ${name}
+      ports:
+        - name: web
+          protocol: TCP
+          port: ${*port}
+
+  deployment.yml: |
+    kind: Deployment
+    apiVersion: apps/v1
+    metadata:
+      namespace: ${namespace}
+      name: ${name}
+      labels: 
+        app: ${name}
+    spec:
+      replicas: ${*replicas}
+      selector: 
+        matchLabels: 
+          app: ${name}
+      template:
+        metadata: 
+          labels: 
+            app: ${name}
+        spec:
+            containers:
+            volumes:
+              - name: ${name}
+                emptyDir:
+
+  ingress.yml: |
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      namespace: ${namespace}
+      name: ${name}
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: ${targetPath}
+        kubernetes.io/ingress.class: nginx
+    spec:
+      rules:
+        - http:
+            paths:
+              - path: ${sourcePath}
+                pathType: Exact
+                backend:
+                  service:
+                    name: ${name}
+                    port:
+                      number: ${*listenPort}

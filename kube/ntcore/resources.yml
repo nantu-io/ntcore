@@ -30,9 +30,12 @@ spec:
         app: ntcore
     spec:
       volumes:
-        - name: app-config
+        - name: ntcore-global
           configMap:
-            name: ntcore
+            name: ntcore-global
+        - name: ntcore-kubernetes
+          configMap:
+            name: ntcore-kubernetes
       containers:
         - name: ntcore
           image: ntcore/webserver:latest
@@ -41,8 +44,10 @@ spec:
             - name: web
               containerPort: 8180
           volumeMounts:
-            - name: app-config
-              mountPath: /usr/src/app/app-config
+            - name: ntcore-global
+              mountPath: /usr/src/app/app-config/global
+            - name: ntcore-kubernetes
+              mountPath: /usr/src/app/app-config/kubernetes
 
 ---
 apiVersion: networking.k8s.io/v1

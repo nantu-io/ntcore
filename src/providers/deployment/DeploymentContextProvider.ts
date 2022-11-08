@@ -10,7 +10,7 @@ import yaml = require('js-yaml');
 import fs = require('fs');
 
 /* Load container config from yaml */
-const servingConfig = yaml.load(fs.readFileSync('app-config/serving.yml', 'utf8'));
+const servingConfigs = yaml.load(fs.readFileSync('app-config/global/serving.yml', 'utf8'));
 
 /**
  * Container group request context.
@@ -55,10 +55,10 @@ export class DeploymentContextProvider
             RequestValidator.nullOnException(() => deploymentProvider.getActive(workspaceId)),
         ]);
         if (!registry?.version) {
-            res.status(400).send({error: 'Unable to find registered model version.'});
+            res.status(400).send({error: 'Unable to find registered model version'});
             return null;
         } else if (DeploymentContextProvider.PENDING === lastDeployment?.status) {
-            res.status(400).send({error: 'Last deployment is still in progress.'});
+            res.status(400).send({error: 'Last deployment is still in progress'});
             return null;
         }
         return this.getContext(workspaceId, registry, lastActiveDeployment?.deploymentId);
@@ -77,25 +77,27 @@ export class DeploymentContextProvider
             RequestValidator.nullOnException(() => deploymentProvider.getLatest(workspaceId)),
             RequestValidator.nullOnException(() => deploymentProvider.getActive(workspaceId)),
         ]);
-        if (DeploymentContextProvider.PENDING === lastDeployment?.status) {
-            res.status(400).send({error: 'Last deployment is still in progress.'});
+        if (!lastActiveDeployment) {
+            res.status(400).send({error: 'No active deployment'});
             return null;
         }
-        return this.getContext(workspaceId, null, lastActiveDeployment?.deploymentId);
+        if (DeploymentContextProvider.PENDING === lastDeployment?.status) {
+            res.status(400).send({error: 'Last deployment is still in progress'});
+            return null;
+        }
+        const experiment: Experiment = await experimentProvider.read(workspaceId, lastActiveDeployment.version);
+        return this.getContext(workspaceId, experiment, lastActiveDeployment?.deploymentId);
     }
 
-    private getContext(workspaceId: string, registry: Experiment, lastActiveId: string): DeploymentContext
+    private getContext(workspaceId: string, experiment: Experiment, lastActiveId: string): DeploymentContext
     {   
-        const type = registry?.framework ? FrameworkToContainerGroupTypeMapping[registry.framework] : null;
-        return {
-            type: type,
-            name: `ntcore-${workspaceId.toLowerCase()}`,
-            version: registry?.version,
-            runtime: registry?.runtime,
-            workspaceId: workspaceId,
-            lastActiveId: lastActiveId,
-            listenPort: 18080,
-            servingConfig: interpolation.expand(servingConfig, { workspaceId })[type.toLowerCase()]
-        }
+        const type = FrameworkToContainerGroupTypeMapping[experiment.framework];
+        const name = `ntcore-${workspaceId.toLowerCase()}`;
+        const version = experiment.version;
+        const runtime = experiment.runtime;
+        const listenPort = 18080;
+        const servingConfig = interpolation.expand(servingConfigs, { workspaceId })[type.toLowerCase()];
+
+        return { type, name, version, runtime, workspaceId, lastActiveId, listenPort, servingConfig };
     }
 }
