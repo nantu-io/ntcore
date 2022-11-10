@@ -1,4 +1,3 @@
-import { appConfig } from '../../../libs/config/AppConfigProvider';
 import { DeploymentContext } from '../../deployment/DeploymentContextProvider';
 import { KubernetesContainer, KubernetesResourceMetadata } from './KubeContainerGroupContextProvider';
 import { interpolation } from 'interpolate-json';
@@ -39,17 +38,16 @@ export class KubernetesDeploymentProviderV1
     /**
      * Generate the kubernetes deployment resource for model serving.
      * @param namespace kubernetes namespace
-     * @param dc container group request context
+     * @param deploymentContext container group request context
      * @returns kubernetes deployment resource
      */
-    public getKubernetesDeployment(namespace: string, dc: DeploymentContext)
+    public getKubernetesDeployment(namespace: string, deploymentContext: DeploymentContext)
     {
-        const modelServingImage = appConfig.container.images[dc.type.toLowerCase()];
-        const modelServingContainer = this.getModelServingContainer(modelServingImage, dc);
-        const metricsProxyContainer = this.getMetricsProxyContainer(dc);
-        const bootstrapContainer = this.getBootstrapContainer(dc);
+        const modelServingContainer = this.getModelServingContainer(deploymentContext);
+        const metricsProxyContainer = this.getMetricsProxyContainer(deploymentContext);
+        const bootstrapContainer = this.getBootstrapContainer(deploymentContext);
 
-        return this.createKubernetesDeployment(namespace, dc.name, [ bootstrapContainer, metricsProxyContainer, modelServingContainer ]);
+        return this.createKubernetesDeployment(namespace, deploymentContext.name, [ bootstrapContainer, metricsProxyContainer, modelServingContainer ]);
     }
 
     private createKubernetesDeployment(namespace: string, name: string, containers: KubernetesContainer[]): KubernetesDeploymentV1 
@@ -59,10 +57,10 @@ export class KubernetesDeploymentProviderV1
         return deployment;
     }
 
-    private getModelServingContainer(image: string, dc: DeploymentContext): KubernetesContainer 
+    private getModelServingContainer(dc: DeploymentContext): KubernetesContainer 
     {
         const container = interpolation.expand(containerTemplates['modelServing'], 
-            { image, name: dc.name, targetPort: dc.servingConfig.targetPort, healthCheckPath: dc.servingConfig.healthCheckPath, initialDelaySeconds: 30, periodSeconds: 10 }) as KubernetesContainer;
+            { name: dc.name, image: dc.servingConfig.image, targetPort: dc.servingConfig.targetPort, healthCheckPath: dc.servingConfig.healthCheckPath, initialDelaySeconds: 30, periodSeconds: 10 }) as KubernetesContainer;
         container.env = dc.servingConfig.environment;
         return container;
     }

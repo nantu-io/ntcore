@@ -4,10 +4,6 @@
 container:
   provider:
     type: docker
-  images:
-    sklearn: ntcore/fast-sklearn
-    tensorflow: ntcore/tensorflow-serving
-    pytorch: ntcore/fast-torch
 database:
   provider:
     type: sqlite
