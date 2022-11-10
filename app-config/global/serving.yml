@@ -1,4 +1,5 @@
 tensorflow:
+  image: tensorflow/serving
   targetPort: 8501
   sourcePath: /s/${workspaceId}/predict
   targetPath: /v1/models/${workspaceId}:predict

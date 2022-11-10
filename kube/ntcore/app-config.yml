@@ -10,10 +10,6 @@ data:
         type: kubernetes
         config:
           namespace: ntcore
-      images:
-        sklearn: ntcore/fast-sklearn
-        tensorflow: tensorflow/serving
-        pytorch: pytorch/torchserve
     database:
       provider:
         type: dynamodb
@@ -31,6 +27,7 @@ data:
   
   serving.yml: |
     tensorflow:
+      image: tensorflow/serving
       targetPort: 8501
       sourcePath: /s/${workspaceId}/predict
       targetPath: /v1/models/${workspaceId}:predict

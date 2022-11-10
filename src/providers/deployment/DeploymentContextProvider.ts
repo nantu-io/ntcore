@@ -25,6 +25,7 @@ export class DeploymentContext
     lastActiveId?: string;
     listenPort: number;
     servingConfig: {
+        image: string;
         targetPort: number;
         sourcePath: string;
         targetPath: string;
@@ -80,13 +81,12 @@ export class DeploymentContextProvider
         if (!lastActiveDeployment) {
             res.status(400).send({error: 'No active deployment'});
             return null;
-        }
-        if (DeploymentContextProvider.PENDING === lastDeployment?.status) {
+        } else if (DeploymentContextProvider.PENDING === lastDeployment?.status) {
             res.status(400).send({error: 'Last deployment is still in progress'});
             return null;
         }
         const experiment: Experiment = await experimentProvider.read(workspaceId, lastActiveDeployment.version);
-        return this.getContext(workspaceId, experiment, lastActiveDeployment?.deploymentId);
+        return this.getContext(workspaceId, experiment, lastActiveDeployment.deploymentId);
     }
 
     private getContext(workspaceId: string, experiment: Experiment, lastActiveId: string): DeploymentContext
