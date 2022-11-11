@@ -61,9 +61,8 @@ export class DeploymentController
             const deployment = await this.createDeploymentEntry(workspaceId, deploymentId, version, createdBy);
             await this._containerGroupProvider.provision(context);
             await this._containerGroupProvider.start(context);
-            const contextWithDeploymentId = { id: deploymentId, ...context };
-            const targetStates = [ ContainerGroupState.RUNNING ]
-            const finalState = await this.waitForContainerGroupState(contextWithDeploymentId, targetStates);
+            const targetStates = [ ContainerGroupState.RUNNING ];
+            const finalState = await this.waitForContainerGroupState(context, targetStates);
             await deploymentProvider.updateStatus(workspaceId, deploymentId, ContainerGroupStateToDeploymentStatusMapping[finalState]);
             if (!requestContext.lastActiveId) return deployment;
             await deploymentProvider.updateStatus(workspaceId, requestContext.lastActiveId, ContainerGroupState.STOPPED);
@@ -108,24 +107,24 @@ export class DeploymentController
      */
     public async terminateDeploymentV1(
         req: Request<{workspaceId: string}, {}, {}, {}>,
-        res: Response<string>)
+        res: Response<{deploymentId: string}>)
     {
         const requestContext = await this._deploymentContextProvider.validateAndGetTerminationContext(req, res);
         if (!requestContext) return;
-        const context = this._containerGroupContextProvider.getContext(requestContext);
-        res.status(201).send(context.id);
+        res.status(201).send({deploymentId: requestContext.lastActiveId});
         
-        await this.stopAndWait(req.params.workspaceId, context);
+        await this.stopAndWait(requestContext);
     }
 
-    private async stopAndWait(workspaceId: string, context: IContainerGroup) 
+    private async stopAndWait(requestContext: DeploymentContext) 
     {
         try {
+            const context = this._containerGroupContextProvider.getContext(requestContext);
             await this._containerGroupProvider.delete(context);
             const targetStates = [ContainerGroupState.INACTIVE, ContainerGroupState.STOPPED];
             const finalState = await this.waitForContainerGroupState(context, targetStates);
             const deploymentStatus = ContainerGroupStateToDeploymentStatusMapping[finalState];
-            await deploymentProvider.updateStatus(workspaceId, context.id, deploymentStatus);
+            await deploymentProvider.updateStatus(requestContext.workspaceId, requestContext.lastActiveId, deploymentStatus);
         } catch (err) {
             // TODO: log error.
         }
