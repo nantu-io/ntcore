@@ -1,6 +1,5 @@
 import { IContainerGroupProvider,  ContainerGroupState, IContainerGroup, ContainerGroupTypeMapping } from "../ContainerGroupProvider";
 import { DockerContainerGroup } from "./DockerContainerGroup";
-import { NotImplementedException } from "../../../commons/Errors";
 import Dockerode = require("dockerode");
 
 export class DockerContainerGroupProvider implements IContainerGroupProvider 
@@ -32,7 +31,6 @@ export class DockerContainerGroupProvider implements IContainerGroupProvider
         const container = await this.getContainerByName(context.name);
         if (container) {
             await this.stop(context);
-            await this.delete(context);
         }
         return (await this.startContainer(context));
     }
@@ -46,36 +44,15 @@ export class DockerContainerGroupProvider implements IContainerGroupProvider
     {
         try {
             const container = await this.getContainerByName(context.name);
-            if (container) await container.stop()
+            if (container) {
+                await container.stop();
+                await container.remove();
+            }
         } catch (err) {
             // Don't do anything if container has already stopped
             if (err.statusCode !== 304) throw err;
         }
         return context;
-    }
-
-    /**
-     * Deletes docker container.
-     * @param context docker container deletion context.
-     * @returns Promise of the docker container context.
-     */
-    public async delete(context: DockerContainerGroup): Promise<IContainerGroup> 
-    {
-        const container = await this.getContainerByName(context.name);
-        if (container) {
-            await container.remove()
-        }
-        return context;
-    }
-
-    /**
-     * Updates docker container.
-     * @param context docker container update context.
-     * @returns Promise of the docker container context.
-     */
-    public async update(context: DockerContainerGroup): Promise<IContainerGroup> 
-    {
-        throw new NotImplementedException();
     }
 
     /**
@@ -92,15 +69,6 @@ export class DockerContainerGroupProvider implements IContainerGroupProvider
         } else {
             return { type: null, name: context.name, state: ContainerGroupState.UNKNOWN };
         }
-    }
-
-    /**
-     * Gets log events from docker container.
-     * @param context docker container logs retrieval context.  
-     */
-    public async getLogs(context: DockerContainerGroup): Promise<string>
-    {
-        throw new NotImplementedException();
     }
 
     private async buildImage(context: DockerContainerGroup): Promise<IContainerGroup> 

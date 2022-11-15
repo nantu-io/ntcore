@@ -103,14 +103,6 @@ export interface IContainerGroupProvider
      */
     stop: (context: IContainerGroup) => Promise<IContainerGroup>;
     /**
-     * Deletes the service 
-     */
-    delete: (context: IContainerGroup) => Promise<IContainerGroup>;
-    /**
-     * Execute command on the container.
-     */
-    update: (context: IContainerGroup) => Promise<IContainerGroup>;
-    /**
      * Returns the state of a service.
      */
     getState: (context: IContainerGroup) => Promise<IContainerGroup>
