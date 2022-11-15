@@ -14,6 +14,9 @@ import { appConfig } from '../libs/config/AppConfigProvider';
 
 const AUTH_USER_HEADER_NAME = "X-NTCore-Auth-User";
 
+/**
+ * Controller for deployment related operations.
+ */
 export class DeploymentController
 {
     private readonly _containerGroupContextProvider: IContainerGroupContextProvider;
@@ -68,7 +71,7 @@ export class DeploymentController
             await deploymentProvider.updateStatus(workspaceId, requestContext.lastActiveId, ContainerGroupState.STOPPED);
             return deployment;
         } catch (err) {
-            await this._containerGroupProvider.delete(context);
+            await this._containerGroupProvider.stop(context);
             // TODO: Handle failed deployment upsert
             await deploymentProvider.updateStatus(workspaceId, deploymentId, "FAILED");
         }
@@ -120,7 +123,7 @@ export class DeploymentController
     {
         try {
             const context = this._containerGroupContextProvider.getContext(requestContext);
-            await this._containerGroupProvider.delete(context);
+            await this._containerGroupProvider.stop(context);
             const targetStates = [ContainerGroupState.INACTIVE, ContainerGroupState.STOPPED];
             const finalState = await this.waitForContainerGroupState(context, targetStates);
             const deploymentStatus = ContainerGroupStateToDeploymentStatusMapping[finalState];

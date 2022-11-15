@@ -2,6 +2,7 @@ import { IContainerGroupProvider, ContainerGroupState } from "../ContainerGroupP
 import { KubernetesContainerGroup } from "./KubeContainerGroupContextProvider";
 import { KubernetesObject, KubernetesObjectApi } from '@kubernetes/client-node';
 import { IncomingMessage } from "http";
+import moment = require('moment');
 
 export class KubernetesContainerGroupProvider implements IContainerGroupProvider 
 {
@@ -29,10 +30,17 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
      */
     public async start(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup>  
     {
-        const servicePromise = this.apply(() => this._kubernetesClient.create(context.service), console.warn);
-        const deploymentPromise = this.apply(() => this._kubernetesClient.create(context.deployment), console.warn);
-        const ingressPromise = this.apply(() => this._kubernetesClient.create(context.ingress), console.warn)
-        await Promise.all([servicePromise, deploymentPromise, ingressPromise]);
+        const deployment = await this.apply(() => this._kubernetesClient.read(context.deployment), console.warn);
+        if (deployment) {
+            const restartAt = moment().format();
+            context.deployment.spec.template.metadata.annotations = { 'kubectl.kubernetes.io/restartedAt': restartAt };
+            await this.apply(() => this._kubernetesClient.patch(context.deployment), console.warn);
+        } else {
+            const deploymentPromise = this.apply(() => this._kubernetesClient.create(context.deployment), console.warn);
+            const servicePromise = this.apply(() => this._kubernetesClient.create(context.service), console.warn);
+            const ingressPromise = this.apply(() => this._kubernetesClient.create(context.ingress), console.warn);
+            await Promise.all([servicePromise, deploymentPromise, ingressPromise]);
+        }
         return context;
     }
 
@@ -51,27 +59,6 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
     }
     
     /**
-     * Deletes the kubernetes service.
-     * @param context Kubernetes container service config.
-     * @returns Kubernetes container service config.
-     */
-    public async delete(context: KubernetesContainerGroup) 
-    {
-        return (await this.stop(context));
-    }
-    
-    /**
-     * Updates the kubernetes service.
-     * @param context Kubernetes container service config.
-     * @returns Kubernetes container service config.
-     */
-    public async update(context: KubernetesContainerGroup) 
-    {
-        await this.apply(() => this._kubernetesClient.patch(context.deployment), console.warn)
-        return context;
-    }
-    
-    /**
      * Retrieve the service state from kubernetes cluster
      * @param context Kubernetes container service config.
      * @returns Kubernetes service states.
@@ -79,9 +66,9 @@ export class KubernetesContainerGroupProvider implements IContainerGroupProvider
     public async getState(context: KubernetesContainerGroup): Promise<KubernetesContainerGroup> 
     {
         try {
-            const status = (await this._kubernetesClient.read(context.deployment))?.body['status'];
-            const conditions = status?.conditions;
-            const isAvailable = conditions && conditions.some((c: { type: string; status: string; }) => c.type === "Available" && c.status === "True");
+            const deployment = await this.apply(() => this._kubernetesClient.read(context.deployment), console.warn);
+            const unavailableReplicas: number = deployment['status']['unavailableReplicas'];
+            const isAvailable = !unavailableReplicas || unavailableReplicas === 0;
             const serviceState = isAvailable ? ContainerGroupState.RUNNING : ContainerGroupState.PENDING;
             return { namespace: context.namespace, type: context.type, name: context.name, state: serviceState };
         } catch (e) {
