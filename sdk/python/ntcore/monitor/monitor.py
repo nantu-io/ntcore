@@ -47,6 +47,30 @@ class Monitor(ABC):
         '''
         data = dict(workspaceId = self._workspace_id, name = name, value = value)
         return self._api_client.doPost(self.__build_url("monitoring", "metrics"), data)
+
+    def add_custom_metric(self, name, type, formula):
+         '''
+         Emits the custom metric line to ntcore monitoring service.
+         
+         PARAMETERS
+         ----
+         workspace_id: str
+         name: str
+         type: str
+         formula: str
+         '''
+         data = dict(workspaceId = self._workspace_id, name = name, type = type, formula = formula)
+         return self._api_client.doPost(self.__build_url("monitoring", "custommetrics"), data)
+
+     def read_custom_metric(self, workspace_id):
+         '''
+         Read the custom metric line to ntcore monitoring service.
+         
+         PARAMETERS
+         ----
+         workspace_id: str
+         '''
+         return self._api_client.doGet(self.__build_url("monitoring", "custommetrics", workspace_id))
         
     def upload_ground_truth(self, input_data, ground_truth, timestamp=None):
         '''
