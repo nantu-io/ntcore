@@ -57,11 +57,13 @@ export class DeploymentController
     private async startAndWait(requestContext: DeploymentContext, createdBy: string): Promise<Deployment>
     {
         const workspaceId = requestContext.workspaceId;
-        const context = this._containerGroupContextProvider.getContext(requestContext);
         const version = Math.floor(requestContext.version)
         const deploymentId = uuidv4();
+        const createdAt = Math.floor((new Date()).getTime()/1000);
+        const deployment: Deployment = { workspaceId, deploymentId, version, createdBy, createdAt, status: "PENDING" };
+        const context = this._containerGroupContextProvider.getContext(requestContext);
         try {
-            const deployment = await this.createDeploymentEntry(workspaceId, deploymentId, version, createdBy);
+            await deploymentProvider.create(deployment);
             await this._containerGroupProvider.provision(context);
             await this._containerGroupProvider.start(context);
             const targetStates = [ ContainerGroupState.RUNNING ];
@@ -77,21 +79,10 @@ export class DeploymentController
         }
     }
 
-    private async createDeploymentEntry(workspaceId: string, deploymentId: string, version: number, createdBy: string): Promise<Deployment>
-    {
-        const deployment: Deployment = {
-            workspaceId,
-            deploymentId,
-            version,
-            status: "PENDING",
-            createdBy: createdBy,
-            createdAt: Math.floor((new Date()).getTime()/1000),
-        }
-        return await deploymentProvider.create(deployment);
-    }
-
     private async waitForContainerGroupState(context: IContainerGroup, states: ContainerGroupState[]): Promise<ContainerGroupState>
-    {
+    { 
+        /* Wait 3 seconds to avoid race conditions between applying restart and fetching status below */
+        await new Promise((resolve, ) => setTimeout(resolve, 3000));
         var containerGroupState: ContainerGroupState;
         await waitUntil(async () => {
             containerGroupState = (await this._containerGroupProvider.getState(context))?.state;
