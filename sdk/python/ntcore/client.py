@@ -135,7 +135,6 @@ class Client(object):
 
         try:
             serialized_model = open(model, "rb").read()
-            print(type(model))
             framework = self.__get_framework_from_model_filename(model)
             model_file = None
         except Exception:

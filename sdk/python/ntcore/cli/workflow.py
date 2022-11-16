@@ -3,6 +3,7 @@ from pathlib import Path
 from ntcore import Client
 from ruamel import yaml
 
+
 FRAMEWORKS = ['sklearn', 'tensorflow', 'pytorch']
 
 @click.group()
@@ -29,10 +30,9 @@ def archive_model(server, workspace_id, framework, model):
     try:
         yamlfile = open(yamlpath, "r")
         tokenValue = yaml.load(yamlfile.read(), Loader=yaml.Loader)
-        api_token = tokenValue['api_token']
+        api_token = tokenValue['token']
     except Exception as e:
-        logging.error("Authentication Failed. Please login first or use option --help for more information") 
-        err_message = "Error: " + str(e)
+        raise Exception("Authentication Failed. Please login first or use option --help for more information") 
 
     click.echo(f"Archiving {model} ...")
 
@@ -48,26 +48,41 @@ def archive_model(server, workspace_id, framework, model):
 @click.option('--server', '-s', default='http://localhost:8000', help='ntcore server endpoint')
 @click.option("--username", '-u', type=str, default=None, required=True, help='username')
 @click.password_option()
-def login(username, password):
+def login(username, password, server):
     '''
     Input username and password. 
     '''
-    click.echo(f"{username} {password}")
-
-
-    url = server + '/dsp/api/v1/user/login'
-    hearders = {"Content-Type: application/json"}
+    url = server + '/dsp/api/v1/users/login'
+    headers = {"Content-Type": "application/json"}
     data = {
         "email": username,
         "password": password
     }
 
 
-    response = requests.post(url = url, data = json.dumps(data), hearders = hearders)
-    tokenValue = {
-        'api_token': response.json()["data"]["api_token"]
-    }
-    
+    try:
+        response = requests.post(url = url, data = json.dumps(data), headers = headers)
+    except Exception as e:
+        # The request failed to connect
+        raise Exception('Connection to {} failed: {}'.format(url, e.args[0]))
+
+
+    if response.status_code == 204:
+        return {}
+    content = response.content
+    if hasattr(content, 'decode'):  # Python 2
+        content = content.decode('utf-8')
+
+
+    try:
+        json_body = json.loads(content)
+    except Exception as e:
+        raise Exception('Invalid response: {}'.format(e))
+    if 'errors' in json_body or 'error' in json_body:
+        raise Exception(json_body)
+
+
+    tokenValue = json_body
     curpath = os.path.dirname(os.path.realpath(__file__))
     yamlpath = os.path.join(curpath, "api_token.yaml")
     with open(yamlpath, "w", encoding="utf-8") as f:
@@ -81,3 +96,4 @@ cli.add_command(login)
 
 if __name__ == '__main__':
     cli()
+    
