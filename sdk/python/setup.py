@@ -37,11 +37,12 @@ setup(
         "python-jose",
         "requests_toolbelt",
         "requests-futures",
-        "psutil"
+        "psutil",
+        "click"
     ],
     entry_points={
         "console_scripts": [
-            
+            'ntcore = ntcore.cli.workflow:cli'
         ],
     },
 )
