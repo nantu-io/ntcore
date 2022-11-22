@@ -35,6 +35,15 @@ data:
       environment:
         - name:  MODEL_NAME
           value: ${workspace_id}
+    sklearn:
+      image: ntcore/sklearn
+      targetPort: 8080
+      sourcePath: /s/${workspaceId}/predict
+      targetPath: /v1/models/predict
+      healthCheckPath: /v1/models/healthcheck
+      environment:
+        - name:  DSP_WORKSPACE_ID
+          value: ${workspaceId}
 
 ---
 kind: ConfigMap
