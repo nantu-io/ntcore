@@ -1,7 +1,7 @@
-import click, shutil, os, requests, json
-from pathlib import Path
+import click, os, requests, json
 from ntcore import Client
 from ruamel import yaml
+from pathlib import Path
 
 
 FRAMEWORKS = ['sklearn', 'tensorflow', 'pytorch']
@@ -24,15 +24,16 @@ def archive_model(server, workspace_id, framework, model):
         exit(1)
 
     api_token = None
-    curpath = os.path.dirname(os.path.realpath(__file__))
-    yamlpath = os.path.join(curpath, "api_token.yaml")
+    homepath = str(Path.home())
+    yamlpath = os.path.join(homepath, ".api_token.yaml")
 
     try:
         yamlfile = open(yamlpath, "r")
         tokenValue = yaml.load(yamlfile.read(), Loader=yaml.Loader)
         api_token = tokenValue['token']
-    except Exception as e:
-        raise Exception("Authentication Failed. Please login first or use option --help for more information") 
+    except Exception:
+        click.echo(click.style("Error", fg="red") + ": Authentication Failed. Please login first or use option --help for more information.")
+        exit(1)
 
     click.echo(f"Archiving {model} ...")
 
@@ -41,7 +42,6 @@ def archive_model(server, workspace_id, framework, model):
         exper.framework = framework
         click.echo(f"Uploading archived model to NTCore ...")
         exper.save_model(model)
-
 
 
 @click.command()
@@ -59,20 +59,17 @@ def login(username, password, server):
         "password": password
     }
 
-
     try:
         response = requests.post(url = url, data = json.dumps(data), headers = headers)
     except Exception as e:
         # The request failed to connect
         raise Exception('Connection to {} failed: {}'.format(url, e.args[0]))
 
-
     if response.status_code == 204:
         return {}
     content = response.content
     if hasattr(content, 'decode'):  # Python 2
         content = content.decode('utf-8')
-
 
     try:
         json_body = json.loads(content)
@@ -81,13 +78,11 @@ def login(username, password, server):
     if 'errors' in json_body or 'error' in json_body:
         raise Exception(json_body)
 
-
     tokenValue = json_body
-    curpath = os.path.dirname(os.path.realpath(__file__))
-    yamlpath = os.path.join(curpath, "api_token.yaml")
+    homepath = str(Path.home())
+    yamlpath = os.path.join(homepath, ".api_token.yaml")
     with open(yamlpath, "w", encoding="utf-8") as f:
         yaml.dump(tokenValue, f, Dumper=yaml.RoundTripDumper)
-
 
 
 cli.add_command(archive_model)
