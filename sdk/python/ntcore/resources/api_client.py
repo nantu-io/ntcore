@@ -120,6 +120,14 @@ class ApiClient(ABC):
         if response.status_code == 204:
             return {}
 
+        if response.status_code == 401:
+            raise NTCoreAPIException({
+                'errors': [{
+                    'code': 'UNAUTHORIZED',
+                    'message': 'Invalid access token'
+                }]
+            })
+
         if not self.__hasJsonContentTypeInHeaders(response):
             return response.content
 
