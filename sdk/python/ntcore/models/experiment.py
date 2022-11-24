@@ -1,3 +1,5 @@
+from .framework import Framework
+
 class Experiment(object):
     """
     Experiment object that matches the NTCore experiment model.
@@ -15,8 +17,8 @@ class Experiment(object):
     def __init__(self, client, workspace_id):
         self._client = client
         self._workspace_id = workspace_id
-        self._runtime = None
-        self._framework = None
+        self._runtime: str = ""
+        self._framework: Framework = Framework.unknown
         self._pretraining_metadata = dict()
         self._posttraining_metadata = dict()
         self._serializable_model = None
@@ -26,7 +28,7 @@ class Experiment(object):
         return self._workspace_id
 
     @property
-    def runtime(self):
+    def runtime(self) -> str:
         return self._runtime
 
     @runtime.setter
@@ -34,7 +36,7 @@ class Experiment(object):
         self._runtime = runtime
     
     @property
-    def framework(self):
+    def framework(self)-> Framework:
         return self._framework
 
     @framework.setter

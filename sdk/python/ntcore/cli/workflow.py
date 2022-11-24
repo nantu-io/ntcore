@@ -2,9 +2,8 @@ import click, os, requests, json
 from ntcore import Client
 from ruamel import yaml
 from pathlib import Path
+from ..models.framework import Framework
 
-
-FRAMEWORKS = ['sklearn', 'tensorflow', 'pytorch']
 
 @click.group()
 def cli():
@@ -19,14 +18,13 @@ def archive_model(server, workspace_id, framework, model):
     '''
     Archive the target python code as serialized file.
     '''
-    if framework not in FRAMEWORKS:
-        click.echo(click.style("Error", fg="red") + ": Invalid framework, acceptable values are sklearn, tensorflow, pytorch.")
+    try:
+        _framework = Framework[framework]
+    except Exception:
+        click.echo(click.style("Error", fg="red") + ": Unknown framework {0}".format(framework))
         exit(1)
 
-    api_token = None
-    homepath = str(Path.home())
-    yamlpath = os.path.join(homepath, ".api_token.yaml")
-
+    yamlpath = os.path.join(str(Path.home()), ".ntcore", "access_token.yaml")
     try:
         yamlfile = open(yamlpath, "r")
         tokenValue = yaml.load(yamlfile.read(), Loader=yaml.Loader)
@@ -39,7 +37,7 @@ def archive_model(server, workspace_id, framework, model):
 
     client = Client(server=server, api_token=api_token)
     with client.start_run(workspace_id) as exper:
-        exper.framework = framework
+        exper.framework = _framework
         click.echo(f"Uploading archived model to NTCore ...")
         exper.save_model(model)
 
@@ -47,7 +45,7 @@ def archive_model(server, workspace_id, framework, model):
 @click.command()
 @click.option('--server', '-s', default='http://localhost:8000', help='ntcore server endpoint')
 @click.option("--username", '-u', type=str, default=None, required=True, help='username')
-@click.password_option()
+@click.password_option(confirmation_prompt=False)
 def login(username, password, server):
     '''
     Input username and password. 
@@ -78,11 +76,12 @@ def login(username, password, server):
     if 'errors' in json_body or 'error' in json_body:
         raise Exception(json_body)
 
-    tokenValue = json_body
-    homepath = str(Path.home())
-    yamlpath = os.path.join(homepath, ".api_token.yaml")
+    token_value = json_body
+    ntcore_home = os.path.join(str(Path.home()), ".ntcore")
+    os.makedirs(ntcore_home, exist_ok=True)
+    yamlpath = os.path.join(ntcore_home, "access_token.yaml")
     with open(yamlpath, "w", encoding="utf-8") as f:
-        yaml.dump(tokenValue, f, Dumper=yaml.RoundTripDumper)
+        yaml.dump(token_value, f, Dumper=yaml.RoundTripDumper)
 
 
 cli.add_command(archive_model)
