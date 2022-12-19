@@ -1,8 +1,7 @@
 from tensorflow.python.keras.engine.training import flatten_metrics_in_order
 from tensorflow.keras.models import Model
-from tensorflow import estimator
+from tensorflow import estimator, __version__
 from packaging import version
-import tensorflow
 import gorilla
 import inspect
 
@@ -31,7 +30,6 @@ def set_attributes(experiment, pretraining_metadata=None, posttraining_metadata=
     if serializable_model:
         experiment.serializable_model = serializable_model
 
-@gorilla.patch(estimator.Estimator)
 def __export_saved_model(self, *args, experiment=None, **kwargs):
     '''
     Patches export_saved_model() model.
@@ -42,7 +40,6 @@ def __export_saved_model(self, *args, experiment=None, **kwargs):
     if experiment is not None:
         experiment.save()
 
-@gorilla.patch(estimator.Estimator)
 def __export_savedmodel(self, *args, experiment=None, **kwargs):
     '''
     Patches export_savedmodel() method.
@@ -53,7 +50,6 @@ def __export_savedmodel(self, *args, experiment=None, **kwargs):
     if experiment is not None:
         experiment.save()
 
-@gorilla.patch(Model)
 def __save(self, *args, experiment=None, **kwargs):
     '''
     Patches save() method.
@@ -64,7 +60,6 @@ def __save(self, *args, experiment=None, **kwargs):
     if experiment is not None:
         experiment.save()
 
-@gorilla.patch(Model)
 def __evaluate(self, *args, experiment=None, return_dict=False, **kwargs):
     '''
     Patches evaluate() method.
@@ -76,7 +71,6 @@ def __evaluate(self, *args, experiment=None, return_dict=False, **kwargs):
         return evaluation
     return flatten_metrics_in_order(evaluation, self.metrics_names)
 
-@gorilla.patch(Model)
 def __fit(self, *args, experiment=None, **kwargs):
     '''
     Patches the fit() method
@@ -87,7 +81,6 @@ def __fit(self, *args, experiment=None, **kwargs):
     params_to_log = __get_run_params_for_fn_args(original, args, kwargs, unlogged_params)
     set_attributes(experiment, pretraining_metadata=params_to_log)
 
-@gorilla.patch(Model)
 def __fit_generator(self, *args, experiment=None, **kwargs):
     '''
     Patches the fit_generator() method
@@ -98,7 +91,6 @@ def __fit_generator(self, *args, experiment=None, **kwargs):
     params_to_log = __get_run_params_for_fn_args(original, args, kwargs, unlogged_params)
     set_attributes(experiment, pretraining_metadata=params_to_log)
 
-@gorilla.patch(estimator.Estimator)
 def __train(self, *args, experiment=None, **kwargs):
     '''
     Patches the train() method
@@ -165,5 +157,5 @@ safe_patch(estimator.Estimator, 'train', __train)
 safe_patch(Model, 'save', __save)
 safe_patch(Model, 'evaluate', __evaluate)
 safe_patch(Model, 'fit', __fit)
-if version.parse(tensorflow.__version__) < version.parse("2.1.0"):
+if version.parse(__version__) < version.parse("2.1.0"):
     safe_patch(Model, 'fit_generator', __fit_generator)

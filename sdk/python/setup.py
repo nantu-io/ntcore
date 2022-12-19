@@ -38,7 +38,8 @@ setup(
         "requests_toolbelt",
         "requests-futures",
         "psutil",
-        "click"
+        "click",
+        "ruamel.yaml"
     ],
     entry_points={
         "console_scripts": [
